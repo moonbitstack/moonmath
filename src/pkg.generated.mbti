@@ -1,11 +1,927 @@
 // Generated using `moon info`, DON'T EDIT IT
 package "moonbitstack/moonmath"
 
+import {
+  "moonbitlang/core/debug",
+}
+
 // Values
+pub fn approx(Float, Float, eps? : Float) -> Bool
+
+pub fn approx_angle(Float, Float, eps? : Float) -> Bool
+
+pub fn clamp01(Float) -> Float
+
+pub let default_epsilon : Float
+
+pub let half_pi : Float
+
+pub fn inverse_lerp(Float, Float, Float) -> Float
+
+pub fn lerp(Float, Float, Float) -> Float
+
+pub let pi : Float
+
+pub let quarter_pi : Float
+
+pub fn remap(Float, Float, Float, Float, Float) -> Float
+
+pub fn smoothstep(Float, Float, Float) -> Float
+
+pub let tau : Float
+
+pub fn to_degrees(Float) -> Float
+
+pub fn to_radians(Float) -> Float
+
+pub fn wrap(Float, Float) -> Float
+
+pub fn wrap_range(Float, Float, Float) -> Float
 
 // Errors
 
 // Types and methods
+pub(all) struct Aabb2 {
+  min : Vec2
+  max : Vec2
+} derive(Eq)
+pub fn Aabb2::approx(Self, Self, eps? : Float) -> Bool
+pub fn Aabb2::area(Self) -> Float
+pub fn Aabb2::center(Self) -> Vec2
+pub fn Aabb2::contains(Self, Self) -> Bool
+pub fn Aabb2::contains_point(Self, Vec2) -> Bool
+pub fn Aabb2::corners(Self) -> FixedArray[Vec2]
+pub fn Aabb2::empty() -> Self
+pub fn Aabb2::equal(Self, Self) -> Bool
+pub fn Aabb2::expand(Self, Float) -> Self
+pub fn Aabb2::extents(Self) -> Vec2
+pub fn Aabb2::from_center_half_extents(Vec2, Vec2) -> Self
+pub fn Aabb2::from_points(FixedArray[Vec2]) -> Self?
+pub fn Aabb2::intersection(Self, Self) -> Self?
+pub fn Aabb2::intersects(Self, Self) -> Bool
+pub fn Aabb2::is_empty(Self) -> Bool
+pub fn Aabb2::new(Vec2, Vec2) -> Self
+pub fn Aabb2::not_equal(Self, Self) -> Bool
+pub fn Aabb2::output(Self, &Logger) -> Unit
+pub fn Aabb2::size(Self) -> Vec2
+pub fn Aabb2::to_rect(Self) -> Rect
+pub fn Aabb2::to_repr(Self) -> @debug.Repr
+pub fn Aabb2::to_string(Self) -> String
+pub fn Aabb2::union(Self, Self) -> Self
+pub impl Show for Aabb2
+pub impl @debug.Debug for Aabb2
+
+pub(all) struct Aabb3 {
+  min : Vec3
+  max : Vec3
+} derive(Eq)
+pub fn Aabb3::approx(Self, Self, eps? : Float) -> Bool
+pub fn Aabb3::center(Self) -> Vec3
+pub fn Aabb3::contains(Self, Self) -> Bool
+pub fn Aabb3::contains_point(Self, Vec3) -> Bool
+pub fn Aabb3::corners(Self) -> FixedArray[Vec3]
+pub fn Aabb3::empty() -> Self
+pub fn Aabb3::equal(Self, Self) -> Bool
+pub fn Aabb3::expand(Self, Float) -> Self
+pub fn Aabb3::extents(Self) -> Vec3
+pub fn Aabb3::from_center_half_extents(Vec3, Vec3) -> Self
+pub fn Aabb3::from_points(FixedArray[Vec3]) -> Self?
+pub fn Aabb3::intersection(Self, Self) -> Self?
+pub fn Aabb3::intersects(Self, Self) -> Bool
+pub fn Aabb3::is_empty(Self) -> Bool
+pub fn Aabb3::new(Vec3, Vec3) -> Self
+pub fn Aabb3::not_equal(Self, Self) -> Bool
+pub fn Aabb3::output(Self, &Logger) -> Unit
+pub fn Aabb3::size(Self) -> Vec3
+pub fn Aabb3::surface_area(Self) -> Float
+pub fn Aabb3::to_repr(Self) -> @debug.Repr
+pub fn Aabb3::to_string(Self) -> String
+pub fn Aabb3::transform(Self, Mat4) -> Self
+pub fn Aabb3::union(Self, Self) -> Self
+pub fn Aabb3::volume(Self) -> Float
+pub impl Show for Aabb3
+pub impl @debug.Debug for Aabb3
+
+pub(all) struct Affine2 {
+  linear : Mat2
+  translation : Vec2
+} derive(Eq)
+pub fn Affine2::approx(Self, Self, eps? : Float) -> Bool
+pub fn Affine2::div(Self, Self) -> Self
+pub fn Affine2::equal(Self, Self) -> Bool
+pub fn Affine2::from_angle(Float) -> Self
+pub fn Affine2::from_angle_translation(Float, Vec2) -> Self
+pub fn Affine2::from_mat3(Mat3) -> Self?
+pub fn Affine2::from_scale(Vec2) -> Self
+pub fn Affine2::from_translation(Vec2) -> Self
+pub fn Affine2::identity() -> Self
+pub fn Affine2::inverse(Self) -> Self?
+pub fn Affine2::is_finite(Self) -> Bool
+pub fn Affine2::mul(Self, Self) -> Self
+pub fn Affine2::new(Mat2, Vec2) -> Self
+pub fn Affine2::not_equal(Self, Self) -> Bool
+pub fn Affine2::output(Self, &Logger) -> Unit
+pub fn Affine2::to_mat3(Self) -> Mat3
+pub fn Affine2::to_repr(Self) -> @debug.Repr
+pub fn Affine2::to_string(Self) -> String
+pub fn Affine2::transform_point(Self, Vec2) -> Vec2
+pub fn Affine2::transform_vector(Self, Vec2) -> Vec2
+pub impl Div for Affine2
+pub impl Mul for Affine2
+pub impl Show for Affine2
+pub impl @debug.Debug for Affine2
+
+pub(all) struct Affine3 {
+  linear : Mat3
+  translation : Vec3
+} derive(Eq)
+pub fn Affine3::approx(Self, Self, eps? : Float) -> Bool
+pub fn Affine3::div(Self, Self) -> Self
+pub fn Affine3::equal(Self, Self) -> Bool
+pub fn Affine3::from_axis_angle(Vec3, Float) -> Self
+pub fn Affine3::from_mat4(Mat4) -> Self?
+pub fn Affine3::from_rotation(Quat) -> Self
+pub fn Affine3::from_scale(Vec3) -> Self
+pub fn Affine3::from_translation(Vec3) -> Self
+pub fn Affine3::from_trs(Trs) -> Self
+pub fn Affine3::identity() -> Self
+pub fn Affine3::inverse(Self) -> Self?
+pub fn Affine3::is_finite(Self) -> Bool
+pub fn Affine3::mul(Self, Self) -> Self
+pub fn Affine3::new(Mat3, Vec3) -> Self
+pub fn Affine3::not_equal(Self, Self) -> Bool
+pub fn Affine3::output(Self, &Logger) -> Unit
+pub fn Affine3::to_mat4(Self) -> Mat4
+pub fn Affine3::to_repr(Self) -> @debug.Repr
+pub fn Affine3::to_string(Self) -> String
+pub fn Affine3::to_trs(Self) -> Trs?
+pub fn Affine3::transform_point(Self, Vec3) -> Vec3
+pub fn Affine3::transform_vector(Self, Vec3) -> Vec3
+pub impl Div for Affine3
+pub impl Mul for Affine3
+pub impl Show for Affine3
+pub impl @debug.Debug for Affine3
+
+pub(all) enum EulerOrder {
+  Xyz
+  Xzy
+  Yxz
+  Yzx
+  Zxy
+  Zyx
+  Xyx
+  Xzx
+  Yxy
+  Yzy
+  Zxz
+  Zyz
+} derive(Eq, @debug.Debug)
+pub fn EulerOrder::equal(Self, Self) -> Bool
+pub fn EulerOrder::not_equal(Self, Self) -> Bool
+pub fn EulerOrder::to_repr(Self) -> @debug.Repr
+
+pub struct Frustum {
+  planes : FixedArray[Plane]
+}
+pub fn Frustum::approx(Self, Self, eps? : Float) -> Bool
+pub fn Frustum::contains_aabb(Self, Aabb3) -> Bool
+pub fn Frustum::contains_point(Self, Vec3) -> Bool
+pub fn Frustum::contains_sphere(Self, Sphere) -> Bool
+pub fn Frustum::equal(Self, Self) -> Bool
+pub fn Frustum::from_matrix(Mat4) -> Self?
+pub fn Frustum::from_matrix_gl(Mat4) -> Self?
+pub fn Frustum::intersects_aabb(Self, Aabb3) -> Bool
+pub fn Frustum::intersects_sphere(Self, Sphere) -> Bool
+pub fn Frustum::not_equal(Self, Self) -> Bool
+pub fn Frustum::output(Self, &Logger) -> Unit
+pub fn Frustum::plane(Self, Int32) -> Plane
+pub fn Frustum::planes(Self) -> FixedArray[Plane]
+pub fn Frustum::to_repr(Self) -> @debug.Repr
+pub fn Frustum::to_string(Self) -> String
+pub impl Eq for Frustum
+pub impl Show for Frustum
+pub impl @debug.Debug for Frustum
+
+pub(all) struct IVec2 {
+  x : Int32
+  y : Int32
+} derive(Eq, Hash)
+pub fn IVec2::abs(Self) -> Self
+pub fn IVec2::add(Self, Self) -> Self
+pub fn IVec2::as_vec2(Self) -> Vec2
+pub fn IVec2::clamp(Self, Self, Self) -> Self
+pub fn IVec2::div(Self, Self) -> Self
+pub fn IVec2::dot(Self, Self) -> Int32
+pub fn IVec2::equal(Self, Self) -> Bool
+pub fn IVec2::from_vec2(Vec2) -> Self
+pub fn IVec2::hash(Self) -> Int32
+pub fn IVec2::hash_combine(Self, Hasher) -> Unit
+pub fn IVec2::max(Self, Self) -> Self
+pub fn IVec2::min(Self, Self) -> Self
+pub fn IVec2::mul(Self, Self) -> Self
+pub fn IVec2::neg(Self) -> Self
+pub fn IVec2::new(Int32, Int32) -> Self
+pub fn IVec2::not_equal(Self, Self) -> Bool
+pub fn IVec2::one() -> Self
+pub fn IVec2::output(Self, &Logger) -> Unit
+pub fn IVec2::splat(Int32) -> Self
+pub fn IVec2::sub(Self, Self) -> Self
+pub fn IVec2::to_array(Self) -> FixedArray[Int32]
+pub fn IVec2::to_repr(Self) -> @debug.Repr
+pub fn IVec2::to_string(Self) -> String
+pub fn IVec2::zero() -> Self
+pub impl Add for IVec2
+pub impl Div for IVec2
+pub impl Mul for IVec2
+pub impl Neg for IVec2
+pub impl Show for IVec2
+pub impl Sub for IVec2
+pub impl @debug.Debug for IVec2
+
+pub(all) struct IVec3 {
+  x : Int32
+  y : Int32
+  z : Int32
+} derive(Eq, Hash)
+pub fn IVec3::abs(Self) -> Self
+pub fn IVec3::add(Self, Self) -> Self
+pub fn IVec3::as_vec3(Self) -> Vec3
+pub fn IVec3::clamp(Self, Self, Self) -> Self
+pub fn IVec3::div(Self, Self) -> Self
+pub fn IVec3::dot(Self, Self) -> Int32
+pub fn IVec3::equal(Self, Self) -> Bool
+pub fn IVec3::from_vec3(Vec3) -> Self
+pub fn IVec3::hash(Self) -> Int32
+pub fn IVec3::hash_combine(Self, Hasher) -> Unit
+pub fn IVec3::max(Self, Self) -> Self
+pub fn IVec3::min(Self, Self) -> Self
+pub fn IVec3::mul(Self, Self) -> Self
+pub fn IVec3::neg(Self) -> Self
+pub fn IVec3::new(Int32, Int32, Int32) -> Self
+pub fn IVec3::not_equal(Self, Self) -> Bool
+pub fn IVec3::one() -> Self
+pub fn IVec3::output(Self, &Logger) -> Unit
+pub fn IVec3::splat(Int32) -> Self
+pub fn IVec3::sub(Self, Self) -> Self
+pub fn IVec3::to_array(Self) -> FixedArray[Int32]
+pub fn IVec3::to_repr(Self) -> @debug.Repr
+pub fn IVec3::to_string(Self) -> String
+pub fn IVec3::zero() -> Self
+pub impl Add for IVec3
+pub impl Div for IVec3
+pub impl Mul for IVec3
+pub impl Neg for IVec3
+pub impl Show for IVec3
+pub impl Sub for IVec3
+pub impl @debug.Debug for IVec3
+
+pub(all) struct IVec4 {
+  x : Int32
+  y : Int32
+  z : Int32
+  w : Int32
+} derive(Eq, Hash)
+pub fn IVec4::abs(Self) -> Self
+pub fn IVec4::add(Self, Self) -> Self
+pub fn IVec4::as_vec4(Self) -> Vec4
+pub fn IVec4::clamp(Self, Self, Self) -> Self
+pub fn IVec4::div(Self, Self) -> Self
+pub fn IVec4::dot(Self, Self) -> Int32
+pub fn IVec4::equal(Self, Self) -> Bool
+pub fn IVec4::from_vec4(Vec4) -> Self
+pub fn IVec4::hash(Self) -> Int32
+pub fn IVec4::hash_combine(Self, Hasher) -> Unit
+pub fn IVec4::max(Self, Self) -> Self
+pub fn IVec4::min(Self, Self) -> Self
+pub fn IVec4::mul(Self, Self) -> Self
+pub fn IVec4::neg(Self) -> Self
+pub fn IVec4::new(Int32, Int32, Int32, Int32) -> Self
+pub fn IVec4::not_equal(Self, Self) -> Bool
+pub fn IVec4::one() -> Self
+pub fn IVec4::output(Self, &Logger) -> Unit
+pub fn IVec4::splat(Int32) -> Self
+pub fn IVec4::sub(Self, Self) -> Self
+pub fn IVec4::to_array(Self) -> FixedArray[Int32]
+pub fn IVec4::to_repr(Self) -> @debug.Repr
+pub fn IVec4::to_string(Self) -> String
+pub fn IVec4::zero() -> Self
+pub impl Add for IVec4
+pub impl Div for IVec4
+pub impl Mul for IVec4
+pub impl Neg for IVec4
+pub impl Show for IVec4
+pub impl Sub for IVec4
+pub impl @debug.Debug for IVec4
+
+pub(all) struct Mat2 {
+  c0 : Vec2
+  c1 : Vec2
+} derive(Eq)
+pub fn Mat2::add(Self, Self) -> Self
+pub fn Mat2::approx(Self, Self, eps? : Float) -> Bool
+pub fn Mat2::col(Self, Int32) -> Vec2
+pub fn Mat2::determinant(Self) -> Float
+pub fn Mat2::div(Self, Self) -> Self
+pub fn Mat2::equal(Self, Self) -> Bool
+pub fn Mat2::from_angle(Float) -> Self
+pub fn Mat2::from_array(FixedArray[Float]) -> Self
+pub fn Mat2::from_cols(Vec2, Vec2) -> Self
+pub fn Mat2::from_rows(Vec2, Vec2) -> Self
+pub fn Mat2::from_scale(Vec2) -> Self
+pub fn Mat2::get(Self, Int32, Int32) -> Float
+pub fn Mat2::identity() -> Self
+pub fn Mat2::inverse(Self) -> Self?
+pub fn Mat2::is_finite(Self) -> Bool
+pub fn Mat2::mul(Self, Self) -> Self
+pub fn Mat2::mul_vec2(Self, Vec2) -> Vec2
+pub fn Mat2::neg(Self) -> Self
+pub fn Mat2::not_equal(Self, Self) -> Bool
+pub fn Mat2::output(Self, &Logger) -> Unit
+pub fn Mat2::row(Self, Int32) -> Vec2
+pub fn Mat2::sub(Self, Self) -> Self
+pub fn Mat2::to_angle(Self) -> Float
+pub fn Mat2::to_array(Self) -> FixedArray[Float]
+pub fn Mat2::to_repr(Self) -> @debug.Repr
+pub fn Mat2::to_string(Self) -> String
+pub fn Mat2::transpose(Self) -> Self
+pub fn Mat2::zero() -> Self
+pub impl Add for Mat2
+pub impl Div for Mat2
+pub impl Mul for Mat2
+pub impl Neg for Mat2
+pub impl Show for Mat2
+pub impl Sub for Mat2
+pub impl @debug.Debug for Mat2
+
+pub(all) struct Mat3 {
+  c0 : Vec3
+  c1 : Vec3
+  c2 : Vec3
+} derive(Eq)
+pub fn Mat3::add(Self, Self) -> Self
+pub fn Mat3::approx(Self, Self, eps? : Float) -> Bool
+pub fn Mat3::col(Self, Int32) -> Vec3
+pub fn Mat3::determinant(Self) -> Float
+pub fn Mat3::div(Self, Self) -> Self
+pub fn Mat3::equal(Self, Self) -> Bool
+pub fn Mat3::from_array(FixedArray[Float]) -> Self
+pub fn Mat3::from_axis_angle(Vec3, Float) -> Self
+pub fn Mat3::from_cols(Vec3, Vec3, Vec3) -> Self
+pub fn Mat3::from_euler(EulerOrder, Vec3) -> Self
+pub fn Mat3::from_mat4(Mat4) -> Self
+pub fn Mat3::from_quat(Quat) -> Self
+pub fn Mat3::from_rows(Vec3, Vec3, Vec3) -> Self
+pub fn Mat3::from_scale(Vec3) -> Self
+pub fn Mat3::get(Self, Int32, Int32) -> Float
+pub fn Mat3::identity() -> Self
+pub fn Mat3::inverse(Self) -> Self?
+pub fn Mat3::is_finite(Self) -> Bool
+pub fn Mat3::mul(Self, Self) -> Self
+pub fn Mat3::mul_vec3(Self, Vec3) -> Vec3
+pub fn Mat3::neg(Self) -> Self
+pub fn Mat3::not_equal(Self, Self) -> Bool
+pub fn Mat3::output(Self, &Logger) -> Unit
+pub fn Mat3::row(Self, Int32) -> Vec3
+pub fn Mat3::sub(Self, Self) -> Self
+pub fn Mat3::to_array(Self) -> FixedArray[Float]
+pub fn Mat3::to_repr(Self) -> @debug.Repr
+pub fn Mat3::to_string(Self) -> String
+pub fn Mat3::transpose(Self) -> Self
+pub fn Mat3::zero() -> Self
+pub impl Add for Mat3
+pub impl Div for Mat3
+pub impl Mul for Mat3
+pub impl Neg for Mat3
+pub impl Show for Mat3
+pub impl Sub for Mat3
+pub impl @debug.Debug for Mat3
+
+pub(all) struct Mat4 {
+  c0 : Vec4
+  c1 : Vec4
+  c2 : Vec4
+  c3 : Vec4
+} derive(Eq)
+pub fn Mat4::add(Self, Self) -> Self
+pub fn Mat4::approx(Self, Self, eps? : Float) -> Bool
+pub fn Mat4::col(Self, Int32) -> Vec4
+pub fn Mat4::determinant(Self) -> Float
+pub fn Mat4::div(Self, Self) -> Self
+pub fn Mat4::equal(Self, Self) -> Bool
+pub fn Mat4::from_array(FixedArray[Float]) -> Self
+pub fn Mat4::from_axis_angle(Vec3, Float) -> Self
+pub fn Mat4::from_cols(Vec4, Vec4, Vec4, Vec4) -> Self
+pub fn Mat4::from_euler(EulerOrder, Vec3) -> Self
+pub fn Mat4::from_mat3(Mat3) -> Self
+pub fn Mat4::from_quat(Quat) -> Self
+pub fn Mat4::from_rows(Vec4, Vec4, Vec4, Vec4) -> Self
+pub fn Mat4::from_scale(Vec3) -> Self
+pub fn Mat4::from_translation(Vec3) -> Self
+pub fn Mat4::from_trs(Trs) -> Self
+pub fn Mat4::frustum(Float, Float, Float, Float, Float, Float) -> Self
+pub fn Mat4::frustum_gl(Float, Float, Float, Float, Float, Float) -> Self
+pub fn Mat4::get(Self, Int32, Int32) -> Float
+pub fn Mat4::identity() -> Self
+pub fn Mat4::inverse(Self) -> Self?
+pub fn Mat4::is_finite(Self) -> Bool
+pub fn Mat4::look_at(Vec3, Vec3, Vec3) -> Self
+pub fn Mat4::mul(Self, Self) -> Self
+pub fn Mat4::mul_vec4(Self, Vec4) -> Vec4
+pub fn Mat4::neg(Self) -> Self
+pub fn Mat4::not_equal(Self, Self) -> Bool
+pub fn Mat4::orthographic(Float, Float, Float, Float, Float, Float) -> Self
+pub fn Mat4::orthographic_gl(Float, Float, Float, Float, Float, Float) -> Self
+pub fn Mat4::output(Self, &Logger) -> Unit
+pub fn Mat4::perspective(Float, Float, Float, Float) -> Self
+pub fn Mat4::perspective_gl(Float, Float, Float, Float) -> Self
+pub fn Mat4::perspective_infinite(Float, Float, Float) -> Self
+pub fn Mat4::perspective_infinite_gl(Float, Float, Float) -> Self
+pub fn Mat4::row(Self, Int32) -> Vec4
+pub fn Mat4::sub(Self, Self) -> Self
+pub fn Mat4::to_array(Self) -> FixedArray[Float]
+pub fn Mat4::to_repr(Self) -> @debug.Repr
+pub fn Mat4::to_string(Self) -> String
+pub fn Mat4::to_trs(Self) -> Trs?
+pub fn Mat4::transform_point(Self, Vec3) -> Vec3
+pub fn Mat4::transform_vector(Self, Vec3) -> Vec3
+pub fn Mat4::transpose(Self) -> Self
+pub fn Mat4::zero() -> Self
+pub impl Add for Mat4
+pub impl Div for Mat4
+pub impl Mul for Mat4
+pub impl Neg for Mat4
+pub impl Show for Mat4
+pub impl Sub for Mat4
+pub impl @debug.Debug for Mat4
+
+pub(all) struct Plane {
+  normal : Vec3
+  distance : Float
+} derive(Eq)
+pub fn Plane::approx(Self, Self, eps? : Float) -> Bool
+pub fn Plane::equal(Self, Self) -> Bool
+pub fn Plane::flip(Self) -> Self
+pub fn Plane::from_point_normal(Vec3, Vec3) -> Self?
+pub fn Plane::from_points(Vec3, Vec3, Vec3) -> Self?
+pub fn Plane::intersect_ray(Self, Ray3) -> Float?
+pub fn Plane::is_finite(Self) -> Bool
+pub fn Plane::new(Vec3, Float) -> Self
+pub fn Plane::not_equal(Self, Self) -> Bool
+pub fn Plane::output(Self, &Logger) -> Unit
+pub fn Plane::project(Self, Vec3) -> Vec3
+pub fn Plane::signed_distance(Self, Vec3) -> Float
+pub fn Plane::to_repr(Self) -> @debug.Repr
+pub fn Plane::to_string(Self) -> String
+pub impl Show for Plane
+pub impl @debug.Debug for Plane
+
+pub(all) struct Quat {
+  x : Float
+  y : Float
+  z : Float
+  w : Float
+} derive(Eq)
+pub fn Quat::approx(Self, Self, eps? : Float) -> Bool
+pub fn Quat::conjugate(Self) -> Self
+pub fn Quat::div(Self, Self) -> Self
+pub fn Quat::dot(Self, Self) -> Float
+pub fn Quat::equal(Self, Self) -> Bool
+pub fn Quat::from_axis_angle(Vec3, Float) -> Self
+pub fn Quat::from_euler(EulerOrder, Vec3) -> Self
+pub fn Quat::from_mat3(Mat3) -> Self
+pub fn Quat::from_mat4(Mat4) -> Self
+pub fn Quat::from_rotation_arc(Vec3, Vec3) -> Self
+pub fn Quat::identity() -> Self
+pub fn Quat::inverse(Self) -> Self?
+pub fn Quat::is_finite(Self) -> Bool
+pub fn Quat::length(Self) -> Float
+pub fn Quat::length_squared(Self) -> Float
+pub fn Quat::mul(Self, Self) -> Self
+pub fn Quat::neg(Self) -> Self
+pub fn Quat::new(Float, Float, Float, Float) -> Self
+pub fn Quat::nlerp(Self, Self, Float) -> Self
+pub fn Quat::normalize(Self) -> Self
+pub fn Quat::not_equal(Self, Self) -> Bool
+pub fn Quat::output(Self, &Logger) -> Unit
+pub fn Quat::rotate(Self, Vec3) -> Vec3
+pub fn Quat::slerp(Self, Self, Float) -> Self
+pub fn Quat::to_array(Self) -> FixedArray[Float]
+pub fn Quat::to_axis_angle(Self) -> (Vec3, Float)
+pub fn Quat::to_euler(Self, EulerOrder) -> Vec3
+pub fn Quat::to_mat3(Self) -> Mat3
+pub fn Quat::to_mat4(Self) -> Mat4
+pub fn Quat::to_repr(Self) -> @debug.Repr
+pub fn Quat::to_string(Self) -> String
+pub impl Div for Quat
+pub impl Mul for Quat
+pub impl Neg for Quat
+pub impl Show for Quat
+pub impl @debug.Debug for Quat
+
+pub(all) struct Ray2 {
+  origin : Vec2
+  direction : Vec2
+} derive(Eq)
+pub fn Ray2::approx(Self, Self, eps? : Float) -> Bool
+pub fn Ray2::at(Self, Float) -> Vec2
+pub fn Ray2::equal(Self, Self) -> Bool
+pub fn Ray2::intersect_aabb(Self, Aabb2) -> Float?
+pub fn Ray2::intersect_aabb_interval(Self, Aabb2) -> (Float, Float)?
+pub fn Ray2::intersect_circle(Self, Vec2, Float) -> Float?
+pub fn Ray2::intersect_rect(Self, Rect) -> Float?
+pub fn Ray2::new(Vec2, Vec2) -> Self
+pub fn Ray2::not_equal(Self, Self) -> Bool
+pub fn Ray2::output(Self, &Logger) -> Unit
+pub fn Ray2::to_repr(Self) -> @debug.Repr
+pub fn Ray2::to_string(Self) -> String
+pub impl Show for Ray2
+pub impl @debug.Debug for Ray2
+
+pub(all) struct Ray3 {
+  origin : Vec3
+  direction : Vec3
+} derive(Eq)
+pub fn Ray3::approx(Self, Self, eps? : Float) -> Bool
+pub fn Ray3::at(Self, Float) -> Vec3
+pub fn Ray3::equal(Self, Self) -> Bool
+pub fn Ray3::intersect_aabb(Self, Aabb3) -> Float?
+pub fn Ray3::intersect_aabb_interval(Self, Aabb3) -> (Float, Float)?
+pub fn Ray3::intersect_plane(Self, Plane) -> Float?
+pub fn Ray3::intersect_sphere(Self, Sphere) -> Float?
+pub fn Ray3::intersect_triangle(Self, Triangle) -> Float?
+pub fn Ray3::new(Vec3, Vec3) -> Self
+pub fn Ray3::not_equal(Self, Self) -> Bool
+pub fn Ray3::output(Self, &Logger) -> Unit
+pub fn Ray3::to_repr(Self) -> @debug.Repr
+pub fn Ray3::to_string(Self) -> String
+pub impl Show for Ray3
+pub impl @debug.Debug for Ray3
+
+pub(all) struct Rect {
+  origin : Vec2
+  size : Vec2
+} derive(Eq)
+pub fn Rect::approx(Self, Self, eps? : Float) -> Bool
+pub fn Rect::area(Self) -> Float
+pub fn Rect::center(Self) -> Vec2
+pub fn Rect::contains(Self, Vec2) -> Bool
+pub fn Rect::corners(Self) -> FixedArray[Vec2]
+pub fn Rect::equal(Self, Self) -> Bool
+pub fn Rect::from_edges(Float, Float, Float, Float) -> Self
+pub fn Rect::from_xywh(Float, Float, Float, Float) -> Self
+pub fn Rect::height(Self) -> Float
+pub fn Rect::inset(Self, Float) -> Self
+pub fn Rect::intersection(Self, Self) -> Self?
+pub fn Rect::intersects(Self, Self) -> Bool
+pub fn Rect::is_empty(Self) -> Bool
+pub fn Rect::max(Self) -> Vec2
+pub fn Rect::min(Self) -> Vec2
+pub fn Rect::new(Vec2, Vec2) -> Self
+pub fn Rect::not_equal(Self, Self) -> Bool
+pub fn Rect::output(Self, &Logger) -> Unit
+pub fn Rect::to_aabb(Self) -> Aabb2
+pub fn Rect::to_repr(Self) -> @debug.Repr
+pub fn Rect::to_string(Self) -> String
+pub fn Rect::translate(Self, Vec2) -> Self
+pub fn Rect::union(Self, Self) -> Self
+pub fn Rect::width(Self) -> Float
+pub impl Show for Rect
+pub impl @debug.Debug for Rect
+
+pub(all) struct Sphere {
+  center : Vec3
+  radius : Float
+} derive(Eq)
+pub fn Sphere::approx(Self, Self, eps? : Float) -> Bool
+pub fn Sphere::contains_point(Self, Vec3) -> Bool
+pub fn Sphere::equal(Self, Self) -> Bool
+pub fn Sphere::intersects_aabb(Self, Aabb3) -> Bool
+pub fn Sphere::intersects_sphere(Self, Self) -> Bool
+pub fn Sphere::new(Vec3, Float) -> Self
+pub fn Sphere::not_equal(Self, Self) -> Bool
+pub fn Sphere::output(Self, &Logger) -> Unit
+pub fn Sphere::surface_area(Self) -> Float
+pub fn Sphere::to_repr(Self) -> @debug.Repr
+pub fn Sphere::to_string(Self) -> String
+pub fn Sphere::volume(Self) -> Float
+pub impl Show for Sphere
+pub impl @debug.Debug for Sphere
+
+pub(all) struct Triangle {
+  a : Vec3
+  b : Vec3
+  c : Vec3
+} derive(Eq)
+pub fn Triangle::approx(Self, Self, eps? : Float) -> Bool
+pub fn Triangle::area(Self) -> Float
+pub fn Triangle::barycentric(Self, Vec3) -> Vec3?
+pub fn Triangle::equal(Self, Self) -> Bool
+pub fn Triangle::intersect_ray(Self, Ray3) -> Float?
+pub fn Triangle::new(Vec3, Vec3, Vec3) -> Self
+pub fn Triangle::normal(Self) -> Vec3
+pub fn Triangle::not_equal(Self, Self) -> Bool
+pub fn Triangle::output(Self, &Logger) -> Unit
+pub fn Triangle::to_repr(Self) -> @debug.Repr
+pub fn Triangle::to_string(Self) -> String
+pub impl Show for Triangle
+pub impl @debug.Debug for Triangle
+
+pub(all) struct Trs {
+  translation : Vec3
+  rotation : Quat
+  scale : Vec3
+} derive(Eq)
+pub fn Trs::equal(Self, Self) -> Bool
+pub fn Trs::new(Vec3, Quat, Vec3) -> Self
+pub fn Trs::not_equal(Self, Self) -> Bool
+pub fn Trs::output(Self, &Logger) -> Unit
+pub fn Trs::to_repr(Self) -> @debug.Repr
+pub fn Trs::to_string(Self) -> String
+pub impl Show for Trs
+pub impl @debug.Debug for Trs
+
+pub(all) struct UVec2 {
+  x : UInt32
+  y : UInt32
+} derive(Eq, Hash)
+pub fn UVec2::add(Self, Self) -> Self
+pub fn UVec2::as_vec2(Self) -> Vec2
+pub fn UVec2::clamp(Self, Self, Self) -> Self
+pub fn UVec2::div(Self, Self) -> Self
+pub fn UVec2::dot(Self, Self) -> UInt32
+pub fn UVec2::equal(Self, Self) -> Bool
+pub fn UVec2::hash(Self) -> Int32
+pub fn UVec2::hash_combine(Self, Hasher) -> Unit
+pub fn UVec2::max(Self, Self) -> Self
+pub fn UVec2::min(Self, Self) -> Self
+pub fn UVec2::mul(Self, Self) -> Self
+pub fn UVec2::new(UInt32, UInt32) -> Self
+pub fn UVec2::not_equal(Self, Self) -> Bool
+pub fn UVec2::one() -> Self
+pub fn UVec2::output(Self, &Logger) -> Unit
+pub fn UVec2::splat(UInt32) -> Self
+pub fn UVec2::sub(Self, Self) -> Self
+pub fn UVec2::to_array(Self) -> FixedArray[UInt32]
+pub fn UVec2::to_repr(Self) -> @debug.Repr
+pub fn UVec2::to_string(Self) -> String
+pub fn UVec2::zero() -> Self
+pub impl Add for UVec2
+pub impl Div for UVec2
+pub impl Mul for UVec2
+pub impl Show for UVec2
+pub impl Sub for UVec2
+pub impl @debug.Debug for UVec2
+
+pub(all) struct UVec3 {
+  x : UInt32
+  y : UInt32
+  z : UInt32
+} derive(Eq, Hash)
+pub fn UVec3::add(Self, Self) -> Self
+pub fn UVec3::as_vec3(Self) -> Vec3
+pub fn UVec3::clamp(Self, Self, Self) -> Self
+pub fn UVec3::div(Self, Self) -> Self
+pub fn UVec3::dot(Self, Self) -> UInt32
+pub fn UVec3::equal(Self, Self) -> Bool
+pub fn UVec3::hash(Self) -> Int32
+pub fn UVec3::hash_combine(Self, Hasher) -> Unit
+pub fn UVec3::max(Self, Self) -> Self
+pub fn UVec3::min(Self, Self) -> Self
+pub fn UVec3::mul(Self, Self) -> Self
+pub fn UVec3::new(UInt32, UInt32, UInt32) -> Self
+pub fn UVec3::not_equal(Self, Self) -> Bool
+pub fn UVec3::one() -> Self
+pub fn UVec3::output(Self, &Logger) -> Unit
+pub fn UVec3::splat(UInt32) -> Self
+pub fn UVec3::sub(Self, Self) -> Self
+pub fn UVec3::to_array(Self) -> FixedArray[UInt32]
+pub fn UVec3::to_repr(Self) -> @debug.Repr
+pub fn UVec3::to_string(Self) -> String
+pub fn UVec3::zero() -> Self
+pub impl Add for UVec3
+pub impl Div for UVec3
+pub impl Mul for UVec3
+pub impl Show for UVec3
+pub impl Sub for UVec3
+pub impl @debug.Debug for UVec3
+
+pub(all) struct UVec4 {
+  x : UInt32
+  y : UInt32
+  z : UInt32
+  w : UInt32
+} derive(Eq, Hash)
+pub fn UVec4::add(Self, Self) -> Self
+pub fn UVec4::as_vec4(Self) -> Vec4
+pub fn UVec4::clamp(Self, Self, Self) -> Self
+pub fn UVec4::div(Self, Self) -> Self
+pub fn UVec4::dot(Self, Self) -> UInt32
+pub fn UVec4::equal(Self, Self) -> Bool
+pub fn UVec4::hash(Self) -> Int32
+pub fn UVec4::hash_combine(Self, Hasher) -> Unit
+pub fn UVec4::max(Self, Self) -> Self
+pub fn UVec4::min(Self, Self) -> Self
+pub fn UVec4::mul(Self, Self) -> Self
+pub fn UVec4::new(UInt32, UInt32, UInt32, UInt32) -> Self
+pub fn UVec4::not_equal(Self, Self) -> Bool
+pub fn UVec4::one() -> Self
+pub fn UVec4::output(Self, &Logger) -> Unit
+pub fn UVec4::splat(UInt32) -> Self
+pub fn UVec4::sub(Self, Self) -> Self
+pub fn UVec4::to_array(Self) -> FixedArray[UInt32]
+pub fn UVec4::to_repr(Self) -> @debug.Repr
+pub fn UVec4::to_string(Self) -> String
+pub fn UVec4::zero() -> Self
+pub impl Add for UVec4
+pub impl Div for UVec4
+pub impl Mul for UVec4
+pub impl Show for UVec4
+pub impl Sub for UVec4
+pub impl @debug.Debug for UVec4
+
+pub(all) struct Vec2 {
+  x : Float
+  y : Float
+} derive(Eq)
+pub fn Vec2::abs(Self) -> Self
+pub fn Vec2::add(Self, Self) -> Self
+pub fn Vec2::angle_between(Self, Self) -> Float
+pub fn Vec2::approx(Self, Self, eps? : Float) -> Bool
+pub fn Vec2::ceil(Self) -> Self
+pub fn Vec2::clamp(Self, Self, Self) -> Self
+pub fn Vec2::cross(Self, Self) -> Float
+pub fn Vec2::distance(Self, Self) -> Float
+pub fn Vec2::distance_squared(Self, Self) -> Float
+pub fn Vec2::div(Self, Self) -> Self
+pub fn Vec2::divide(Self, Float) -> Self
+pub fn Vec2::dot(Self, Self) -> Float
+pub fn Vec2::equal(Self, Self) -> Bool
+pub fn Vec2::floor(Self) -> Self
+pub fn Vec2::fract(Self) -> Self
+pub fn Vec2::is_finite(Self) -> Bool
+pub fn Vec2::length(Self) -> Float
+pub fn Vec2::length_squared(Self) -> Float
+pub fn Vec2::lerp(Self, Self, Float) -> Self
+pub fn Vec2::max(Self, Self) -> Self
+pub fn Vec2::min(Self, Self) -> Self
+pub fn Vec2::mul(Self, Self) -> Self
+pub fn Vec2::neg(Self) -> Self
+pub fn Vec2::new(Float, Float) -> Self
+pub fn Vec2::normalize(Self) -> Self
+pub fn Vec2::normalize_or(Self, Self) -> Self
+pub fn Vec2::not_equal(Self, Self) -> Bool
+pub fn Vec2::one() -> Self
+pub fn Vec2::output(Self, &Logger) -> Unit
+pub fn Vec2::perp(Self) -> Self
+pub fn Vec2::project(Self, Self) -> Self
+pub fn Vec2::reflect(Self, Self) -> Self
+pub fn Vec2::refract(Self, Self, Float) -> Self?
+pub fn Vec2::reject(Self, Self) -> Self
+pub fn Vec2::round(Self) -> Self
+pub fn Vec2::scale(Self, Float) -> Self
+pub fn Vec2::splat(Float) -> Self
+pub fn Vec2::sub(Self, Self) -> Self
+pub fn Vec2::to_array(Self) -> FixedArray[Float]
+pub fn Vec2::to_repr(Self) -> @debug.Repr
+pub fn Vec2::to_string(Self) -> String
+pub fn Vec2::to_vec3(Self, Float) -> Vec3
+pub fn Vec2::to_vec4(Self, Float, Float) -> Vec4
+pub fn Vec2::try_normalize(Self) -> Self?
+pub fn Vec2::unit_x() -> Self
+pub fn Vec2::unit_y() -> Self
+pub fn Vec2::yx(Self) -> Self
+pub fn Vec2::zero() -> Self
+pub impl Add for Vec2
+pub impl Div for Vec2
+pub impl Mul for Vec2
+pub impl Neg for Vec2
+pub impl Show for Vec2
+pub impl Sub for Vec2
+pub impl @debug.Debug for Vec2
+
+pub(all) struct Vec3 {
+  x : Float
+  y : Float
+  z : Float
+} derive(Eq)
+pub fn Vec3::abs(Self) -> Self
+pub fn Vec3::add(Self, Self) -> Self
+pub fn Vec3::angle_between(Self, Self) -> Float
+pub fn Vec3::approx(Self, Self, eps? : Float) -> Bool
+pub fn Vec3::ceil(Self) -> Self
+pub fn Vec3::clamp(Self, Self, Self) -> Self
+pub fn Vec3::cross(Self, Self) -> Self
+pub fn Vec3::distance(Self, Self) -> Float
+pub fn Vec3::distance_squared(Self, Self) -> Float
+pub fn Vec3::div(Self, Self) -> Self
+pub fn Vec3::divide(Self, Float) -> Self
+pub fn Vec3::dot(Self, Self) -> Float
+pub fn Vec3::equal(Self, Self) -> Bool
+pub fn Vec3::floor(Self) -> Self
+pub fn Vec3::fract(Self) -> Self
+pub fn Vec3::is_finite(Self) -> Bool
+pub fn Vec3::length(Self) -> Float
+pub fn Vec3::length_squared(Self) -> Float
+pub fn Vec3::lerp(Self, Self, Float) -> Self
+pub fn Vec3::max(Self, Self) -> Self
+pub fn Vec3::min(Self, Self) -> Self
+pub fn Vec3::mul(Self, Self) -> Self
+pub fn Vec3::neg(Self) -> Self
+pub fn Vec3::new(Float, Float, Float) -> Self
+pub fn Vec3::normalize(Self) -> Self
+pub fn Vec3::normalize_or(Self, Self) -> Self
+pub fn Vec3::not_equal(Self, Self) -> Bool
+pub fn Vec3::one() -> Self
+pub fn Vec3::output(Self, &Logger) -> Unit
+pub fn Vec3::project(Self, Self) -> Self
+pub fn Vec3::reflect(Self, Self) -> Self
+pub fn Vec3::refract(Self, Self, Float) -> Self?
+pub fn Vec3::reject(Self, Self) -> Self
+pub fn Vec3::round(Self) -> Self
+pub fn Vec3::scale(Self, Float) -> Self
+pub fn Vec3::splat(Float) -> Self
+pub fn Vec3::sub(Self, Self) -> Self
+pub fn Vec3::to_array(Self) -> FixedArray[Float]
+pub fn Vec3::to_repr(Self) -> @debug.Repr
+pub fn Vec3::to_string(Self) -> String
+pub fn Vec3::to_vec4(Self, Float) -> Vec4
+pub fn Vec3::try_normalize(Self) -> Self?
+pub fn Vec3::unit_x() -> Self
+pub fn Vec3::unit_y() -> Self
+pub fn Vec3::unit_z() -> Self
+pub fn Vec3::xy(Self) -> Vec2
+pub fn Vec3::xz(Self) -> Vec2
+pub fn Vec3::xzy(Self) -> Self
+pub fn Vec3::yxz(Self) -> Self
+pub fn Vec3::yz(Self) -> Vec2
+pub fn Vec3::yzx(Self) -> Self
+pub fn Vec3::zero() -> Self
+pub fn Vec3::zxy(Self) -> Self
+pub fn Vec3::zyx(Self) -> Self
+pub impl Add for Vec3
+pub impl Div for Vec3
+pub impl Mul for Vec3
+pub impl Neg for Vec3
+pub impl Show for Vec3
+pub impl Sub for Vec3
+pub impl @debug.Debug for Vec3
+
+pub(all) struct Vec4 {
+  x : Float
+  y : Float
+  z : Float
+  w : Float
+} derive(Eq)
+pub fn Vec4::abs(Self) -> Self
+pub fn Vec4::add(Self, Self) -> Self
+pub fn Vec4::approx(Self, Self, eps? : Float) -> Bool
+pub fn Vec4::ceil(Self) -> Self
+pub fn Vec4::clamp(Self, Self, Self) -> Self
+pub fn Vec4::distance(Self, Self) -> Float
+pub fn Vec4::distance_squared(Self, Self) -> Float
+pub fn Vec4::div(Self, Self) -> Self
+pub fn Vec4::divide(Self, Float) -> Self
+pub fn Vec4::dot(Self, Self) -> Float
+pub fn Vec4::equal(Self, Self) -> Bool
+pub fn Vec4::floor(Self) -> Self
+pub fn Vec4::fract(Self) -> Self
+pub fn Vec4::is_finite(Self) -> Bool
+pub fn Vec4::length(Self) -> Float
+pub fn Vec4::length_squared(Self) -> Float
+pub fn Vec4::lerp(Self, Self, Float) -> Self
+pub fn Vec4::max(Self, Self) -> Self
+pub fn Vec4::min(Self, Self) -> Self
+pub fn Vec4::mul(Self, Self) -> Self
+pub fn Vec4::neg(Self) -> Self
+pub fn Vec4::new(Float, Float, Float, Float) -> Self
+pub fn Vec4::normalize(Self) -> Self
+pub fn Vec4::normalize_or(Self, Self) -> Self
+pub fn Vec4::not_equal(Self, Self) -> Bool
+pub fn Vec4::one() -> Self
+pub fn Vec4::output(Self, &Logger) -> Unit
+pub fn Vec4::round(Self) -> Self
+pub fn Vec4::scale(Self, Float) -> Self
+pub fn Vec4::splat(Float) -> Self
+pub fn Vec4::sub(Self, Self) -> Self
+pub fn Vec4::to_array(Self) -> FixedArray[Float]
+pub fn Vec4::to_repr(Self) -> @debug.Repr
+pub fn Vec4::to_string(Self) -> String
+pub fn Vec4::try_normalize(Self) -> Self?
+pub fn Vec4::unit_w() -> Self
+pub fn Vec4::unit_x() -> Self
+pub fn Vec4::unit_y() -> Self
+pub fn Vec4::unit_z() -> Self
+pub fn Vec4::wzyx(Self) -> Self
+pub fn Vec4::xy(Self) -> Vec2
+pub fn Vec4::xyz(Self) -> Vec3
+pub fn Vec4::zero() -> Self
+pub impl Add for Vec4
+pub impl Div for Vec4
+pub impl Mul for Vec4
+pub impl Neg for Vec4
+pub impl Show for Vec4
+pub impl Sub for Vec4
+pub impl @debug.Debug for Vec4
 
 // Type aliases
 

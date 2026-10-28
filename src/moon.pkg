@@ -13,3 +13,15 @@
 //
 // Values are immutable and the operators are total: nothing allocates and
 // nothing raises except the integer division the language itself aborts on.
+import {
+  "moonbitlang/core/debug",
+  "moonbitlang/core/math",
+}
+
+import {
+  "moonbitlang/core/hashmap",
+} for "wbtest"
+
+import {
+  "moonbitlang/core/bench",
+} for "test"

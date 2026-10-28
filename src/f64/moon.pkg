@@ -8,3 +8,11 @@
 //
 // Both are generated from one template by `scripts/gen_math.py`; a change to the
 // shape of the API belongs there, not here.
+import {
+  "moonbitlang/core/debug",
+  "moonbitlang/core/math",
+}
+
+import {
+  "moonbitlang/core/bench",
+} for "test"
