@@ -9,7 +9,9 @@ into `src/` (single precision) and `src/f64/` (double precision). A template
 named `foo.f32.mbt` is only emitted for single precision, which is how the
 integer vectors stay out of the double package.
 
-Run `moon fmt` afterwards: the output is formatted by the formatter, not here,
+Run `moon fmt` afterwards, and before `scripts/gen_api.py` reads these files:
+the formatter re-wraps the code inside doc comments, and the reference page
+embeds those blocks verbatim. The output is formatted by the formatter, not here,
 which is also why the check that the two packages are still what the template
 says is "regenerate, format, and see whether anything moved".
 

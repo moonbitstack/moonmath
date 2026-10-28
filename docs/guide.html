@@ -128,7 +128,7 @@
               <span class="label">listing 1 · handedness</span>
               <button class="copy" type="button" data-copy>copy</button>
             </div>
-            <pre><code>let forward = @moonmath.Vec3::new(0.0, 0.0, -1.0)  // where the eye looks
+            <pre><code>let forward = @moonmath.Vec3::new(0.0, 0.0, -1.0)  // the way the eye looks
 let up = @moonmath.Vec3::unit_y()
 let right = forward.cross(up)                       // +x, not -x
 
@@ -241,7 +241,7 @@ None</code></pre>
               <span class="label">listing 4 · four useful functions</span>
               <button class="copy" type="button" data-copy>copy</button>
             </div>
-            <pre><code>println(@moonmath.smoothstep(0.0, 1.0, 0.25))  // 3t² − 2t³ at t = 0.25
+            <pre><code>println(@moonmath.smoothstep(0.0, 1.0, 0.25))  // 3t² − 2t³, at t = 0.25
 println(@moonmath.wrap(7.5, 5.0))              // into 0 … 5
 println(@moonmath.to_degrees(@moonmath.half_pi))</code></pre>
           </div>
@@ -375,15 +375,10 @@ Vec4(1, 2, 3, 1)</code></pre>
             </div>
             <pre><code>let eye = @moonmath.Vec3::new(0.0, 0.0, 6.0)
 let view = @moonmath.Mat4::look_at(
-  eye,
-  @moonmath.Vec3::zero(),
-  @moonmath.Vec3::unit_y(),
+  eye, @moonmath.Vec3::zero(), @moonmath.Vec3::unit_y(),
 )
 let projection = @moonmath.Mat4::perspective(
-  @moonmath.to_radians(60.0),
-  1.5,
-  0.1,
-  100.0,
+  @moonmath.to_radians(60.0), 1.5, 0.1, 100.0,
 )
 let view_projection = projection * view
 
@@ -409,8 +404,10 @@ println(view_projection.transform_point(@moonmath.Vec3::zero()))</code></pre>
               <button class="copy" type="button" data-copy>copy</button>
             </div>
             <pre><code>// 0.1 in front of the eye, and 100 in front of the eye.
-println(view_projection.transform_point(@moonmath.Vec3::new(0.0, 0.0, 5.9)))
-println(view_projection.transform_point(@moonmath.Vec3::new(0.0, 0.0, -94.0)))</code></pre>
+let on_near = @moonmath.Vec3::new(0.0, 0.0, 5.9)
+let on_far = @moonmath.Vec3::new(0.0, 0.0, -94.0)
+println(view_projection.transform_point(on_near))
+println(view_projection.transform_point(on_far))</code></pre>
           </div>
 
           <div class="slip output">
@@ -455,7 +452,10 @@ Vec3(0, 0, 1)</code></pre>
             </div>
             <pre><code>let placement = @moonmath.Trs::new(
   @moonmath.Vec3::new(0.0, 2.0, 0.0),
-  @moonmath.Quat::from_axis_angle(@moonmath.Vec3::unit_y(), @moonmath.half_pi),
+  @moonmath.Quat::from_axis_angle(
+    @moonmath.Vec3::unit_y(),
+    @moonmath.half_pi,
+  ),
   @moonmath.Vec3::splat(0.5),
 )
 let model = @moonmath.Mat4::from_trs(placement)
@@ -724,7 +724,7 @@ Vec3(1000000000, 0, 0)</code></pre>
           <p style="margin-top: 2rem">
             <a href="api.html" class="turn-page">
               <span class="turn-kicker">turn the page</span>
-              <span class="turn-title">The lexicon: every public name, with its sentence</span>
+              <span class="turn-title">The lexicon, every public name</span>
               <span class="turn-mark" aria-hidden="true">
                 <svg viewBox="0 0 26 12" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round">
                   <path d="M1 6h22" /><path d="M18 1.5 23.5 6 18 10.5" />

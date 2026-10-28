@@ -161,32 +161,33 @@
 
           <figure class="plate">
             <div class="plate-inner">
-              <svg viewBox="60 20 340 320" role="img" aria-labelledby="fig1-title">
+              <svg viewBox="20 30 310 290" role="img" aria-labelledby="fig1-title">
                 <title id="fig1-title">
                   A unit cube in perspective, with the three edges that meet at
                   the far corner drawn dashed.
                 </title>
                 <!-- the three edges that are behind -->
-                <path class="ink-dash" d="M213.1 198.4 L350.9 230.6" />
-                <path class="ink-dash" d="M213.1 198.4 L210.7 53.6" />
-                <path class="ink-dash" d="M213.1 198.4 L117.9 260.5" />
+                <path class="ink-dash" d="M143.9 192.4 L277.5 223.6" />
+                <path class="ink-dash" d="M143.9 192.4 L141.6 52.0" />
+                <path class="ink-dash" d="M143.9 192.4 L51.6 252.6" />
                 <!-- the face nearest the eye -->
-                <path class="ink" d="M117.9 260.5 L278.5 311.2 L283.6 110.9 L104.1 84.6 Z" />
+                <path class="ink" d="M51.6 252.6 L207.3 301.8 L212.3 107.6 L38.3 82.0 Z" />
                 <!-- the four edges that tie it to the far face -->
-                <path class="ink" d="M350.9 230.6 L362.1 69.5 L210.7 53.6" />
-                <path class="ink" d="M350.9 230.6 L278.5 311.2" />
-                <path class="ink" d="M362.1 69.5 L283.6 110.9" />
-                <path class="ink" d="M210.7 53.6 L104.1 84.6" />
+                <path class="ink" d="M277.5 223.6 L288.4 67.4 L141.6 52.0" />
+                <path class="ink" d="M277.5 223.6 L207.3 301.8" />
+                <path class="ink" d="M288.4 67.4 L212.3 107.6" />
+                <path class="ink" d="M141.6 52.0 L38.3 82.0" />
                 <!-- the axes the edges run along -->
-                <text class="ink-label" x="196" y="330">x</text>
-                <text class="ink-label" x="84" y="178">y</text>
-                <text class="ink-label" x="150" y="46">z</text>
+                <text class="ink-label" x="120" y="316">x</text>
+                <text class="ink-label" x="24" y="172">y</text>
+                <text class="ink-label" x="80" y="46">z</text>
               </svg>
             </div>
             <figcaption>
               <span class="no">Fig. 1.</span> The unit cube, seen through
-              <code>look_at</code> and <code>perspective</code> at 34° and drawn
-              with the numbers they returned. Perspective shortens the far face;
+              <code>look_at</code> and <code>perspective</code> at 30° and drawn
+              with the numbers they returned, in a frame of the same
+              proportions. Perspective shortens the far face;
               the three edges that meet behind it are dashed, as a draughtsman
               would leave them.
             </figcaption>
@@ -245,7 +246,9 @@
               <span class="label">listing 1 · the sixteen floats</span>
               <button class="copy" type="button" data-copy>copy</button>
             </div>
-            <pre><code>let moved = @moonmath.Mat4::from_translation(@moonmath.Vec3::new(3.0, 0.0, 0.0))
+            <pre><code>let moved = @moonmath.Mat4::from_translation(
+  @moonmath.Vec3::new(3.0, 0.0, 0.0),
+)
 let buffer = moved.to_array()</code></pre>
           </div>
 
@@ -329,10 +332,11 @@ let buffer = moved.to_array()</code></pre>
                   </p>
                 </div>
               </li>
-              <li>
+              <li class="tall">
                 <div class="step-body">
-                  $$ \frac{-An + B}{n} = 0 \;\Rightarrow\; B = An, \qquad
-                  \frac{-Af + An}{f} = 1 \;\Rightarrow\; A = -\frac{f}{f-n} $$
+                  $$ \begin{aligned} \frac{-An + B}{n} = 0 \;&\Rightarrow\;
+                  B = An, \\[2pt] \frac{-Af + An}{f} = 1 \;&\Rightarrow\;
+                  A = -\frac{f}{f-n} \end{aligned} $$
                   <p>
                     Substituting back gives \(B = -\dfrac{fn}{f-n}\), both negative
                     once \(f > n\).
@@ -370,38 +374,37 @@ let buffer = moved.to_array()</code></pre>
 
           <figure class="plate">
             <div class="plate-inner">
-              <svg viewBox="0 0 480 250" role="img" aria-labelledby="fig2-title">
+              <svg viewBox="0 0 480 300" role="img" aria-labelledby="fig2-title">
                 <title id="fig2-title">
                   A frustum seen from the side, with the near plane at depth zero
                   and the far plane at depth one.
                 </title>
-                <!-- the eye -->
-                <circle cx="40" cy="125" r="2.6" fill="currentColor" stroke="none" />
-                <text class="ink-label" x="26" y="112">eye</text>
+                <!-- the eye, and where it looks -->
+                <circle cx="46" cy="140" r="3" fill="currentColor" stroke="none" />
+                <text class="ink-label" x="30" y="128">eye</text>
+                <path class="ink-dash" d="M46 140 H430" />
                 <!-- the frustum edges -->
-                <path class="ink" d="M40 125 L430 40" />
-                <path class="ink" d="M40 125 L430 210" />
-                <path class="ink-dash" d="M40 125 L430 125" />
-                <!-- near plane -->
-                <path class="ink" d="M150 88 L150 162" />
-                <!-- far plane -->
-                <path class="ink" d="M430 40 L430 210" />
-                <!-- the angle -->
-                <path class="ink-thin" d="M96 108 A64 64 0 0 1 96 142" />
-                <text class="ink-label" x="104" y="129">θ</text>
-                <!-- measurements -->
-                <path class="ink-thin" d="M40 232 L150 232" />
-                <path class="ink-thin" d="M150 226 L150 238" />
-                <path class="ink-thin" d="M40 226 L40 238" />
-                <text class="ink-label" x="88" y="246">n</text>
-                <path class="ink-thin" d="M150 232 L430 232" />
-                <path class="ink-thin" d="M430 226 L430 238" />
-                <text class="ink-label" x="286" y="246">f</text>
-                <!-- the two depths -->
-                <text class="ink-label" x="140" y="78">0</text>
-                <text class="ink-label" x="424" y="30">1</text>
-                <text class="ink-hand" x="150" y="186">the near plane</text>
-                <text class="ink-hand" x="356" y="228">the far plane</text>
+                <path class="ink" d="M46 140 L430 58" />
+                <path class="ink" d="M46 140 L430 222" />
+                <!-- the angle between them -->
+                <path class="ink-thin" d="M118 118 A76 76 0 0 1 118 162" />
+                <text class="ink-label" x="100" y="151" style="font-size: 16px">θ</text>
+                <!-- the near plane -->
+                <path class="ink" d="M160 116 L160 164" />
+                <text class="ink-label" x="168" y="110">0</text>
+                <!-- the far plane -->
+                <path class="ink" d="M430 58 L430 222" />
+                <text class="ink-label" x="420" y="48">1</text>
+                <!-- the two distances -->
+                <path class="ink-thin" d="M46 262 H160" />
+                <path class="ink-thin" d="M46 256 V268 M160 256 V268" />
+                <text class="ink-label" x="98" y="282">n</text>
+                <path class="ink-thin" d="M160 262 H430" />
+                <path class="ink-thin" d="M430 256 V268" />
+                <text class="ink-label" x="288" y="282">f</text>
+                <!-- what the planes are -->
+                <text class="ink-hand" x="150" y="206">the near plane</text>
+                <text class="ink-hand" x="336" y="242">the far plane</text>
               </svg>
             </div>
             <figcaption>
@@ -502,7 +505,8 @@ far depth = 1</code></pre>
               <span class="label">listing 2 · two readings of the same turn</span>
               <button class="copy" type="button" data-copy>copy</button>
             </div>
-            <pre><code>// By axis: the third component turns about z, which Zyx does first.
+            <pre><code>// By axis: the third component turns about z, which
+// Zyx turns first.
 let yaw = @moonmath.Quat::from_euler(
   @moonmath.EulerOrder::Zyx,
   @moonmath.Vec3::new(0.0, 0.0, @moonmath.to_radians(90.0)),
@@ -510,7 +514,8 @@ let yaw = @moonmath.Quat::from_euler(
 println(yaw)
 println(yaw.to_euler(@moonmath.EulerOrder::Zyx))
 
-// In order: Xyx turns about x twice, so the turns are named by place.
+// In order: Xyx turns about x twice, so the turns are
+// named by place.
 let precessing = @moonmath.Quat::from_euler_turns(
   @moonmath.EulerOrder::Xyx,
   @moonmath.Turns::new(0.3, 1.2, -0.4),
@@ -614,9 +619,9 @@ let double = @f64.Mat4::identity()</code></pre>
             <div class="kicker"><span>§ V</span></div>
             <h2>What is in the box</h2>
             <p>
-              Twenty-six types, grouped by what they are for. Each links to its
-              entry in the lexicon, where every field, method and value has a
-              sentence.
+              Twenty-seven types, grouped by what they are for. Each links to
+              its entry in the lexicon, where every field, method and value has
+              a sentence.
             </p>
           </div>
 
@@ -714,7 +719,7 @@ let double = @f64.Mat4::identity()</code></pre>
           <p style="margin-top: 2rem">
             <a href="guide.html" class="turn-page">
               <span class="turn-kicker">turn the page</span>
-              <span class="turn-title">A guide, from the first vector to a culled scene</span>
+              <span class="turn-title">From a first vector to a culled scene</span>
               <span class="turn-mark" aria-hidden="true">
                 <svg viewBox="0 0 26 12" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round">
                   <path d="M1 6h22" /><path d="M18 1.5 23.5 6 18 10.5" />

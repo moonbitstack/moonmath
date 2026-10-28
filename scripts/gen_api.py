@@ -18,6 +18,9 @@ result with what is committed, which is what keeps the page honest:
 
     python scripts/gen_api.py
     git diff --exit-code docs/api.html
+
+Run it after `moon fmt`, not before: the code blocks inside doc comments are
+copied into the page word for word, and the formatter re-wraps them.
 """
 
 import html
