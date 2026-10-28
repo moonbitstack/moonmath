@@ -561,17 +561,15 @@ def render_second_hand():
         ),
     ]:
         if names == ["__values__"]:
-            entries = []
-            for item in sorted(data["values"], key=lambda entry: entry["name"]):
-                entries.append(
-                    '<article class="entry"><h3>%s<span class="kind">value</span></h3>'
-                    '<div class="names"><span>%s</span></div></article>'
-                    % (html.escape(item["name"]), html.escape(item["name"]))
-                )
+            entries = sorted(data["values"], key=lambda entry: entry["name"])
             if entries:
                 rows.append(
-                    '<section><div class="group-head"><h2>%s</h2></div>%s</section>'
-                    % (title, "".join(entries))
+                    '<section><div class="group-head"><h2>%s</h2></div>'
+                    '<p class="names">%s</p></section>'
+                    % (
+                        title,
+                        "".join("<span>%s</span>" % html.escape(item["name"]) for item in entries),
+                    )
                 )
             continue
         entries = []

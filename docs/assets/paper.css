@@ -1432,10 +1432,14 @@ figure.plate figcaption .no {
 
 .second-hand .names {
   font-family: var(--mono);
-  font-size: 0.76rem;
+  font-size: 0.78rem;
   color: var(--ink-soft);
-  line-height: 1.65;
+  line-height: 1.9;
   word-spacing: 0.1em;
+}
+
+.second-hand .group-head + .names {
+  margin-top: 0.6rem;
 }
 
 .second-hand .names span + span::before {
