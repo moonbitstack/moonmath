@@ -1,6 +1,17 @@
-# moonmath
+<h1 align="center">moonmath</h1>
 
-Vectors, matrices, quaternions and geometry for MoonBit: column-major, right-handed, single precision by default, and laid out so that a matrix copies straight into a WGSL buffer.
+<p align="center">
+  <b>Vectors, matrices, quaternions and geometry for MoonBit.</b><br />
+  Column-major, right-handed, depth from zero to one, and laid out so that a
+  matrix copies straight into a WGSL buffer.
+</p>
+
+<p align="center">
+  <a href="https://moonbitstack.github.io/moonmath/">Home</a> &nbsp;·&nbsp;
+  <a href="https://moonbitstack.github.io/moonmath/guide.html">Guide</a> &nbsp;·&nbsp;
+  <a href="https://moonbitstack.github.io/moonmath/api.html">API</a> &nbsp;·&nbsp;
+  <a href="https://mooncakes.io/docs/moonbitstack/moonmath">mooncakes</a>
+</p>
 
 ```moonbit
 let eye = @moonmath.Vec3::new(0.0, 1.6, 6.0)
