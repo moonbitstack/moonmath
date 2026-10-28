@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>moonmath — the arithmetic of space</title>
+    <meta
+      name="description"
+      content="Vectors, matrices, quaternions and geometry for MoonBit: column-major, right-handed, depth from zero to one, and single or double precision from one template."
+    />
+    <link rel="icon" href="assets/nib.svg" type="image/svg+xml" />
+    <script>
+      (function () {
+        try {
+          var t = localStorage.getItem("moonmath-theme");
+        } catch (e) {
+          t = null;
+        }
+        if (!t) {
+          t =
+            window.matchMedia &&
+            window.matchMedia("(prefers-color-scheme: dark)").matches
+              ? "dark"
+              : "light";
+        }
+        document.documentElement.setAttribute("data-theme", t);
+      })();
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600&family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=IM+Fell+English:ital@0;1&family=IM+Fell+English+SC&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css"
+    />
+    <link rel="stylesheet" href="assets/paper.css?v=1" />
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to the text</a>
+
+    <header class="masthead">
+      <div class="masthead-inner">
+        <a class="mark" href="index.html" aria-label="moonmath, home">
+          <svg class="nib" viewBox="0 0 24 24" aria-hidden="true">
+            <path
+              d="M12 2.2c1.9 3.6 3.3 7.2 3.3 10.5 0 3.4-1.5 6.5-3.3 9.1-1.8-2.6-3.3-5.7-3.3-9.1 0-3.3 1.4-6.9 3.3-10.5z"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.1"
+              stroke-linejoin="round"
+            />
+            <path d="M12 7.4v11" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" />
+            <circle cx="12" cy="9.4" r="1.15" fill="none" stroke="currentColor" stroke-width="1.1" />
+          </svg>
+          <span class="mark-text">
+            <span class="mark-name">moonmath</span>
+            <span class="mark-sub">the arithmetic of space</span>
+          </span>
+        </a>
+        <nav class="nav" aria-label="Main">
+          <a href="index.html" aria-current="page">Frontispiece</a>
+          <a href="guide.html">Guide</a>
+          <a href="api.html">Lexicon</a>
+          <a href="showcase.html">Workshop</a>
+        </nav>
+        <div class="tools">
+          <button class="icon-btn" type="button" data-theme-toggle aria-label="Read by candlelight">
+            <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="4" />
+              <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" />
+            </svg>
+            <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true">
+              <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" />
+            </svg>
+          </button>
+          <a class="icon-btn" href="https://github.com/moonbitstack/moonmath" aria-label="The repository on GitHub">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M12 .5a12 12 0 0 0-3.8 23.4c.6.1.8-.3.8-.6v-2c-3.3.7-4-1.6-4-1.6-.6-1.4-1.4-1.8-1.4-1.8-1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.8-1.6-2.7-.3-5.5-1.3-5.5-6 0-1.2.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.2 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0C17.3 4.7 18.3 5 18.3 5c.6 1.7.2 2.9.1 3.2.8.8 1.2 1.9 1.2 3.1 0 4.7-2.8 5.7-5.5 6 .4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6A12 12 0 0 0 12 .5z" />
+            </svg>
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <main id="main">
+      <section class="title-page">
+        <p class="imprint">moonbitstack · for moonbit</p>
+        <h1>The Arithmetic<br /><span class="of">of</span> Space</h1>
+        <p class="standfirst">
+          Vectors, matrices, quaternions and geometry, kept in the order a GPU
+          buffer keeps them: column-major, right-handed, depth from zero to one,
+          and single precision unless you ask for more.
+        </p>
+
+        <div class="ornament" aria-hidden="true">
+          <svg viewBox="0 0 42 14" fill="none" stroke="currentColor" stroke-width="1">
+            <path d="M1 7h8" />
+            <path d="M33 7h8" />
+            <path d="M21 2.2c-3.4 1.4-5.6 3-7.4 4.8 1.8 1.8 4 3.4 7.4 4.8 3.4-1.4 5.6-3 7.4-4.8-1.8-1.8-4-3.4-7.4-4.8z" />
+            <circle cx="21" cy="7" r="1.3" />
+          </svg>
+        </div>
+
+        <p class="epigraph">
+          “Philosophy is written in this grand book — I mean the universe — which
+          stands continually open to our gaze, but it cannot be understood unless
+          one first learns to comprehend the language and interpret the
+          characters in which it is written.”
+          <cite>Galileo Galilei, Il Saggiatore, 1623</cite>
+        </p>
+
+        <nav class="contents" aria-label="Contents of this page">
+          <a href="#buffer">
+            <span class="num">I</span>
+            <span class="what">The page and the buffer</span>
+            <span class="where">fig. 1</span>
+          </a>
+          <a href="#depth">
+            <span class="num">II</span>
+            <span class="what">Where the depth goes</span>
+            <span class="where">fig. 3</span>
+          </a>
+          <a href="#orders">
+            <span class="num">III</span>
+            <span class="what">Twelve orders of turning</span>
+            <span class="where">tbl. 1</span>
+          </a>
+          <a href="#hands">
+            <span class="num">IV</span>
+            <span class="what">Two hands, one template</span>
+            <span class="where">illustration</span>
+          </a>
+          <a href="#box">
+            <span class="num">V</span>
+            <span class="what">What is in the box</span>
+            <span class="where">index</span>
+          </a>
+        </nav>
+      </section>
+
+      <!-- I. the preamble, and the page -->
+      <section class="page" id="buffer">
+        <div class="column">
+          <p class="preamble">
+            <span class="dropcap">E</span>very frame a renderer draws is an
+            argument in geometry, carried out several million times a second.
+            This library is that argument written down once: the vectors a vertex
+            shader already has, the matrix a camera is, the rotations that
+            interpolate better than a matrix does, and the predicates that answer
+            whether two things touch. It is not a renderer. It talks to no GPU and
+            loads no mesh; it produces the sixteen numbers you hand to one.
+          </p>
+
+          <div class="sec-head">
+            <div class="kicker"><span>§ I</span></div>
+            <h2>The page and the buffer</h2>
+          </div>
+
+          <figure class="plate">
+            <div class="plate-inner">
+              <svg viewBox="60 20 340 320" role="img" aria-labelledby="fig1-title">
+                <title id="fig1-title">
+                  A unit cube in perspective, with the three edges that meet at
+                  the far corner drawn dashed.
+                </title>
+                <!-- the three edges that are behind -->
+                <path class="ink-dash" d="M213.1 198.4 L350.9 230.6" />
+                <path class="ink-dash" d="M213.1 198.4 L210.7 53.6" />
+                <path class="ink-dash" d="M213.1 198.4 L117.9 260.5" />
+                <!-- the face nearest the eye -->
+                <path class="ink" d="M117.9 260.5 L278.5 311.2 L283.6 110.9 L104.1 84.6 Z" />
+                <!-- the four edges that tie it to the far face -->
+                <path class="ink" d="M350.9 230.6 L362.1 69.5 L210.7 53.6" />
+                <path class="ink" d="M350.9 230.6 L278.5 311.2" />
+                <path class="ink" d="M362.1 69.5 L283.6 110.9" />
+                <path class="ink" d="M210.7 53.6 L104.1 84.6" />
+                <!-- the axes the edges run along -->
+                <text class="ink-label" x="196" y="330">x</text>
+                <text class="ink-label" x="84" y="178">y</text>
+                <text class="ink-label" x="150" y="46">z</text>
+              </svg>
+            </div>
+            <figcaption>
+              <span class="no">Fig. 1.</span> The unit cube, seen through
+              <code>look_at</code> and <code>perspective</code> at 34° and drawn
+              with the numbers they returned. Perspective shortens the far face;
+              the three edges that meet behind it are dashed, as a draughtsman
+              would leave them.
+            </figcaption>
+          </figure>
+
+          <p>
+            A matrix is four columns. That is not a storage detail to be optimised
+            away later; it is the shape of the thing, and it is the shape a
+            <code>mat4x4&lt;f32&gt;</code> has in a WGSL buffer. So
+            <code>Mat4</code> holds <code>c0</code>, <code>c1</code>,
+            <code>c2</code>, <code>c3</code>, and <code>to_array</code> writes them
+            in that order, sixteen floats that a single copy puts where the shader
+            expects them.
+          </p>
+
+          $$ M = \begin{bmatrix} c_{0x} & c_{1x} & c_{2x} & c_{3x} \\ c_{0y} & c_{1y}
+          & c_{2y} & c_{3y} \\ c_{0z} & c_{1z} & c_{2z} & c_{3z} \\ c_{0w} & c_{1w}
+          & c_{2w} & c_{3w} \end{bmatrix} $$
+
+          <figure class="mem-figure">
+            <div class="mem-strip" aria-hidden="true">
+              <div class="braces">
+                <span>c<sub>0</sub></span><span>c<sub>1</sub></span><span>c<sub>2</sub></span><span>c<sub>3</sub></span>
+              </div>
+              <div class="cells">
+                <span>0</span><span>1</span><span>2</span><span>3</span>
+                <span>4</span><span>5</span><span>6</span><span>7</span>
+                <span>8</span><span>9</span><span>10</span><span>11</span>
+                <span>12</span><span>13</span><span>14</span><span>15</span>
+              </div>
+            </div>
+            <figcaption>
+              <span class="no">Fig. 2.</span> Sixteen floats, in the order they
+              sit in the buffer. The fourth group is the translation, which is why
+              it lands at the end of the array.
+            </figcaption>
+          </figure>
+
+          <p>
+            A vector multiplies against those columns, not against rows: the
+            result is the columns, weighted by the components of the vector and
+            added.
+          </p>
+
+          $$ Mv \;=\; \sum_{k=0}^{3} c_k\, v_k $$
+
+          <p>
+            Everything else follows from that one line. Two matrices multiply by
+            applying one to each column of the other, so the product applies the
+            right-hand matrix first — \((AB)v = A(Bv)\) — which is the order a
+            scene graph composes in: a model, then a view, then a projection.
+          </p>
+
+          <div class="slip">
+            <div class="slip-head">
+              <span class="label">listing 1 · the sixteen floats</span>
+              <button class="copy" type="button" data-copy>copy</button>
+            </div>
+            <pre><code>let moved = @moonmath.Mat4::from_translation(@moonmath.Vec3::new(3.0, 0.0, 0.0))
+let buffer = moved.to_array()</code></pre>
+          </div>
+
+          <div class="slip output">
+            <div class="slip-head"><span class="label">printed</span></div>
+            <pre><code>[1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 3, 0, 0, 1]</code></pre>
+          </div>
+
+          <p>
+            The translation sits in the twelfth, thirteenth and fourteenth places
+            because it sits in the fourth column. That is the whole of what
+            “column-major” means, and it is why a matrix can be copied into a
+            uniform buffer without being transposed on the way.
+          </p>
+        </div>
+
+        <aside class="margin">
+          <p class="note">
+            <b>Three decisions</b> are carried by every signature in the library:
+            column-major, right-handed, radians. Learning them once is enough.
+          </p>
+          <p class="note">
+            The w component of a point is one, of a direction zero. That single
+            difference is what makes <code>transform_point</code> and
+            <code>transform_vector</code> different functions.
+            <span class="sum">— the fourth row, in passing</span>
+          </p>
+        </aside>
+      </section>
+
+      <!-- II. the derivation -->
+      <section class="page" id="depth">
+        <div class="column">
+          <div class="sec-head">
+            <div class="kicker"><span>§ II</span></div>
+            <h2>Where the depth goes</h2>
+            <p>
+              WebGPU clips depth to the range zero to one. A projection matrix is
+              the thing that agrees to it, and it is short enough to derive on one
+              page.
+            </p>
+          </div>
+
+          <p>
+            Work in view space: the camera at the origin, looking down \(-z\). A
+            point in front of it has \(z = -d\) with \(d > 0\), and \(d\) is the
+            distance the depth will be measured against. The vertical field of view
+            is \(\theta\), the aspect ratio \(a\), the near plane \(n\) and the far
+            plane \(f\).
+          </p>
+
+          <div class="working">
+            <ol>
+              <li>
+                <div class="step-body">
+                  $$ x_c = \frac{x}{a\tan(\theta/2)}, \qquad y_c =
+                  \frac{y}{\tan(\theta/2)}, \qquad w_c = -z $$
+                  <p>
+                    Scale \(x\) and \(y\) so that the edges of the frustum land on
+                    ±1 after the divide, and keep the distance in \(w\).
+                  </p>
+                </div>
+              </li>
+              <li>
+                <div class="step-body">
+                  $$ \frac{x_c}{w_c} = \frac{x}{-z\,a\tan(\theta/2)} $$
+                  <p>
+                    At the edge of the frustum \(x = -z\,a\tan(\theta/2)\), so the
+                    quotient is one. The divide is what makes a perspective
+                    perspective; nothing else here is nonlinear.
+                  </p>
+                </div>
+              </li>
+              <li>
+                <div class="step-body">
+                  $$ z_c = Az + B, \qquad \frac{z_c}{-z}\Big|_{z=-n} = 0, \qquad
+                  \frac{z_c}{-z}\Big|_{z=-f} = 1 $$
+                  <p>
+                    Depth is the one row that gets to be affine in \(z\): two
+                    unknowns, two conditions, and the planes are pinned.
+                  </p>
+                </div>
+              </li>
+              <li>
+                <div class="step-body">
+                  $$ \frac{-An + B}{n} = 0 \;\Rightarrow\; B = An, \qquad
+                  \frac{-Af + An}{f} = 1 \;\Rightarrow\; A = -\frac{f}{f-n} $$
+                  <p>
+                    Substituting back gives \(B = -\dfrac{fn}{f-n}\), both negative
+                    once \(f > n\).
+                  </p>
+                </div>
+              </li>
+              <li>
+                <div class="step-body">
+                  $$ z_{\text{ndc}} = \frac{fz + fn}{(f-n)\,z} $$
+                  <p>
+                    At \(z=-n\) the numerator is \(-fn + fn = 0\); at \(z=-f\) it is
+                    \(-f^2 + fn = -f(f-n)\), over \((f-n)(-f)\), which is one. The
+                    library checks both, and prints \(0\) and \(1\).
+                  </p>
+                </div>
+              </li>
+              <li>
+                <div class="step-body">
+                  $$ \frac{dz_{\text{ndc}}}{dz} = -\frac{fn}{(f-n)\,z^2} $$
+                  <p>
+                    The step grows with the inverse square of the distance, so most
+                    of the range is spent within a few metres of the eye. That is
+                    not an accident of the formula; it is the formula.
+                  </p>
+                </div>
+              </li>
+            </ol>
+          </div>
+
+          <p>Assembled, the four rows become the matrix that <code>Mat4::perspective</code> returns:</p>
+
+          $$ P = \begin{bmatrix} \dfrac{1}{a\tan(\theta/2)} & 0 & 0 & 0 \\[4pt] 0 &
+          \dfrac{1}{\tan(\theta/2)} & 0 & 0 \\[4pt] 0 & 0 & \dfrac{f}{n-f} &
+          \dfrac{fn}{n-f} \\[4pt] 0 & 0 & -1 & 0 \end{bmatrix} $$
+
+          <figure class="plate">
+            <div class="plate-inner">
+              <svg viewBox="0 0 480 250" role="img" aria-labelledby="fig2-title">
+                <title id="fig2-title">
+                  A frustum seen from the side, with the near plane at depth zero
+                  and the far plane at depth one.
+                </title>
+                <!-- the eye -->
+                <circle cx="40" cy="125" r="2.6" fill="currentColor" stroke="none" />
+                <text class="ink-label" x="26" y="112">eye</text>
+                <!-- the frustum edges -->
+                <path class="ink" d="M40 125 L430 40" />
+                <path class="ink" d="M40 125 L430 210" />
+                <path class="ink-dash" d="M40 125 L430 125" />
+                <!-- near plane -->
+                <path class="ink" d="M150 88 L150 162" />
+                <!-- far plane -->
+                <path class="ink" d="M430 40 L430 210" />
+                <!-- the angle -->
+                <path class="ink-thin" d="M96 108 A64 64 0 0 1 96 142" />
+                <text class="ink-label" x="104" y="129">θ</text>
+                <!-- measurements -->
+                <path class="ink-thin" d="M40 232 L150 232" />
+                <path class="ink-thin" d="M150 226 L150 238" />
+                <path class="ink-thin" d="M40 226 L40 238" />
+                <text class="ink-label" x="88" y="246">n</text>
+                <path class="ink-thin" d="M150 232 L430 232" />
+                <path class="ink-thin" d="M430 226 L430 238" />
+                <text class="ink-label" x="286" y="246">f</text>
+                <!-- the two depths -->
+                <text class="ink-label" x="140" y="78">0</text>
+                <text class="ink-label" x="424" y="30">1</text>
+                <text class="ink-hand" x="150" y="186">the near plane</text>
+                <text class="ink-hand" x="356" y="228">the far plane</text>
+              </svg>
+            </div>
+            <figcaption>
+              <span class="no">Fig. 3.</span> The frustum from the side. The
+              projection sends the plane at \(n\) to depth 0 and the plane at
+              \(f\) to 1; everything between arrives in between, crowded towards
+              the near end.
+            </figcaption>
+          </figure>
+
+          <div class="slip output">
+            <div class="slip-head"><span class="label">printed · the two ends</span></div>
+            <pre><code>near depth = 0
+far depth = 1</code></pre>
+          </div>
+
+          <div class="remark">
+            <span class="tag">the other convention</span>
+            <p>
+              OpenGL clips to minus one to one. The same derivation with those two
+              conditions gives \(A = \dfrac{f+n}{n-f}\) and \(B =
+              \dfrac{2fn}{n-f}\), and the <code>_gl</code> variants are exactly
+              that — <code>perspective_gl</code>, <code>orthographic_gl</code>,
+              <code>frustum_gl</code>. Nothing else changes.
+            </p>
+          </div>
+        </div>
+
+        <aside class="margin">
+          <p class="note">
+            The far plane arrives at <b>exactly</b> one, not nearly one, because
+            the conditions were solved rather than fitted.
+          </p>
+          <p class="note">
+            Change \(n\) from 0.1 to 0.01 and the same curve is squeezed into a
+            tenth of the range. The workshop page draws it.
+          </p>
+        </aside>
+      </section>
+
+      <!-- III. euler orders -->
+      <section class="page" id="orders">
+        <div class="column">
+          <div class="sec-head">
+            <div class="kicker"><span>§ III</span></div>
+            <h2>Twelve orders of turning</h2>
+            <p>
+              Three turns about coordinate axes, taken in some order, describe any
+              rotation. There are twelve such orders, and the library names all
+              twelve because a file written by another tool will use one of them.
+            </p>
+          </div>
+
+          <p>
+            Six of the orders turn about three different axes — the Tait–Bryan
+            family, which is what a yaw, a pitch and a roll are. The other six turn
+            about the first axis twice, and are called proper Euler angles, though
+            they are no more proper than the others.
+          </p>
+
+          <table class="ledger">
+            <caption>Tbl. 1 · the twelve orders, and where each one loses a degree of freedom</caption>
+            <thead>
+              <tr>
+                <th>order</th>
+                <th>turns about</th>
+                <th>locks when</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>Xyz</td><td>x, then y, then z</td><td>y = ±90°</td></tr>
+              <tr><td>Xzy</td><td>x, then z, then y</td><td>z = ±90°</td></tr>
+              <tr><td>Yxz</td><td>y, then x, then z</td><td>x = ±90°</td></tr>
+              <tr><td>Yzx</td><td>y, then z, then x</td><td>z = ±90°</td></tr>
+              <tr><td>Zxy</td><td>z, then x, then y</td><td>x = ±90°</td></tr>
+              <tr><td>Zyx</td><td>z, then y, then x</td><td>y = ±90°</td></tr>
+              <tr><td>Xyx</td><td>x, then y, then x</td><td>y = 0° or 180°</td></tr>
+              <tr><td>Xzx</td><td>x, then z, then x</td><td>z = 0° or 180°</td></tr>
+              <tr><td>Yxy</td><td>y, then x, then y</td><td>x = 0° or 180°</td></tr>
+              <tr><td>Yzy</td><td>y, then z, then y</td><td>z = 0° or 180°</td></tr>
+              <tr><td>Zxz</td><td>z, then x, then z</td><td>x = 0° or 180°</td></tr>
+              <tr><td>Zyz</td><td>z, then y, then z</td><td>y = 0° or 180°</td></tr>
+            </tbody>
+          </table>
+
+          <p>
+            <code>from_euler</code> reads a <code>Vec3</code> by axis: the
+            component named <code>x</code> is the turn about \(x\), wherever in the
+            order that turn comes. For the six Tait–Bryan orders that is exact and
+            complete. For the other six it cannot be, because two turns about \(x\)
+            do not fit in the one component named after it — so those six take a
+            <code>Turns</code> record, whose fields are named by their place in the
+            order rather than by an axis.
+          </p>
+
+          <div class="slip">
+            <div class="slip-head">
+              <span class="label">listing 2 · two readings of the same turn</span>
+              <button class="copy" type="button" data-copy>copy</button>
+            </div>
+            <pre><code>// By axis: the third component turns about z, which Zyx does first.
+let yaw = @moonmath.Quat::from_euler(
+  @moonmath.EulerOrder::Zyx,
+  @moonmath.Vec3::new(0.0, 0.0, @moonmath.to_radians(90.0)),
+)
+println(yaw)
+println(yaw.to_euler(@moonmath.EulerOrder::Zyx))
+
+// In order: Xyx turns about x twice, so the turns are named by place.
+let precessing = @moonmath.Quat::from_euler_turns(
+  @moonmath.EulerOrder::Xyx,
+  @moonmath.Turns::new(0.3, 1.2, -0.4),
+)
+println(precessing)</code></pre>
+          </div>
+
+          <div class="slip output">
+            <div class="slip-head"><span class="label">printed</span></div>
+            <pre><code>Quat(0, 0, 0.7071068, 0.7071067)
+Vec3(0, 0, 1.5707965)
+Quat(-0.041249573, 0.53040975, 0.19361468, 0.8243042)</code></pre>
+          </div>
+        </div>
+
+        <aside class="margin">
+          <p class="note">
+            At a lock, only the <b>sum</b> of the first and third turns is
+            readable. The library puts the whole of it in the third and returns
+            zero for the first, so turning the dial back does not jump.
+          </p>
+        </aside>
+      </section>
+
+      <!-- IV. two precisions -->
+      <section class="page" id="hands">
+        <div class="column">
+          <div class="sec-head">
+            <div class="kicker"><span>§ IV</span></div>
+            <h2>Two hands, one template</h2>
+          </div>
+
+          <p>
+            A GPU buffer holds single precision, and a simulation that runs for
+            hours or spans a solar system does not. Past a few kilometres, a
+            <code>Float</code> can no longer tell one metre from the next: at a
+            billion, the gap between two representable numbers is sixty-four.
+          </p>
+
+          <div class="slip">
+            <div class="slip-head">
+              <span class="label">listing 3 · the same sum in both hands</span>
+              <button class="copy" type="button" data-copy>copy</button>
+            </div>
+            <pre><code>let far = @f64.Vec3::new(1.0e9, 0.0, 0.0)
+let step = @f64.Vec3::new(1.0e-3, 0.0, 0.0)
+println("\{far + step}")
+
+let near = @moonmath.Vec3::new(1.0e9, 0.0, 0.0)
+let small = @moonmath.Vec3::new(1.0e-3, 0.0, 0.0)
+println("\{near + small}")</code></pre>
+          </div>
+
+          <div class="slip output">
+            <div class="slip-head"><span class="label">printed</span></div>
+            <pre><code>Vec3(1000000000.001, 0, 0)
+Vec3(1000000000, 0, 0)</code></pre>
+          </div>
+
+          <p>
+            The millimetre survives in the first line and is gone in the second.
+            The double-precision package is the same library: the same types, the
+            same names, the same operators, generated from one template into two
+            packages, so a program written against one reads the same against the
+            other with a different import.
+          </p>
+
+          <div class="slip">
+            <div class="slip-head">
+              <span class="label">listing 4 · importing the second hand</span>
+              <button class="copy" type="button" data-copy>copy</button>
+            </div>
+            <pre><code>import {
+  "moonbitstack/moonmath",
+  "moonbitstack/moonmath/f64",
+}
+
+let single = @moonmath.Mat4::identity()
+let double = @f64.Mat4::identity()</code></pre>
+          </div>
+
+          <p>
+            The integer vectors — <code>IVec2</code>, <code>UVec3</code> and their
+            siblings — exist only in single precision, because they count grid
+            cells and pixels, and a pixel has no fractional part.
+          </p>
+        </div>
+
+        <aside class="margin">
+          <p class="note">
+            <b>24 bits</b> of mantissa buy about seven decimal digits. A world
+            measured in kilometres runs out of them before the eye notices.
+          </p>
+        </aside>
+      </section>
+
+      <!-- V. contents of the box -->
+      <section class="page" id="box">
+        <div class="column">
+          <div class="sec-head">
+            <div class="kicker"><span>§ V</span></div>
+            <h2>What is in the box</h2>
+            <p>
+              Twenty-six types, grouped by what they are for. Each links to its
+              entry in the lexicon, where every field, method and value has a
+              sentence.
+            </p>
+          </div>
+
+          <table class="ledger">
+            <thead>
+              <tr>
+                <th>family</th>
+                <th>types</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Vectors</td>
+                <td>
+                  <a href="api.html#vec2">Vec2</a>,
+                  <a href="api.html#vec3">Vec3</a>,
+                  <a href="api.html#vec4">Vec4</a> — one, two, three and four
+                  components, with dot, cross, normalize, lerp, reflect, refract
+                  and the swizzles
+                </td>
+              </tr>
+              <tr>
+                <td>Integer vectors</td>
+                <td>
+                  <a href="api.html#ivec2">IVec2</a>,
+                  <a href="api.html#ivec3">IVec3</a>,
+                  <a href="api.html#ivec4">IVec4</a>,
+                  <a href="api.html#uvec2">UVec2</a>,
+                  <a href="api.html#uvec3">UVec3</a>,
+                  <a href="api.html#uvec4">UVec4</a> — signed and unsigned, for
+                  grid cells, pixels and indices
+                </td>
+              </tr>
+              <tr>
+                <td>Matrices</td>
+                <td>
+                  <a href="api.html#mat2">Mat2</a>,
+                  <a href="api.html#mat3">Mat3</a>,
+                  <a href="api.html#mat4">Mat4</a> — products, transposes,
+                  determinants, inverses, and the cameras:
+                  <code>look_at</code>, <code>perspective</code>,
+                  <code>orthographic</code>, <code>frustum</code>
+                </td>
+              </tr>
+              <tr>
+                <td>Rotation</td>
+                <td>
+                  <a href="api.html#quat">Quat</a>,
+                  <a href="api.html#eulerorder">EulerOrder</a>,
+                  <a href="api.html#turns">Turns</a> — axis and angle, two vectors,
+                  slerp and nlerp, twelve Euler orders, and the conversion to and
+                  from both matrix sizes
+                </td>
+              </tr>
+              <tr>
+                <td>Placement</td>
+                <td>
+                  <a href="api.html#trs">Trs</a>,
+                  <a href="api.html#affine2">Affine2</a>,
+                  <a href="api.html#affine3">Affine3</a> — a rotation, a scale and
+                  a translation kept apart, and the two transforms that leave the
+                  last row of a matrix alone
+                </td>
+              </tr>
+              <tr>
+                <td>Geometry</td>
+                <td>
+                  <a href="api.html#rect">Rect</a>,
+                  <a href="api.html#aabb2">Aabb2</a>,
+                  <a href="api.html#aabb3">Aabb3</a>,
+                  <a href="api.html#ray2">Ray2</a>,
+                  <a href="api.html#ray3">Ray3</a>,
+                  <a href="api.html#plane">Plane</a>,
+                  <a href="api.html#sphere">Sphere</a>,
+                  <a href="api.html#triangle">Triangle</a>,
+                  <a href="api.html#frustum">Frustum</a> — shape, and whether two
+                  shapes meet
+                </td>
+              </tr>
+              <tr>
+                <td>Values</td>
+                <td>
+                  <a href="api.html#moonmath-approx"><code>approx</code></a>,
+                  <a href="api.html#moonmath-lerp"><code>lerp</code></a>,
+                  <a href="api.html#moonmath-smoothstep"><code>smoothstep</code></a>,
+                  <a href="api.html#moonmath-remap"><code>remap</code></a>,
+                  <a href="api.html#moonmath-wrap"><code>wrap</code></a>,
+                  <a href="api.html#moonmath-to_radians"><code>to_radians</code></a>
+                  and the constants beside them
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <p style="margin-top: 2rem">
+            <a href="guide.html" class="turn-page">
+              <span class="turn-kicker">turn the page</span>
+              <span class="turn-title">A guide, from the first vector to a culled scene</span>
+              <span class="turn-mark" aria-hidden="true">
+                <svg viewBox="0 0 26 12" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round">
+                  <path d="M1 6h22" /><path d="M18 1.5 23.5 6 18 10.5" />
+                </svg>
+              </span>
+            </a>
+          </p>
+        </div>
+
+        <aside class="margin">
+          <p class="note">
+            No dependency beyond the standard library. Nothing allocates beyond the
+            value it returns.
+          </p>
+        </aside>
+      </section>
+    </main>
+
+    <footer class="colophon">
+      <div class="colophon-inner">
+        <div>
+          <div class="device">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                d="M12 2.2c1.9 3.6 3.3 7.2 3.3 10.5 0 3.4-1.5 6.5-3.3 9.1-1.8-2.6-3.3-5.7-3.3-9.1 0-3.3 1.4-6.9 3.3-10.5z"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.1"
+                stroke-linejoin="round"
+              />
+              <path d="M12 7.4v11" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" />
+              <circle cx="12" cy="9.4" r="1.15" fill="none" stroke="currentColor" stroke-width="1.1" />
+            </svg>
+            <span>moonmath</span>
+          </div>
+          <p class="fine" style="margin: 0.5rem 0 0">
+            Twelve Euler orders, two precisions, six planes to a frustum, nothing
+            else to install.
+          </p>
+        </div>
+        <p class="fine">
+          Set in EB Garamond and IM Fell English, the marginalia in Caveat, the
+          listings in Courier Prime; formulae by KaTeX. Apache-2.0.
+        </p>
+        <div>
+          <div class="links">
+            <a href="guide.html">Guide</a>
+            <a href="api.html">Lexicon</a>
+            <a href="showcase.html">Workshop</a>
+            <a href="https://github.com/moonbitstack/moonmath">GitHub</a>
+          </div>
+          <div class="folio" style="margin-top: 0.7rem">fol. i</div>
+        </div>
+      </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" defer></script>
+    <script src="assets/site.js?v=1" defer></script>
+  </body>
+</html>

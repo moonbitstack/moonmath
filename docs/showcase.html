@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>The workshop — moonmath</title>
+    <meta
+      name="description"
+      content="Four dials on a perspective camera: the matrix, the projected cube and the depth curve, computed in the page by moonmath compiled to JavaScript."
+    />
+    <link rel="icon" href="assets/nib.svg" type="image/svg+xml" />
+    <script>
+      (function () {
+        try {
+          var t = localStorage.getItem("moonmath-theme");
+        } catch (e) {
+          t = null;
+        }
+        if (!t) {
+          t =
+            window.matchMedia &&
+            window.matchMedia("(prefers-color-scheme: dark)").matches
+              ? "dark"
+              : "light";
+        }
+        document.documentElement.setAttribute("data-theme", t);
+      })();
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600&family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=IM+Fell+English:ital@0;1&family=IM+Fell+English+SC&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css"
+    />
+    <link rel="stylesheet" href="assets/paper.css?v=1" />
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to the text</a>
+
+    <header class="masthead">
+      <div class="masthead-inner">
+        <a class="mark" href="index.html" aria-label="moonmath, home">
+          <svg class="nib" viewBox="0 0 24 24" aria-hidden="true">
+            <path
+              d="M12 2.2c1.9 3.6 3.3 7.2 3.3 10.5 0 3.4-1.5 6.5-3.3 9.1-1.8-2.6-3.3-5.7-3.3-9.1 0-3.3 1.4-6.9 3.3-10.5z"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.1"
+              stroke-linejoin="round"
+            />
+            <path d="M12 7.4v11" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" />
+            <circle cx="12" cy="9.4" r="1.15" fill="none" stroke="currentColor" stroke-width="1.1" />
+          </svg>
+          <span class="mark-text">
+            <span class="mark-name">moonmath</span>
+            <span class="mark-sub">the arithmetic of space</span>
+          </span>
+        </a>
+        <nav class="nav" aria-label="Main">
+          <a href="index.html">Frontispiece</a>
+          <a href="guide.html">Guide</a>
+          <a href="api.html">Lexicon</a>
+          <a href="showcase.html" aria-current="page">Workshop</a>
+        </nav>
+        <div class="tools">
+          <button class="icon-btn" type="button" data-theme-toggle aria-label="Read by candlelight">
+            <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="4" />
+              <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" />
+            </svg>
+            <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true">
+              <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" />
+            </svg>
+          </button>
+          <a class="icon-btn" href="https://github.com/moonbitstack/moonmath" aria-label="The repository on GitHub">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M12 .5a12 12 0 0 0-3.8 23.4c.6.1.8-.3.8-.6v-2c-3.3.7-4-1.6-4-1.6-.6-1.4-1.4-1.8-1.4-1.8-1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.8-1.6-2.7-.3-5.5-1.3-5.5-6 0-1.2.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.2 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0C17.3 4.7 18.3 5 18.3 5c.6 1.7.2 2.9.1 3.2.8.8 1.2 1.9 1.2 3.1 0 4.7-2.8 5.7-5.5 6 .4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6A12 12 0 0 0 12 .5z" />
+            </svg>
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <main id="main">
+      <section class="title-page" style="padding-bottom: 0.5rem">
+        <p class="imprint">the workshop</p>
+        <h1 style="font-size: clamp(2.2rem, 5.6vw, 3.4rem)">One matrix, four dials</h1>
+        <p class="standfirst">
+          A perspective camera, a unit cube and the depth it produces. The numbers
+          are computed in this page by the library itself, compiled to JavaScript;
+          the drawing is only the ink that follows from them.
+        </p>
+      </section>
+
+      <section class="workshop">
+        <div class="bench" data-bench>
+          <div class="screen" data-screen>
+            <canvas aria-label="A wireframe cube seen through the camera, drawn from the projected corners the library returned."></canvas>
+            <span class="stamp">drawn from the matrix the library returned</span>
+          </div>
+          <div class="dials">
+            <div class="dial">
+              <label for="fov">field of view <span class="value"></span></label>
+              <input id="fov" data-dial="fov" data-unit="°" type="range" min="20" max="100" step="1" value="30" />
+            </div>
+            <div class="dial">
+              <label for="distance">distance of the eye <span class="value"></span></label>
+              <input id="distance" data-dial="distance" type="range" min="3" max="20" step="0.1" value="6.5" />
+            </div>
+            <div class="dial">
+              <label for="near">near plane <span class="value"></span></label>
+              <input id="near" data-dial="near" type="range" min="0.05" max="1.5" step="0.05" value="0.1" />
+            </div>
+            <div class="dial">
+              <label for="far">far plane <span class="value"></span></label>
+              <input id="far" data-dial="far" type="range" min="10" max="200" step="5" value="60" />
+            </div>
+            <p class="dial-note">
+              Drag a dial. The cube is the same cube throughout; only the camera
+              changes.
+            </p>
+          </div>
+        </div>
+
+        <div class="readout">
+          <div>
+            <div class="readout-label">the view-projection matrix, column by column</div>
+            <div class="matrix" data-matrix aria-live="off"></div>
+            <p class="readout-note">
+              <span data-eye></span><br />
+              near plane → <b data-near></b> · far plane → <b data-far></b>
+            </p>
+          </div>
+          <div class="curve" data-curve></div>
+          <p class="note" style="align-self: center">
+            The red row is the <b>depth row</b>: the only one that mentions the
+            near and far planes, and the only one that changes when you move
+            <b>far</b>.
+          </p>
+        </div>
+      </section>
+
+      <section class="page" id="call">
+        <div class="column">
+          <div class="sec-head">
+            <div class="kicker"><span>§ 1</span></div>
+            <h2>What the page calls</h2>
+          </div>
+
+          <p>
+            Everything on this page comes from one call. The page passes five
+            numbers — the field of view in degrees, the eye's distance along
+            <code>z</code>, the two planes and the aspect ratio of the sheet — and
+            the library answers with the matrix and the projected corners.
+          </p>
+
+          <div class="slip">
+            <div class="slip-head">
+              <span class="label">the whole of it</span>
+              <button class="copy" type="button" data-copy>copy</button>
+            </div>
+            <pre><code>let eye = @moonmath.Vec3::new(1.6, 1.4, distance)
+let view = @moonmath.Mat4::look_at(eye, @moonmath.Vec3::zero(), @moonmath.Vec3::unit_y())
+let projection = @moonmath.Mat4::perspective(
+  @moonmath.to_radians(field_of_view),
+  aspect,
+  near,
+  far,
+)
+let view_projection = projection * view
+
+// Eight corners of a cube from -1 to 1, projected one at a time.
+let ndc = view_projection.transform_point(corner)</code></pre>
+          </div>
+
+          <p>
+            The bridge that carries the answer across is a dozen lines in
+            <code>src/examples/web/</code>: it writes the sixteen numbers and the
+            eight points into a string the page can read. Nothing is reimplemented
+            on the other side — the ink is the only thing the page adds.
+          </p>
+
+          <div class="remark">
+            <span class="tag">watched, not assumed</span>
+            <p>
+              Move the far dial and the cube does not move. The first two rows of
+              the projection do not mention \(f\): it takes part only in depth and
+              in clipping. The curve, which is all depth, moves a great deal.
+            </p>
+          </div>
+        </div>
+
+        <aside class="margin">
+          <p class="note">
+            The dashed edges are the three that meet at the corner facing away
+            from the eye: the page tests each face's normal against the eye, and
+            leaves what it cannot see to a dashed line, as a draughtsman would.
+          </p>
+        </aside>
+      </section>
+
+      <section class="page" id="bend">
+        <div class="column">
+          <div class="sec-head">
+            <div class="kicker"><span>§ 2</span></div>
+            <h2>Why the curve bends</h2>
+          </div>
+
+          <p>
+            Depth is a projection of a projection. The clip-space \(z\) is affine
+            in the distance, and then it is divided by \(w\), which is the distance
+            itself — so what arrives is a hyperbola:
+          </p>
+
+          $$ z_{\text{ndc}}(d) = \frac{f}{f-n} - \frac{fn}{f-n}\cdot\frac{1}{d} $$
+
+          <p>
+            At the near plane \(d = n\) the two terms cancel and the depth is zero;
+            at the far plane \(d = f\) the second term is \(n/(f-n)\) and what is
+            left is one. Between them, the curve is already at nine tenths of its
+            height when the distance is ten times the near plane, whatever the far
+            plane is:
+          </p>
+
+          $$ \frac{f}{f-n} - \frac{fn}{f-n}\cdot\frac{1}{10n} = \frac{f}{f-n}\left(1 -
+          \frac{1}{10}\right) = 0.9\cdot\frac{f}{f-n} $$
+
+          <p>
+            This is the reason a depth buffer spends its precision where the eye
+            can tell the difference, and the reason a near plane of 0.01 costs more
+            than it looks: it buys a hundredth of a metre and charges the whole
+            buffer for it.
+          </p>
+        </div>
+
+        <aside class="margin">
+          <p class="note">
+            Set <b>near</b> to 0.05 and watch the curve stand up almost at once.
+            The picture barely changes; the depth range is spent.
+          </p>
+        </aside>
+      </section>
+    </main>
+
+    <footer class="colophon">
+      <div class="colophon-inner">
+        <div>
+          <div class="device">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                d="M12 2.2c1.9 3.6 3.3 7.2 3.3 10.5 0 3.4-1.5 6.5-3.3 9.1-1.8-2.6-3.3-5.7-3.3-9.1 0-3.3 1.4-6.9 3.3-10.5z"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.1"
+                stroke-linejoin="round"
+              />
+              <path d="M12 7.4v11" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" />
+              <circle cx="12" cy="9.4" r="1.15" fill="none" stroke="currentColor" stroke-width="1.1" />
+            </svg>
+            <span>moonmath</span>
+          </div>
+          <p class="fine" style="margin: 0.5rem 0 0">
+            The cube is projected by the library; the page only draws the lines
+            between the points it was given.
+          </p>
+        </div>
+        <p class="fine">
+          Set in EB Garamond and IM Fell English, the marginalia in Caveat, the
+          listings in Courier Prime; formulae by KaTeX. Apache-2.0.
+        </p>
+        <div>
+          <div class="links">
+            <a href="index.html">Frontispiece</a>
+            <a href="guide.html">Guide</a>
+            <a href="api.html">Lexicon</a>
+            <a href="https://github.com/moonbitstack/moonmath">GitHub</a>
+          </div>
+          <div class="folio" style="margin-top: 0.7rem">fol. iii</div>
+        </div>
+      </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" defer></script>
+    <script src="assets/site.js?v=1" defer></script>
+    <script src="assets/moonmath.js" defer></script>
+    <script src="assets/bench.js?v=1" defer></script>
+  </body>
+</html>

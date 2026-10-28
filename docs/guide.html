@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>A guide — moonmath</title>
+    <meta
+      name="description"
+      content="From the first vector to a culled scene: how to install moonmath and use its vectors, matrices, cameras, rotations and geometry, with the output each step prints."
+    />
+    <link rel="icon" href="assets/nib.svg" type="image/svg+xml" />
+    <script>
+      (function () {
+        try {
+          var t = localStorage.getItem("moonmath-theme");
+        } catch (e) {
+          t = null;
+        }
+        if (!t) {
+          t =
+            window.matchMedia &&
+            window.matchMedia("(prefers-color-scheme: dark)").matches
+              ? "dark"
+              : "light";
+        }
+        document.documentElement.setAttribute("data-theme", t);
+      })();
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600&family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=IM+Fell+English:ital@0;1&family=IM+Fell+English+SC&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css"
+    />
+    <link rel="stylesheet" href="assets/paper.css?v=1" />
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to the text</a>
+
+    <header class="masthead">
+      <div class="masthead-inner">
+        <a class="mark" href="index.html" aria-label="moonmath, home">
+          <svg class="nib" viewBox="0 0 24 24" aria-hidden="true">
+            <path
+              d="M12 2.2c1.9 3.6 3.3 7.2 3.3 10.5 0 3.4-1.5 6.5-3.3 9.1-1.8-2.6-3.3-5.7-3.3-9.1 0-3.3 1.4-6.9 3.3-10.5z"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.1"
+              stroke-linejoin="round"
+            />
+            <path d="M12 7.4v11" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" />
+            <circle cx="12" cy="9.4" r="1.15" fill="none" stroke="currentColor" stroke-width="1.1" />
+          </svg>
+          <span class="mark-text">
+            <span class="mark-name">moonmath</span>
+            <span class="mark-sub">the arithmetic of space</span>
+          </span>
+        </a>
+        <nav class="nav" aria-label="Main">
+          <a href="index.html">Frontispiece</a>
+          <a href="guide.html" aria-current="page">Guide</a>
+          <a href="api.html">Lexicon</a>
+          <a href="showcase.html">Workshop</a>
+        </nav>
+        <div class="tools">
+          <button class="icon-btn" type="button" data-theme-toggle aria-label="Read by candlelight">
+            <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="4" />
+              <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" />
+            </svg>
+            <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true">
+              <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" />
+            </svg>
+          </button>
+          <a class="icon-btn" href="https://github.com/moonbitstack/moonmath" aria-label="The repository on GitHub">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M12 .5a12 12 0 0 0-3.8 23.4c.6.1.8-.3.8-.6v-2c-3.3.7-4-1.6-4-1.6-.6-1.4-1.4-1.8-1.4-1.8-1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.8-1.6-2.7-.3-5.5-1.3-5.5-6 0-1.2.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.2 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0C17.3 4.7 18.3 5 18.3 5c.6 1.7.2 2.9.1 3.2.8.8 1.2 1.9 1.2 3.1 0 4.7-2.8 5.7-5.5 6 .4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6A12 12 0 0 0 12 .5z" />
+            </svg>
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <main id="main">
+      <section class="title-page" style="padding-bottom: 1rem">
+        <p class="imprint">the guide</p>
+        <h1 style="font-size: clamp(2.1rem, 5.4vw, 3.2rem)">Eight steps, from a vector to a culled scene</h1>
+        <p class="standfirst">
+          Every listing below is a program that was run to write this page, and
+          every printed line is what it printed. Nothing here is a sketch of an
+          API to come.
+        </p>
+      </section>
+
+      <section class="page" id="install">
+        <div class="column">
+          <div class="sec-head">
+            <div class="kicker"><span>§ 1</span></div>
+            <h2>Getting it, and the first vector</h2>
+          </div>
+
+          <p>
+            The package is one module with two packages inside: the default
+            single precision one, and <code>moonmath/f64</code>. Adding the module
+            is enough for both.
+          </p>
+
+          <div class="slip">
+            <div class="slip-head">
+              <span class="label">shell</span>
+              <button class="copy" type="button" data-copy>copy</button>
+            </div>
+            <pre><code>moon add moonbitstack/moonmath</code></pre>
+          </div>
+
+          <p>
+            A vector is a value: immutable, small, and returned by everything that
+            takes one. The first useful thing to know is the handedness, because
+            it decides a sign you will meet on the first day.
+          </p>
+
+          <div class="slip">
+            <div class="slip-head">
+              <span class="label">listing 1 · handedness</span>
+              <button class="copy" type="button" data-copy>copy</button>
+            </div>
+            <pre><code>let forward = @moonmath.Vec3::new(0.0, 0.0, -1.0)  // where the eye looks
+let up = @moonmath.Vec3::unit_y()
+let right = forward.cross(up)                       // +x, not -x
+
+println(right)
+println(forward.dot(up))</code></pre>
+          </div>
+
+          <div class="slip output">
+            <div class="slip-head"><span class="label">printed</span></div>
+            <pre><code>Vec3(1, 0, 0)
+0</code></pre>
+          </div>
+
+          <p>
+            <code>x</code> runs east, <code>y</code> north and <code>z</code>
+            towards the viewer, so <code>cross(x, y)</code> is <code>z</code> and a
+            camera looking down <code>−z</code> has its right hand along
+            <code>+x</code>. A left-handed system would give the opposite sign
+            here, and a mirrored world at the end of it.
+          </p>
+        </div>
+
+        <aside class="margin">
+          <p class="note">
+            The import name is the last part of the module path:
+            <code>@moonmath</code>, and <code>@f64</code> for the second
+            precision.
+          </p>
+        </aside>
+      </section>
+
+      <section class="page" id="vectors">
+        <div class="column">
+          <div class="sec-head">
+            <div class="kicker"><span>§ 2</span></div>
+            <h2>Vectors<em>, and what an operator means</em></h2>
+          </div>
+
+          <p>
+            The operators work component by component, between two values of the
+            same type. <code>a * b</code> is not a dot product and not a matrix
+            product: it is the product of the components, which is what a shader
+            means by <code>a * b</code> too. The dot product has a name because it
+            is a different thing.
+          </p>
+
+          <div class="slip">
+            <div class="slip-head">
+              <span class="label">listing 2 · arithmetic</span>
+              <button class="copy" type="button" data-copy>copy</button>
+            </div>
+            <pre><code>let a = @moonmath.Vec3::new(1.0, 2.0, 3.0)
+let b = @moonmath.Vec3::new(4.0, -5.0, 6.0)
+
+println(a + b)          // component by component
+println(a * b)          // the same, multiplied
+println(a.dot(b))       // one number
+println(a.length())
+println(a.normalize())
+println(a.lerp(b, 0.25))  // a quarter of the way to b
+println(a.min(b))        // component by component, the smaller</code></pre>
+          </div>
+
+          <div class="slip output">
+            <div class="slip-head"><span class="label">printed</span></div>
+            <pre><code>Vec3(5, -3, 9)
+Vec3(4, -10, 18)
+12
+3.7416575
+Vec3(0.26726124, 0.5345225, 0.8017837)
+Vec3(1.75, 0.25, 3.75)
+Vec3(1, -5, 3)</code></pre>
+          </div>
+
+          <p>
+            The zero vector has no direction, and normalizing it would divide by
+            zero. The library returns the zero vector rather than a NaN, and
+            <code>try_normalize</code> is there for callers who need to know which
+            case they are in.
+          </p>
+
+          <div class="slip">
+            <div class="slip-head">
+              <span class="label">listing 3 · a direction that isn't one</span>
+              <button class="copy" type="button" data-copy>copy</button>
+            </div>
+            <pre><code>let nothing = @moonmath.Vec3::zero()
+
+println(nothing.normalize())       // no NaN escapes
+println(nothing.try_normalize())   // the caller can tell</code></pre>
+          </div>
+
+          <div class="slip output">
+            <div class="slip-head"><span class="label">printed</span></div>
+            <pre><code>Vec3(0, 0, 0)
+None</code></pre>
+          </div>
+
+          <h3 class="sub">The scalars beside them</h3>
+
+          <p>
+            Angles are radians everywhere in the library, and the conversion
+            happens at the edge, where the number came from a file or a person.
+            The easing and wrapping helpers are plain functions, not methods,
+            because they belong to no type in particular.
+          </p>
+
+          <div class="slip">
+            <div class="slip-head">
+              <span class="label">listing 4 · four useful functions</span>
+              <button class="copy" type="button" data-copy>copy</button>
+            </div>
+            <pre><code>println(@moonmath.smoothstep(0.0, 1.0, 0.25))  // 3t² − 2t³ at t = 0.25
+println(@moonmath.wrap(7.5, 5.0))              // into 0 … 5
+println(@moonmath.to_degrees(@moonmath.half_pi))</code></pre>
+          </div>
+
+          <div class="slip output">
+            <div class="slip-head"><span class="label">printed</span></div>
+            <pre><code>0.15625
+2.5
+90</code></pre>
+          </div>
+        </div>
+
+        <aside class="margin">
+          <p class="note">
+            <b>Two vectors, one operator.</b> MoonBit declares <code>mul(Self,
+            Self)</code>, so <code>Vec3 * Float</code> cannot exist. Scaling is
+            <code>scale</code>, and dividing is <code>divide</code>.
+          </p>
+          <p class="note">
+            <code>normalize</code> keeps the zero vector at zero on purpose: a
+            NaN spreads through a scene graph faster than any warning.
+          </p>
+        </aside>
+      </section>
+
+      <section class="page" id="matrices">
+        <div class="column">
+          <div class="sec-head">
+            <div class="kicker"><span>§ 3</span></div>
+            <h2>Matrices<em>, and the order they multiply in</em></h2>
+          </div>
+
+          <p>
+            A matrix is built from its columns, because that is the order it is
+            stored in. Three columns, three vectors, one matrix.
+          </p>
+
+          <div class="slip">
+            <div class="slip-head">
+              <span class="label">listing 5 · a matrix and its inverse</span>
+              <button class="copy" type="button" data-copy>copy</button>
+            </div>
+            <pre><code>let m = @moonmath.Mat3::from_cols(
+  @moonmath.Vec3::new(1.0, 2.0, 3.0),
+  @moonmath.Vec3::new(4.0, 5.0, 6.0),
+  @moonmath.Vec3::new(7.0, 8.0, 10.0),
+)
+
+println(m.determinant())
+println(m * m.inverse().unwrap())
+println((m * m.inverse().unwrap()).approx(@moonmath.Mat3::identity()))</code></pre>
+          </div>
+
+          <div class="slip output">
+            <div class="slip-head"><span class="label">printed</span></div>
+            <pre><code>-3
+Mat3[Vec3(1, 0, 0), Vec3(0, 1, 0), Vec3(0, 0, 1)]
+true</code></pre>
+          </div>
+
+          <p>
+            <code>inverse</code> returns an <code>Option</code>, because a matrix
+            can be singular and the caller has to decide what that means. When the
+            case cannot happen, <code>unwrap</code> says so at the point where the
+            knowledge is. The <code>/</code> operator aborts instead, since it has
+            nowhere to report anything.
+          </p>
+
+          <div class="remark">
+            <span class="tag">the order</span>
+            <p>
+              <code>a * b</code> applies <code>b</code> first. A scene graph reads
+              left to right when you write it — projection, view, model — and each
+              is applied to the result of the one on its right. If the world comes
+              out inside-out, this is the line to check.
+            </p>
+          </div>
+
+          <p>
+            A matrix times a vector is not <code>*</code>, because the two sides
+            would have different types. It is a method, and there is one for each
+            size:
+          </p>
+
+          <div class="slip">
+            <div class="slip-head">
+              <span class="label">listing 6 · three ways to multiply</span>
+              <button class="copy" type="button" data-copy>copy</button>
+            </div>
+            <pre><code>let v3 = @moonmath.Vec3::new(1.0, 0.0, 0.0)
+println(m.mul_vec3(v3))
+
+let v4 = @moonmath.Vec4::new(1.0, 0.0, 0.0, 1.0)
+let big = @moonmath.Mat4::from_mat3(m)
+println(big.mul_vec4(v4))</code></pre>
+          </div>
+
+          <div class="slip output">
+            <div class="slip-head"><span class="label">printed</span></div>
+            <pre><code>Vec3(1, 2, 3)
+Vec4(1, 2, 3, 1)</code></pre>
+          </div>
+        </div>
+
+        <aside class="margin">
+          <p class="note">
+            The determinant of this matrix is <b>−3</b>, so it turns the axes
+            inside out as well as stretching them.
+          </p>
+        </aside>
+      </section>
+
+      <section class="page" id="camera">
+        <div class="column">
+          <div class="sec-head">
+            <div class="kicker"><span>§ 4</span></div>
+            <h2>A camera<em>, in two matrices</em></h2>
+          </div>
+
+          <p>
+            A camera is a view matrix and a projection matrix. The first moves the
+            world so that the eye is at the origin looking down <code>−z</code>;
+            the second squeezes what it sees into the unit cube the clipper
+            expects. Multiplying them gives the matrix a vertex shader takes.
+          </p>
+
+          <div class="slip">
+            <div class="slip-head">
+              <span class="label">listing 7 · a view, a projection, and a point</span>
+              <button class="copy" type="button" data-copy>copy</button>
+            </div>
+            <pre><code>let eye = @moonmath.Vec3::new(0.0, 0.0, 6.0)
+let view = @moonmath.Mat4::look_at(
+  eye,
+  @moonmath.Vec3::zero(),
+  @moonmath.Vec3::unit_y(),
+)
+let projection = @moonmath.Mat4::perspective(
+  @moonmath.to_radians(60.0),
+  1.5,
+  0.1,
+  100.0,
+)
+let view_projection = projection * view
+
+println(view_projection.transform_point(@moonmath.Vec3::zero()))</code></pre>
+          </div>
+
+          <div class="slip output">
+            <div class="slip-head"><span class="label">printed</span></div>
+            <pre><code>Vec3(0, 0, 0.9843177)</code></pre>
+          </div>
+
+          <p>
+            The origin of the world is dead centre of the screen, so its
+            <code>x</code> and <code>y</code> are zero, and its depth is 0.98 —
+            nearly at the far plane, because the eye is six metres away and the far
+            plane is a hundred. Point the same matrix at the two planes and the
+            convention shows itself:
+          </p>
+
+          <div class="slip">
+            <div class="slip-head">
+              <span class="label">listing 8 · the two ends of the depth range</span>
+              <button class="copy" type="button" data-copy>copy</button>
+            </div>
+            <pre><code>// 0.1 in front of the eye, and 100 in front of the eye.
+println(view_projection.transform_point(@moonmath.Vec3::new(0.0, 0.0, 5.9)))
+println(view_projection.transform_point(@moonmath.Vec3::new(0.0, 0.0, -94.0)))</code></pre>
+          </div>
+
+          <div class="slip output">
+            <div class="slip-head"><span class="label">printed</span></div>
+            <pre><code>Vec3(0, 0, 0)
+Vec3(0, 0, 1)</code></pre>
+          </div>
+
+          <p>
+            Zero and one, exactly, as WebGPU clips. The <code>_gl</code> variants
+            of the same four projections map the planes to minus one and one
+            instead, for a pipeline that wants that.
+          </p>
+        </div>
+
+        <aside class="margin">
+          <p class="note">
+            <b>Why 0.98 and not 0.5?</b> Depth is not linear in distance. At six
+            metres out of a hundred, most of the range is already spent.
+          </p>
+        </aside>
+      </section>
+
+      <section class="page" id="placement">
+        <div class="column">
+          <div class="sec-head">
+            <div class="kicker"><span>§ 5</span></div>
+            <h2>Placement<em>, kept apart</em></h2>
+          </div>
+
+          <p>
+            A model matrix is a scale, a rotation and a translation, and keeping
+            the three apart is what makes a transform editable. <code>Trs</code>
+            holds them; <code>Mat4::from_trs</code> turns them into the matrix the
+            shader wants; <code>to_trs</code> reads them back.
+          </p>
+
+          <div class="slip">
+            <div class="slip-head">
+              <span class="label">listing 9 · a local frame, placed</span>
+              <button class="copy" type="button" data-copy>copy</button>
+            </div>
+            <pre><code>let placement = @moonmath.Trs::new(
+  @moonmath.Vec3::new(0.0, 2.0, 0.0),
+  @moonmath.Quat::from_axis_angle(@moonmath.Vec3::unit_y(), @moonmath.half_pi),
+  @moonmath.Vec3::splat(0.5),
+)
+let model = @moonmath.Mat4::from_trs(placement)
+
+// A local +x, halved, turned a quarter turn about y, then lifted two.
+println(model.transform_point(@moonmath.Vec3::new(1.0, 0.0, 0.0)))
+println(model.transform_vector(@moonmath.Vec3::new(1.0, 0.0, 0.0)))</code></pre>
+          </div>
+
+          <div class="slip output">
+            <div class="slip-head"><span class="label">printed</span></div>
+            <pre><code>Vec3(-5.9604645e-8, 2, -0.49999997)
+Vec3(-5.9604645e-8, 0, -0.49999997)</code></pre>
+          </div>
+
+          <p>
+            The point is lifted by the translation and the direction is not, which
+            is the whole difference between the fourth component being one and
+            zero. The two tiny values are a quarter turn done in single precision:
+            \(\cos 90°\) is not quite zero, and the matrix says so rather than
+            rounding it away.
+          </p>
+
+          <div class="slip">
+            <div class="slip-head">
+              <span class="label">listing 10 · reading it back</span>
+              <button class="copy" type="button" data-copy>copy</button>
+            </div>
+            <pre><code>let back = model.to_trs().unwrap()
+
+println(back.translation)
+println(back.scale)</code></pre>
+          </div>
+
+          <div class="slip output">
+            <div class="slip-head"><span class="label">printed</span></div>
+            <pre><code>Vec3(0, 2, 0)
+Vec3(0.49999997, 0.5, 0.49999997)</code></pre>
+          </div>
+
+          <p>
+            Not every matrix can be taken apart this way. A shear leans the three
+            columns towards each other, and no rotation and scale produces that, so
+            <code>to_trs</code> answers <code>None</code> — the same answer a
+            singular matrix gets.
+          </p>
+        </div>
+
+        <aside class="margin">
+          <p class="note">
+            <code>Affine2</code> and <code>Affine3</code> are the same idea with
+            the last row assumed: four numbers less to store, and an
+            <code>inverse</code> that is a 3×3 solve rather than a 4×4 one.
+          </p>
+        </aside>
+      </section>
+
+      <section class="page" id="rotation">
+        <div class="column">
+          <div class="sec-head">
+            <div class="kicker"><span>§ 6</span></div>
+            <h2>Rotation<em>, eight numbers instead of sixteen</em></h2>
+          </div>
+
+          <p>
+            A quaternion is four numbers that interpolate, and a matrix is what a
+            shader wants. Both directions are here, and a rotation survives the
+            round trip.
+          </p>
+
+          <div class="slip">
+            <div class="slip-head">
+              <span class="label">listing 11 · a turn, halfway to it, and the matrix</span>
+              <button class="copy" type="button" data-copy>copy</button>
+            </div>
+            <pre><code>let turn = @moonmath.Quat::from_axis_angle(
+  @moonmath.Vec3::unit_y(),
+  @moonmath.quarter_pi,
+)
+let half_way = @moonmath.Quat::identity().slerp(turn, 0.5)
+
+println(turn.rotate(@moonmath.Vec3::unit_x()))
+println(half_way.rotate(@moonmath.Vec3::unit_x()))
+println(turn.to_mat3())
+println(@moonmath.Quat::from_mat3(turn.to_mat3()).approx(turn))</code></pre>
+          </div>
+
+          <div class="slip output">
+            <div class="slip-head"><span class="label">printed</span></div>
+            <pre><code>Vec3(0.7071067, 0, -0.7071068)
+Vec3(0.9238795, 0, -0.3826835)
+Mat3[Vec3(0.7071067, 0, -0.7071068), Vec3(0, 1, 0), Vec3(0.7071068, 0, 0.7071067)]
+true</code></pre>
+          </div>
+
+          <p>
+            A quarter turn about <code>y</code> sends <code>+x</code> towards
+            <code>−z</code>, and half of that turn sends it almost nowhere: slerp
+            walks the arc, so the half-way rotation is a rotation by 22.5°, not a
+            linear blend of the four components.
+          </p>
+
+          <div class="slip">
+            <div class="slip-head">
+              <span class="label">listing 12 · Euler angles, by axis</span>
+              <button class="copy" type="button" data-copy>copy</button>
+            </div>
+            <pre><code>let yaw = @moonmath.Quat::from_euler(
+  @moonmath.EulerOrder::Zyx,
+  @moonmath.Vec3::new(0.0, 0.0, @moonmath.to_radians(90.0)),
+)
+println(yaw.to_euler(@moonmath.EulerOrder::Zyx))
+
+// An order that turns about x twice needs the turns by place.
+let precessing = @moonmath.Quat::from_euler_turns(
+  @moonmath.EulerOrder::Xyx,
+  @moonmath.Turns::new(0.3, 1.2, -0.4),
+)
+println(precessing)</code></pre>
+          </div>
+
+          <div class="slip output">
+            <div class="slip-head"><span class="label">printed</span></div>
+            <pre><code>Vec3(0, 0, 1.5707965)
+Quat(-0.041249573, 0.53040975, 0.19361468, 0.8243042)</code></pre>
+          </div>
+
+          <p>
+            The first component of the vector is the turn about <code>x</code>,
+            wherever in the order that turn comes. All twelve orders are in the
+            <a href="api.html#quat">lexicon</a>, with the angle at which each one
+            stops being able to say what it means.
+          </p>
+        </div>
+
+        <aside class="margin">
+          <p class="note">
+            <b>slerp</b> and <b>nlerp</b> are both here: the first walks the arc
+            at constant speed, the second is cheaper and looks almost the same for
+            small turns.
+          </p>
+        </aside>
+      </section>
+
+      <section class="page" id="geometry">
+        <div class="column">
+          <div class="sec-head">
+            <div class="kicker"><span>§ 7</span></div>
+            <h2>Geometry<em>, and whether two things touch</em></h2>
+          </div>
+
+          <p>
+            A ray is a start and a direction. Asking where it meets a box gives a
+            distance along it, or <code>None</code>.
+          </p>
+
+          <div class="slip">
+            <div class="slip-head">
+              <span class="label">listing 13 · a ray, a room and a ball</span>
+              <button class="copy" type="button" data-copy>copy</button>
+            </div>
+            <pre><code>let room = @moonmath.Aabb3::new(
+  @moonmath.Vec3::new(-4.0, 0.0, -4.0),
+  @moonmath.Vec3::new(4.0, 3.0, 4.0),
+)
+let down = @moonmath.Ray3::new(
+  @moonmath.Vec3::new(0.0, 2.0, 0.0),
+  @moonmath.Vec3::new(0.0, -1.0, 0.0),
+)
+println(down.intersect_aabb(room))   // the floor is two below
+println(down.at(2.0))
+
+let ball = @moonmath.Sphere::new(@moonmath.Vec3::zero(), 1.0)
+let ahead = @moonmath.Ray3::new(
+  @moonmath.Vec3::new(0.0, 0.0, 5.0),
+  @moonmath.Vec3::new(0.0, 0.0, -1.0),
+)
+println(ahead.intersect_sphere(ball))</code></pre>
+          </div>
+
+          <div class="slip output">
+            <div class="slip-head"><span class="label">printed</span></div>
+            <pre><code>Some(2)
+Vec3(0, 0, 0)
+Some(4)</code></pre>
+          </div>
+
+          <p>
+            The last piece a renderer needs is the cheapest: throw away what the
+            camera cannot see before drawing it. A frustum built from the same
+            view-projection matrix answers for a box in one call per plane.
+          </p>
+
+          <div class="slip">
+            <div class="slip-head">
+              <span class="label">listing 14 · culling</span>
+              <button class="copy" type="button" data-copy>copy</button>
+            </div>
+            <pre><code>let frustum = @moonmath.Frustum::from_matrix(view_projection).unwrap()
+println(frustum.intersects_aabb(room))       // in front of the camera
+
+let far_room = @moonmath.Aabb3::new(
+  @moonmath.Vec3::splat(50.0),
+  @moonmath.Vec3::splat(60.0),
+)
+println(frustum.intersects_aabb(far_room))   // behind it</code></pre>
+          </div>
+
+          <div class="slip output">
+            <div class="slip-head"><span class="label">printed</span></div>
+            <pre><code>true
+false</code></pre>
+          </div>
+        </div>
+
+        <aside class="margin">
+          <p class="note">
+            The frustum test is conservative on purpose: a box that straddles the
+            edge of the screen is kept, because dropping something visible is worse
+            than drawing something invisible.
+          </p>
+        </aside>
+      </section>
+
+      <section class="page" id="double">
+        <div class="column">
+          <div class="sec-head">
+            <div class="kicker"><span>§ 8</span></div>
+            <h2>The same library, in double</h2>
+          </div>
+
+          <p>
+            Import <code>moonbitstack/moonmath/f64</code> and every type appears
+            again with <code>Double</code> where <code>Float</code> was. The names,
+            the operators and the documentation are the same; only the numbers
+            change.
+          </p>
+
+          <div class="slip">
+            <div class="slip-head">
+              <span class="label">listing 15 · a millimetre, at a billion metres</span>
+              <button class="copy" type="button" data-copy>copy</button>
+            </div>
+            <pre><code>let far = @f64.Vec3::new(1.0e9, 0.0, 0.0)
+let step = @f64.Vec3::new(1.0e-3, 0.0, 0.0)
+println(far + step)
+
+let near = @moonmath.Vec3::new(1.0e9, 0.0, 0.0)
+let small = @moonmath.Vec3::new(1.0e-3, 0.0, 0.0)
+println(near + small)</code></pre>
+          </div>
+
+          <div class="slip output">
+            <div class="slip-head"><span class="label">printed</span></div>
+            <pre><code>Vec3(1000000000.001, 0, 0)
+Vec3(1000000000, 0, 0)</code></pre>
+          </div>
+
+          <p>
+            At a billion, single precision counts in steps of sixty-four, so a
+            millimetre is not a small distance — it is no distance at all. A
+            simulation that spans a solar system wants the second package; what it
+            sends to the GPU still wants the first.
+          </p>
+
+          <p style="margin-top: 2rem">
+            <a href="api.html" class="turn-page">
+              <span class="turn-kicker">turn the page</span>
+              <span class="turn-title">The lexicon: every public name, with its sentence</span>
+              <span class="turn-mark" aria-hidden="true">
+                <svg viewBox="0 0 26 12" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round">
+                  <path d="M1 6h22" /><path d="M18 1.5 23.5 6 18 10.5" />
+                </svg>
+              </span>
+            </a>
+          </p>
+        </div>
+
+        <aside class="margin">
+          <p class="note">
+            Both packages are generated from one template, so a change to the
+            shape of the API lands in both hands at once.
+          </p>
+        </aside>
+      </section>
+    </main>
+
+    <footer class="colophon">
+      <div class="colophon-inner">
+        <div>
+          <div class="device">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                d="M12 2.2c1.9 3.6 3.3 7.2 3.3 10.5 0 3.4-1.5 6.5-3.3 9.1-1.8-2.6-3.3-5.7-3.3-9.1 0-3.3 1.4-6.9 3.3-10.5z"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.1"
+                stroke-linejoin="round"
+              />
+              <path d="M12 7.4v11" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" />
+              <circle cx="12" cy="9.4" r="1.15" fill="none" stroke="currentColor" stroke-width="1.1" />
+            </svg>
+            <span>moonmath</span>
+          </div>
+          <p class="fine" style="margin: 0.5rem 0 0">
+            Every listing on this page was compiled and run; every printed line is
+            what it printed.
+          </p>
+        </div>
+        <p class="fine">
+          Set in EB Garamond and IM Fell English, the marginalia in Caveat, the
+          listings in Courier Prime; formulae by KaTeX. Apache-2.0.
+        </p>
+        <div>
+          <div class="links">
+            <a href="index.html">Frontispiece</a>
+            <a href="api.html">Lexicon</a>
+            <a href="showcase.html">Workshop</a>
+            <a href="https://github.com/moonbitstack/moonmath">GitHub</a>
+          </div>
+          <div class="folio" style="margin-top: 0.7rem">fol. ii</div>
+        </div>
+      </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" defer></script>
+    <script src="assets/site.js?v=1" defer></script>
+  </body>
+</html>
