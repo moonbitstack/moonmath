@@ -43,6 +43,83 @@ Five decisions shape the whole surface, and all five are visible in every signat
 
 Two more, smaller ones. The zero vector has no direction, and `normalize` returns `Vec3::zero()` for it rather than a NaN — `try_normalize` and `normalize_or` exist for callers that need to tell the case apart. And every value type implements `Eq`, `Show` and `Debug`; the integer vectors also implement `Hash`. Equality is exact — `approx` is the comparison to use on results of arithmetic, and it takes an optional epsilon.
 
+## Using it
+
+### Rotations
+
+A quaternion is four numbers that interpolate; a matrix is what a shader wants. Both directions are here, and a rotation round-trips through either.
+
+```moonbit
+let turn = @moonmath.Quat::from_axis_angle(@moonmath.Vec3::unit_y(), @moonmath.quarter_pi)
+let half_way = @moonmath.Quat::identity().slerp(turn, 0.5)
+
+let ahead = turn.rotate(@moonmath.Vec3::unit_z())
+let matrix = turn.to_mat3()
+
+// Euler angles, in one of the twelve orders, by name.
+let from_yaw = @moonmath.Quat::from_euler(
+  @moonmath.EulerOrder::Zyx,
+  @moonmath.Vec3::new(@moonmath.to_radians(90.0), 0.0, 0.0),
+)
+let back = from_yaw.to_euler(@moonmath.EulerOrder::Zyx)
+```
+
+The three components of an Euler angle vector are the three turns in the order the order names them, not the turns about `x`, `y` and `z`: for `Zyx` the first component turns about `z`. An order that turns about two axes — `Xyx` and its siblings — has no other reading, since the first and third turn share an axis.
+
+### Scene graph transforms
+
+Position, rotation and scale are three separate pieces, and so is a matrix built from them:
+
+```moonbit
+let placement = @moonmath.Trs::new(
+  @moonmath.Vec3::new(0.0, 2.0, 0.0),
+  @moonmath.Quat::from_axis_angle(@moonmath.Vec3::unit_y(), @moonmath.half_pi),
+  @moonmath.Vec3::splat(0.5),
+)
+let model = @moonmath.Mat4::from_trs(placement)
+
+// And back out again, for an editor or an animation to edit.
+let editable = model.to_trs().unwrap()
+```
+
+`Affine2` and `Affine3` are the same transform without the row that does nothing: cheaper to compose and apply, and impossible to make non-affine.
+
+### Geometry
+
+Boxes, rays, planes, spheres, triangles and the frustum, with the tests a broad phase and a pick need.
+
+```moonbit
+let room = @moonmath.Aabb3::new(
+  @moonmath.Vec3::new(-4.0, 0.0, -4.0),
+  @moonmath.Vec3::new(4.0, 3.0, 4.0),
+)
+let ray = @moonmath.Ray3::new(
+  @moonmath.Vec3::new(0.0, 2.0, 0.0),
+  @moonmath.Vec3::new(0.0, -1.0, -1.0).normalize(),
+)
+
+match ray.intersect_aabb(room) {
+  Some(t) => println("the room is \{t} away along the ray, at \{ray.at(t)}")
+  None => println("the ray leaves the room alone")
+}
+
+let frustum = @moonmath.Frustum::from_matrix(view_projection).unwrap()
+if frustum.intersects_aabb(room) {
+  println("there is something to draw")
+}
+```
+
+Rectangles are separate from boxes because a layout thinks in a corner and a size, not in two opposite corners: `Rect` is `origin` plus `size`, and `Aabb2` is `min` plus `max`. They convert to each other with `to_aabb` and `to_rect`.
+
+### Double precision
+
+`moonbitstack/moonmath/f64` holds the same types at `Double`, generated from the same template as the single-precision package. A simulation that runs for hours, or spans a planet, converts at the boundary rather than living in `Float` throughout:
+
+```moonbit
+let far_away = @f64.Vec3::new(1.0e9, 0.0, 0.0)
+let scaled = far_away.scale(2.0)
+```
+
 ## The interface
 
 Every type below is a value type: immutable, and returning a new value from every operation. Unless a row says otherwise, each also carries `+ - * /`, unary `-`, `Eq`, `Show` and `Debug`.
@@ -208,6 +285,39 @@ What each type adds:
 | | `contains_point(p)`, `contains_aabb(box)`, `intersects_aabb(box)`, `contains_sphere(s)`, `intersects_sphere(s)` | |
 
 The intersection functions return the `t` of the crossing rather than the point, because the distance is usually what a caller wants and the point is `at(t)`. A ray that starts inside a shape reports the crossing on its way out.
+
+## Examples
+
+Four runnable programs, each `moon run`-able on its own:
+
+| Example | What it shows |
+|:--|:--|
+| `src/examples/01-tour` | the whole surface in one run |
+| `src/examples/02-camera` | a camera, what lands on screen, frustum culling, and a pick |
+| `src/examples/03-layout` | rectangles, insets and hit testing for a window of panes |
+| `src/examples/04-collision` | a ray narrowed from a sphere to a triangle, and a bounce |
+
+## Performance
+
+Throughput on the native backend, `moon bench --target native --release`, single precision, on an x86-64 machine with the 2026-10-23 toolchain. Each row is one operation, measured 64 at a time inside a timed closure; the numbers are the best of three runs.
+
+| Operation | ns | per second |
+|:--|--:|--:|
+| `Vec3::dot` | 1.9 | 540,000,000 |
+| `Vec4::dot` | 1.7 | 600,000,000 |
+| `Frustum::intersects_aabb` | 21 | 47,000,000 |
+| `Vec3::normalize` | 56 | 18,000,000 |
+| `Mat4::transform_point` | 56 | 18,000,000 |
+| `Vec3::cross` | 61 | 16,000,000 |
+| `Quat::rotate` | 64 | 16,000,000 |
+| `Quat::slerp` | 96 | 10,000,000 |
+| `Ray3::intersect_aabb` | 97 | 10,000,000 |
+| `Ray3::intersect_sphere` | 111 | 9,000,000 |
+| `Quat::to_mat3` | 220 | 4,500,000 |
+| `Mat4 * Mat4` | 282 | 3,500,000 |
+| `Mat4::inverse` | 330 | 3,000,000 |
+
+The first two rows are arithmetic with nothing to build; the rest return a value type, and on this backend a struct is a heap value, so part of every row above them is the allocation of the result. What that means in practice is that an operation returning a `Vec3` costs about the same whether it is a cross product or a normalisation, and that a loop over ten thousand vectors spends much of its time in the allocator rather than in the arithmetic.
 
 ## Licence
 
