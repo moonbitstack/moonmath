@@ -190,6 +190,13 @@ test "a mirrored scale comes back with its sign on the first axis" {
 test "a matrix with no scale has no decomposition, and one that is not a trs has no exact one" {
   let squashed = Mat4::from_scale(Vec3::new(1.0, 0.0, 1.0))
   assert_eq(squashed.to_trs(), None)
+  // A shear is a rotation's columns leaning towards each other, and there is no
+  // scale and rotation that reproduces it.
+  let sheared = Mat4::from_array([
+    1.0, 0.0, 0.0, 0.0, 0.5, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0,
+    1.0,
+  ])
+  assert_eq(sheared.to_trs(), None)
   // A pure translation is the easy case.
   let moved = Mat4::from_translation(Vec3::new(4.0, 5.0, 6.0))
   let back = moved.to_trs().unwrap()

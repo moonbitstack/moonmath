@@ -228,6 +228,15 @@ pub fn Mat4::to_trs(self : Mat4) -> Trs? {
     self.c1.xyz().divide(sy),
     self.c2.xyz().divide(sz),
   )
+  // A decomposition exists only when those three are perpendicular: a shear
+  // makes the columns lean towards each other, and no rotation and scale
+  // reproduces that.
+  let slack : {{S}} = {{ORTHO_EPS}}
+  if rotation.c0.dot(rotation.c1).abs() > slack ||
+    rotation.c1.dot(rotation.c2).abs() > slack ||
+    rotation.c2.dot(rotation.c0).abs() > slack {
+    return None
+  }
   let quat = Quat::from_mat3(rotation)
   Some(Trs::new(self.c3.xyz(), quat, { x: sx, y: sy, z: sz }))
 }
