@@ -1,15 +1,25 @@
-name = "moonbitstack/CHANGE-ME"
+name = "moonbitstack/moonmath"
 
 version = "0.1.0"
 
 readme = "README.md"
 
-repository = "https://github.com/moonbitstack/CHANGE-ME"
+repository = "https://github.com/moonbitstack/moonmath"
 
 license = "Apache-2.0"
 
-keywords = [ "moonbit" ]
+keywords = [
+  "math",
+  "linear-algebra",
+  "vector",
+  "matrix",
+  "quaternion",
+  "geometry",
+  "graphics",
+  "wgsl",
+  "moonbit",
+]
 
-description = "One sentence saying what this is and what it is not."
+description = "Vectors, matrices, quaternions and geometry for MoonBit: column-major, right-handed, and ready to copy into a GPU buffer."
 
 source = "src"

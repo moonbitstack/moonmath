@@ -1,2 +1,15 @@
-// What this package implements, and a first-hand link to the specification it
-// implements. A package without that link is not finished.
+// Vectors, matrices, quaternions and geometry, in the single precision a GPU
+// works in.
+//
+// WGSL memory layout: https://www.w3.org/TR/WGSL/#memory-layouts
+// WebGPU coordinates and depth: https://www.w3.org/TR/webgpu/#coordinate-systems
+//
+// Column-major, because that is how a `mat4x4<f32>` is laid out in a buffer:
+// a `Mat4` copies into one with `to_array` and an unaligned write, and the two
+// then agree about which element is where. Right-handed, because the camera
+// conventions of the graphics stack below this one are. The projection
+// functions map the near plane to depth 0 and the far plane to 1, as WebGPU
+// clips; the `_gl` variants map them to -1 and 1 for OpenGL-style pipelines.
+//
+// Values are immutable and the operators are total: nothing allocates and
+// nothing raises except the integer division the language itself aborts on.

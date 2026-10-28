@@ -1,0 +1,10 @@
+// The same shapes as the parent package, in double precision.
+//
+// A GPU buffer holds single precision, and a simulation that runs for hours or
+// spans a solar system does not: `Vec3` there loses the low bits of a position
+// past a few kilometres. This package is that second set — every type, operator
+// and constructor the parent has, at `Double`, so code written against one
+// reads the same against the other.
+//
+// Both are generated from one template by `scripts/gen_math.py`; a change to the
+// shape of the API belongs there, not here.
