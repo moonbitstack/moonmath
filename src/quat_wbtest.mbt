@@ -152,10 +152,10 @@ test "every axis order produces a rotation that carries its own angles" {
   for order in orders {
     for angles in angle_sets {
       let (x, y, z) = angles
-      let wanted = Vec3::new(x, y, z)
-      let q = Quat::from_euler(order, wanted)
-      let read_back = q.to_euler(order)
-      let rebuilt = Quat::from_euler(order, read_back)
+      let turns = Turns::new(x, y, z)
+      let q = Quat::from_euler_turns(order, turns)
+      let read_back = q.to_euler_turns(order)
+      let rebuilt = Quat::from_euler_turns(order, read_back)
       assert_true(rebuilt.approx(q, eps=1.0e-4))
     }
   }
@@ -166,31 +166,39 @@ test "the two families of axis order are both covered" {
   assert_eq(tait_bryan_orders().length(), 6)
   assert_eq(proper_orders().length(), 6)
   // Each family keeps its own rotation: a proper order cannot produce the same
-  // matrix as a Tait-Bryan one for the same angles, in general.
-  let angles = Vec3::new(0.4, 0.5, 0.6)
-  let tait_bryan = Quat::from_euler(Xyz, angles)
-  let proper = Quat::from_euler(Xyx, angles)
+  // matrix as a Tait-Bryan one for the same turns, in general.
+  let turns = Turns::new(0.4, 0.5, 0.6)
+  let tait_bryan = Quat::from_euler_turns(Xyz, turns)
+  let proper = Quat::from_euler_turns(Xyx, turns)
   assert_false(tait_bryan.approx(proper, eps=1.0e-3))
 }
 
 ///|
 test "one angle, one axis" {
   // Turning about a single named axis is the same as building that rotation
-  // directly, whichever order names it.
+  // directly, whichever order names it — and whichever place it has in the
+  // order, because the angle vector is read by axis.
   let angle : Float = 0.75
   assert_true(
     Quat::from_euler(Xyz, Vec3::new(angle, 0.0, 0.0)).approx(
       Quat::from_axis_angle(Vec3::unit_x(), angle),
     ),
   )
-  // The first component is the first turn, whichever axis that is.
+  // Zyx turns about z first, and the vector still says z where it means z.
   assert_true(
-    Quat::from_euler(Zyx, Vec3::new(angle, 0.0, 0.0)).approx(
+    Quat::from_euler(Zyx, Vec3::new(0.0, 0.0, angle)).approx(
       Quat::from_axis_angle(Vec3::unit_z(), angle),
     ),
   )
   assert_true(
-    Quat::from_euler(Yxy, Vec3::new(angle, 0.0, 0.0)).approx(
+    Quat::from_euler(Yxz, Vec3::new(0.0, angle, 0.0)).approx(
+      Quat::from_axis_angle(Vec3::unit_y(), angle),
+    ),
+  )
+  // An order that turns about two axes has no by-axis form; the general one
+  // takes the turns in order.
+  assert_true(
+    Quat::from_euler_turns(Yxy, Turns::new(angle, 0.0, 0.0)).approx(
       Quat::from_axis_angle(Vec3::unit_y(), angle),
     ),
   )
@@ -218,13 +226,16 @@ test "the gimbal lock angle still describes the same rotation" {
     let q = Quat::from_euler(order, lock)
     let read_back = q.to_euler(order)
     assert_true(Quat::from_euler(order, read_back).approx(q, eps=1.0e-4))
-    assert_true(approx(read_back.x, 0.0, eps=1.0e-5))
+    // The turn about y is the one that locked, and it comes back in the same
+    // component. The angle is only as good as the arc sine that recovered it,
+    // which near a quarter turn is a square root of the last place.
+    assert_true(approx(read_back.y, half_pi, eps=1.0e-3))
   }
   // The proper orders lock at the ends of their middle turn instead.
   for order in proper_lock_orders() {
-    let q = Quat::from_euler(order, Vec3::new(0.0, pi, 0.0))
-    let read_back = q.to_euler(order)
-    assert_true(Quat::from_euler(order, read_back).approx(q, eps=1.0e-4))
+    let q = Quat::from_euler_turns(order, Turns::new(0.0, pi, 0.0))
+    let read_back = q.to_euler_turns(order)
+    assert_true(Quat::from_euler_turns(order, read_back).approx(q, eps=1.0e-4))
   }
 }
 
@@ -305,6 +316,43 @@ test "nlerp walks the straight line and lands on the sphere" {
   // The zero quaternion has no direction on the sphere; normalization falls
   // back to the identity rather than to a division by zero.
   assert_eq(Quat::new(0.0, 0.0, 0.0, 0.0).normalize(), Quat::identity())
+}
+
+///|
+test "reading by axis and reading in order are the same for three axes" {
+  // For an order that names three different axes the two readings are the same
+  // rotation, one permuted into the other.
+  let x : Float = 0.3
+  let y : Float = -0.5
+  let z : Float = 0.7
+  let by_axis : Array[(EulerOrder, Turns)] = [
+    (Xyz, Turns::new(x, y, z)),
+    (Xzy, Turns::new(x, z, y)),
+    (Yxz, Turns::new(y, x, z)),
+    (Yzx, Turns::new(y, z, x)),
+    (Zxy, Turns::new(z, x, y)),
+    (Zyx, Turns::new(z, y, x)),
+  ]
+  for entry in by_axis {
+    let (order, in_order) = entry
+    let from_vector = Quat::from_euler(order, Vec3::new(x, y, z))
+    let from_turns = Quat::from_euler_turns(order, in_order)
+    assert_true(from_vector.approx(from_turns, eps=1.0e-5))
+    // And the vector that comes back says the same thing.
+    assert_true(
+      from_vector.to_euler(order).approx(Vec3::new(x, y, z), eps=1.0e-5),
+    )
+  }
+}
+
+///|
+test "panic reading angles by axis for an order that turns about two axes" {
+  let _ = Quat::from_euler(Xyx, Vec3::new(0.1, 0.2, 0.3))
+}
+
+///|
+test "panic writing angles by axis for an order that turns about two axes" {
+  let _ = Quat::identity().to_euler(Xyx)
 }
 
 ///|

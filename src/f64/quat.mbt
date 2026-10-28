@@ -142,44 +142,164 @@ pub fn Quat::from_axis_angle(axis : Vec3, radians : Double) -> Quat {
 }
 
 ///|
+/// The three turns of a rotation, in the order the order names them.
+///
+/// `first` is the turn about the first axis of the order, `second` about the
+/// second and `third` about the third — which for six of the twelve orders is
+/// the first axis again. A record rather than a vector because a vector's
+/// components are named after axes, and for those six orders the third turn is
+/// not about the third axis; naming the slots after their place in the order
+/// says exactly what they are.
+pub(all) struct Turns {
+  first : Double
+  second : Double
+  third : Double
+} derive(Eq)
+
+///|
+pub extend Turns with Eq::{equal, not_equal}
+
+///|
+/// The three turns, in the order the order names them.
+pub fn Turns::new(first : Double, second : Double, third : Double) -> Turns {
+  { first, second, third, }
+}
+
+///|
+/// Whether the two triples agree to within `eps`.
+pub fn Turns::approx(self : Turns, other : Turns, eps? : Double) -> Bool {
+  approx(self.first, other.first, eps?) &&
+  approx(self.second, other.second, eps?) &&
+  approx(self.third, other.third, eps?)
+}
+
+///|
+pub impl Show for Turns with fn output(self, logger) {
+  logger.write_string("Turns(\{self.first}, \{self.second}, \{self.third})")
+}
+
+///|
+pub extend Turns with Show::{output, to_string}
+
+///|
+pub impl Debug for Turns with fn to_repr(self) {
+  @debug.Repr::ctor("Turns", [
+    (Some("first"), @debug.Repr::double(self.first)),
+    (Some("second"), @debug.Repr::double(self.second)),
+    (Some("third"), @debug.Repr::double(self.third)),
+  ])
+}
+
+///|
+pub extend Turns with Debug::{to_repr}
+
+///|
+/// The turn each axis carries, for an order that names three different axes.
+///
+/// For such an order there is one turn per axis, so a vector read by axis says
+/// everything; for an order that names an axis twice there are two turns about
+/// it and no way to say both with one component per axis, which is what `None`
+/// means here.
+fn turns_by_axis(order : EulerOrder, angles : Vec3) -> Turns? {
+  let (i, j, k) = order.axes()
+  if i == k {
+    None
+  } else {
+    let components = angles.to_array()
+    Some(Turns::new(components[i], components[j], components[k]))
+  }
+}
+
+///|
 /// The rotation the three angles describe, taken in `order`, in radians.
 ///
-/// The components of `angles` are the three turns in the order the order names
-/// them, not the turns about the three axes: for `Xyz` they are the turns about
-/// `x`, `y` and `z` in that order, which is the same thing, but for `Xzy` the
-/// second component is the turn about `z` and the third the turn about `y`, and
-/// for `Yxy` the second is about `y` and the third about `x` again. Reading them
-/// by axis is impossible as soon as an order turns about the same axis twice.
+/// The components of `angles` are the turns about `x`, `y` and `z`, wherever in
+/// the order those axes turn up: for `Zyx`, which turns about `z` first, the
+/// third component is the first turn. That is the reading a caller expects from
+/// a vector named after axes, and it is exact for the six orders that name three
+/// different axes.
+///
+/// The other six turn about one axis twice — `Xyx` is the family — and two turns
+/// about one axis cannot both be given by its single component. Passing one of
+/// those orders to this function aborts; `from_euler_turns` takes the three
+/// turns in order and covers all twelve.
 ///
 /// ```mbt check
 /// test {
+///   // Zyx turns about z first, so the third component is the first turn.
 ///   let turn = @f64.Quat::from_euler(
 ///     @f64.EulerOrder::Zyx,
-///     @f64.Vec3::new(@f64.half_pi, 0.0, 0.0),
+///     @f64.Vec3::new(0.0, 0.0, @f64.half_pi),
 ///   )
-///   // Zyx turns about z first, so the first angle is the one about z.
 ///   assert_true(turn.rotate(@f64.Vec3::unit_y()).approx(-@f64.Vec3::unit_x()))
 /// }
 /// ```
 pub fn Quat::from_euler(order : EulerOrder, angles : Vec3) -> Quat {
+  match turns_by_axis(order, angles) {
+    Some(turns) => Quat::from_euler_turns(order, turns)
+    None =>
+      abort(
+        "Quat::from_euler reads the angles by axis, and this order turns about one axis twice: use Quat::from_euler_turns",
+      )
+  }
+}
+
+///|
+/// The rotation the three turns describe, in the order the order names them.
+///
+/// The general form: it takes the first turn, the second and the third however
+/// many axes they use, so it covers all twelve orders. For the six that name
+/// three different axes it is the same rotation `from_euler` builds from a
+/// vector, with the turns already in order.
+pub fn Quat::from_euler_turns(order : EulerOrder, turns : Turns) -> Quat {
   let (i, j, k) = order.axes()
-  let turns = angles.to_array()
-  let first = Quat::from_axis_angle(axis_of(i), turns[0])
-  let second = Quat::from_axis_angle(axis_of(j), turns[1])
-  let third = Quat::from_axis_angle(axis_of(k), turns[2])
+  let first = Quat::from_axis_angle(axis_of(i), turns.first)
+  let second = Quat::from_axis_angle(axis_of(j), turns.second)
+  let third = Quat::from_axis_angle(axis_of(k), turns.third)
   first * second * third
 }
 
 ///|
-/// The three angles that produce this rotation in `order`, in radians.
+/// The turn about each axis that produces this rotation in `order`, in radians.
 ///
-/// The inverse of `from_euler`, and read the same way: the components are the
-/// three turns in the order the order names them. Feeding the result back gives
-/// the rotation again, except at the two angles where the first and third turns
-/// collapse into one — the gimbal lock every three-angle convention has. There
-/// the first turn comes back as zero and the whole of it is carried by the
-/// third.
+/// The inverse of `from_euler`, and read the same way: the component of an axis
+/// is the turn about it, wherever in the order it comes. Aborts for the six
+/// orders that turn about one axis twice, whose two turns cannot both be written
+/// into one component; `to_euler_turns` returns them in order instead.
+///
+/// ```mbt check
+/// test {
+///   let turn = @f64.Quat::from_axis_angle(@f64.Vec3::unit_x(), @f64.quarter_pi)
+///   let angles = turn.to_euler(@f64.EulerOrder::Yxz)
+///   assert_true(@f64.approx(angles.x, @f64.quarter_pi))
+/// }
+/// ```
 pub fn Quat::to_euler(self : Quat, order : EulerOrder) -> Vec3 {
+  let (i, j, k) = order.axes()
+  if i == k {
+    abort(
+      "Quat::to_euler writes the angles by axis, and this order turns about one axis twice: use Quat::to_euler_turns",
+    )
+  }
+  let turns = self.to_euler_turns(order)
+  let zero : Double = 0.0
+  let angles = FixedArray::make(3, zero)
+  angles[i] = turns.first
+  angles[j] = turns.second
+  angles[k] = turns.third
+  { x: angles[0], y: angles[1], z: angles[2], }
+}
+
+///|
+/// The three turns that produce this rotation in `order`, in radians, in the
+/// order the order names them.
+///
+/// The inverse of `from_euler_turns`, for every one of the twelve orders.
+/// Feeding the result back gives the rotation again, except at the two angles
+/// where the first and third turns collapse into one — the gimbal lock every
+/// three-angle convention has. There the first turn comes back as zero and the
+/// whole of it is carried by the third.
+pub fn Quat::to_euler_turns(self : Quat, order : EulerOrder) -> Turns {
   let m = self.to_mat3()
   let (i, j, k) = order.axes()
   let one : Double = 1.0
@@ -223,7 +343,7 @@ pub fn Quat::to_euler(self : Quat, order : EulerOrder) -> Vec3 {
       angles[2] = @math.atan2(-parity * m.get(i, j), m.get(i, i))
     }
   }
-  { x: angles[0], y: angles[1], z: angles[2], }
+  Turns::new(angles[0], angles[1], angles[2])
 }
 
 ///|

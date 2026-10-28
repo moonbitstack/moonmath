@@ -257,6 +257,7 @@ pub fn Mat3::from_array(FixedArray[Double]) -> Self
 pub fn Mat3::from_axis_angle(Vec3, Double) -> Self
 pub fn Mat3::from_cols(Vec3, Vec3, Vec3) -> Self
 pub fn Mat3::from_euler(EulerOrder, Vec3) -> Self
+pub fn Mat3::from_euler_turns(EulerOrder, Turns) -> Self
 pub fn Mat3::from_mat4(Mat4) -> Self
 pub fn Mat3::from_quat(Quat) -> Self
 pub fn Mat3::from_rows(Vec3, Vec3, Vec3) -> Self
@@ -301,6 +302,7 @@ pub fn Mat4::from_array(FixedArray[Double]) -> Self
 pub fn Mat4::from_axis_angle(Vec3, Double) -> Self
 pub fn Mat4::from_cols(Vec4, Vec4, Vec4, Vec4) -> Self
 pub fn Mat4::from_euler(EulerOrder, Vec3) -> Self
+pub fn Mat4::from_euler_turns(EulerOrder, Turns) -> Self
 pub fn Mat4::from_mat3(Mat3) -> Self
 pub fn Mat4::from_quat(Quat) -> Self
 pub fn Mat4::from_rows(Vec4, Vec4, Vec4, Vec4) -> Self
@@ -377,6 +379,7 @@ pub fn Quat::dot(Self, Self) -> Double
 pub fn Quat::equal(Self, Self) -> Bool
 pub fn Quat::from_axis_angle(Vec3, Double) -> Self
 pub fn Quat::from_euler(EulerOrder, Vec3) -> Self
+pub fn Quat::from_euler_turns(EulerOrder, Turns) -> Self
 pub fn Quat::from_mat3(Mat3) -> Self
 pub fn Quat::from_mat4(Mat4) -> Self
 pub fn Quat::from_rotation_arc(Vec3, Vec3) -> Self
@@ -397,6 +400,7 @@ pub fn Quat::slerp(Self, Self, Double) -> Self
 pub fn Quat::to_array(Self) -> FixedArray[Double]
 pub fn Quat::to_axis_angle(Self) -> (Vec3, Double)
 pub fn Quat::to_euler(Self, EulerOrder) -> Vec3
+pub fn Quat::to_euler_turns(Self, EulerOrder) -> Turns
 pub fn Quat::to_mat3(Self) -> Mat3
 pub fn Quat::to_mat4(Self) -> Mat4
 pub fn Quat::to_repr(Self) -> @debug.Repr
@@ -528,6 +532,21 @@ pub fn Trs::to_repr(Self) -> @debug.Repr
 pub fn Trs::to_string(Self) -> String
 pub impl Show for Trs
 pub impl @debug.Debug for Trs
+
+pub(all) struct Turns {
+  first : Double
+  second : Double
+  third : Double
+} derive(Eq)
+pub fn Turns::approx(Self, Self, eps? : Double) -> Bool
+pub fn Turns::equal(Self, Self) -> Bool
+pub fn Turns::new(Double, Double, Double) -> Self
+pub fn Turns::not_equal(Self, Self) -> Bool
+pub fn Turns::output(Self, &Logger) -> Unit
+pub fn Turns::to_repr(Self) -> @debug.Repr
+pub fn Turns::to_string(Self) -> String
+pub impl Show for Turns
+pub impl @debug.Debug for Turns
 
 pub(all) struct Vec2 {
   x : Double

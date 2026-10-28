@@ -155,10 +155,17 @@ pub fn Mat4::from_quat(q : Quat) -> Mat4 {
 }
 
 ///|
-/// The rotation the three angles describe, taken in `order`, in radians. See
-/// `Quat::from_euler` for how the components are read.
+/// The rotation the three angles describe, taken in `order`, in radians, read by
+/// axis. See `Quat::from_euler` for how the components are read and which orders
+/// that reading cannot express.
 pub fn Mat4::from_euler(order : EulerOrder, angles : Vec3) -> Mat4 {
   Quat::from_euler(order, angles).to_mat4()
+}
+
+///|
+/// The rotation the three turns describe, in the order the order names them.
+pub fn Mat4::from_euler_turns(order : EulerOrder, turns : Turns) -> Mat4 {
+  Quat::from_euler_turns(order, turns).to_mat4()
 }
 
 ///|

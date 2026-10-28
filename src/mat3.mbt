@@ -117,12 +117,20 @@ pub fn Mat3::from_quat(q : Quat) -> Mat3 {
 }
 
 ///|
-/// The rotation the three angles describe, taken in `order`.
+/// The rotation the three angles describe, taken in `order`, read by axis.
 ///
-/// The angles are in radians, the first for the first axis the order names, the
-/// second for the second and the third for the third; see `Quat::from_euler`.
+/// The components are the turns about `x`, `y` and `z`, in radians, wherever in
+/// the order those axes turn up; see `Quat::from_euler`, which also says which
+/// orders this reading cannot express. `from_euler_turns` takes the turns in the
+/// order the order names them and covers all twelve.
 pub fn Mat3::from_euler(order : EulerOrder, angles : Vec3) -> Mat3 {
   Quat::from_euler(order, angles).to_mat3()
+}
+
+///|
+/// The rotation the three turns describe, in the order the order names them.
+pub fn Mat3::from_euler_turns(order : EulerOrder, turns : Turns) -> Mat3 {
+  Quat::from_euler_turns(order, turns).to_mat3()
 }
 
 ///|

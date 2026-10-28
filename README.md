@@ -37,7 +37,7 @@ Five decisions shape the whole surface, and all five are visible in every signat
 
 **Angles are radians.** Every angle in the library, in a signature or out of one, is in radians; `to_radians` and `to_degrees` convert at the edge, where the number came from a file or a human.
 
-**Operators are component-wise, and only between two values of the same type.** `a + b`, `a - b`, `a * b`, `a / b`, `-a` do what they look like on two vectors, two matrices or two quaternions. There is no `Vec3 * Float`, because a type can only carry one `*` here: scaling is `scale` and its inverse `divide`, and a matrix times a vector is `mul_vec4`, `mul_vec3` or `mul_vec2`.
+**Operators take two values of the same type.** `a + b`, `a - b`, `a * b`, `a / b`, `-a` do what they look like on two vectors, two matrices or two quaternions. MoonBit's arithmetic traits are declared `fn mul(Self, Self) -> Self`, so the two sides of an operator are the same type by definition: there is no `Vec3 * Float` to define, and no `Mat4 * Vec4` either. Scaling is `scale` and its inverse `divide`, and a matrix times a vector is `mul_vec4`, `mul_vec3` or `mul_vec2`.
 
 **A matrix that cannot be inverted says so.** `inverse` returns an `Option`, `None` for a singular matrix, and the caller decides whether that is an error. The operator `/` has nowhere to report it, so `a / b` aborts when `b` is singular; `inverse` is what to reach for when the case can happen.
 
@@ -59,12 +59,22 @@ let matrix = turn.to_mat3()
 // Euler angles, in one of the twelve orders, by name.
 let from_yaw = @moonmath.Quat::from_euler(
   @moonmath.EulerOrder::Zyx,
-  @moonmath.Vec3::new(@moonmath.to_radians(90.0), 0.0, 0.0),
+  @moonmath.Vec3::new(0.0, 0.0, @moonmath.to_radians(90.0)),
 )
 let back = from_yaw.to_euler(@moonmath.EulerOrder::Zyx)
 ```
 
-The three components of an Euler angle vector are the three turns in the order the order names them, not the turns about `x`, `y` and `z`: for `Zyx` the first component turns about `z`. An order that turns about two axes — `Xyx` and its siblings — has no other reading, since the first and third turn share an axis.
+The three components of an Euler angle vector are the turns about `x`, `y` and `z` — the component says which axis, wherever that axis turns up in the order. `Zyx` above turns about `z` first, and the turn is in the third component because it is a turn about `z`.
+
+Six of the twelve orders turn about one axis twice — `Xyx` and its siblings — and two turns about `x` cannot both live in the single component named after it. Those six have no by-axis form, so `from_euler` and `to_euler` abort on them; `from_euler_turns` and `to_euler_turns` take a `Turns` record whose fields are named after their place in the order, and cover all twelve:
+
+```moonbit
+let precessing = @moonmath.Quat::from_euler_turns(
+  @moonmath.EulerOrder::Xyx,
+  @moonmath.Turns::new(0.3, 1.2, -0.4),
+)
+let turns = precessing.to_euler_turns(@moonmath.EulerOrder::Xyx)
+```
 
 ### Scene graph transforms
 
@@ -213,9 +223,9 @@ What each type adds:
 | Type | Signature | Meaning |
 |:--|:--|:--|
 | `Mat2` | `from_scale(Vec2)`, `from_angle(radians)`, `to_angle() -> Float` | a scaling, a rotation, and the angle back out |
-| `Mat3` | `from_scale(Vec3)`, `from_axis_angle(axis, radians)`, `from_quat(q)`, `from_euler(order, angles)` | |
+| `Mat3` | `from_scale(Vec3)`, `from_axis_angle(axis, radians)`, `from_quat(q)`, `from_euler(order, angles)`, `from_euler_turns(order, turns)` | |
 | | `from_mat4(m)` | the upper-left block, without the translation |
-| `Mat4` | `from_scale(Vec3)`, `from_translation(Vec3)`, `from_axis_angle(axis, radians)`, `from_quat(q)`, `from_euler(order, angles)` | |
+| `Mat4` | `from_scale(Vec3)`, `from_translation(Vec3)`, `from_axis_angle(axis, radians)`, `from_quat(q)`, `from_euler(order, angles)`, `from_euler_turns(order, turns)` | |
 | | `from_mat3(m)` | the 3×3 with `w = 1` and no translation |
 | | `from_trs(trs)`, `to_trs() -> Trs?` | scale, then rotate, then move; and back |
 | | `transform_point(p) -> Vec3` | a point, divided by `w` when there is one |
@@ -233,7 +243,8 @@ What each type adds:
 |:--|:--|
 | `Quat::identity()`, `Quat::new(x, y, z, w)` | no rotation, and a raw one |
 | `Quat::from_axis_angle(axis, radians)` | the right-hand rule about an axis |
-| `Quat::from_euler(order, angles)`, `Quat::to_euler(order) -> Vec3` | three angles in, three angles out |
+| `Quat::from_euler(order, angles)`, `Quat::to_euler(order) -> Vec3` | the turns about `x`, `y` and `z`, by axis; aborts for an order that turns about one axis twice |
+| `Quat::from_euler_turns(order, turns)`, `Quat::to_euler_turns(order) -> Turns` | the same, with the three turns in order, for all twelve orders |
 | `Quat::from_rotation_arc(from, to)` | the shortest rotation between two directions |
 | `Quat::from_mat3(m)`, `Quat::from_mat4(m)` | out of a matrix |
 | `Quat::to_mat3()`, `Quat::to_mat4()` | into one |
@@ -243,7 +254,7 @@ What each type adds:
 | `Quat::slerp(other, t)`, `Quat::nlerp(other, t)` | at constant angular speed, and along the straight line |
 | `Quat::to_array()`, `is_finite()`, `approx(other, eps?)` | |
 
-`EulerOrder` names the twelve orders: `Xyz`, `Xzy`, `Yxz`, `Yzx`, `Zxy`, `Zyx`, `Xyx`, `Xzx`, `Yxy`, `Yzy`, `Zxz`, `Zyz`.
+`EulerOrder` names the twelve orders: `Xyz`, `Xzy`, `Yxz`, `Yzx`, `Zxy`, `Zyx`, `Xyx`, `Xzx`, `Yxy`, `Yzy`, `Zxz`, `Zyz`. `Turns` is the record of three turns in order — `first`, `second`, `third` — with `Turns::new` and `Turns::approx`.
 
 ### Affine transforms
 
