@@ -9,14 +9,15 @@ into `src/` (single precision) and `src/f64/` (double precision). A template
 named `foo.f32.mbt` is only emitted for single precision, which is how the
 integer vectors stay out of the double package.
 
-Run `moon fmt` afterwards: the output is formatted by the formatter, not here.
+Run `moon fmt` afterwards: the output is formatted by the formatter, not here,
+which is also why the check that the two packages are still what the template
+says is "regenerate, format, and see whether anything moved".
 
-Usage: python scripts/gen_math.py [--check]
+Usage: python scripts/gen_math.py
 """
 
 from __future__ import annotations
 
-import argparse
 import sys
 from pathlib import Path
 
@@ -99,16 +100,7 @@ def left_behind(text: str) -> list[str]:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--check",
-        action="store_true",
-        help="report differences instead of writing the files",
-    )
-    args = parser.parse_args()
-
     written = 0
-    stale: list[str] = []
     for template in sorted(TEMPLATE.glob("*.mbt")):
         name = template.name
         precisions = ["f32", "f64"]
@@ -131,16 +123,9 @@ def main() -> int:
             out = TARGETS[which] / name
             if out.exists() and out.read_text(encoding="utf-8") == text:
                 continue
-            stale.append(str(out.relative_to(ROOT)))
-            if not args.check:
-                out.write_text(text, encoding="utf-8", newline="\n")
-                written += 1
+            out.write_text(text, encoding="utf-8", newline="\n")
+            written += 1
 
-    if args.check:
-        if stale:
-            print("out of date:", *stale, sep="\n  ")
-            return 1
-        return 0
     if written:
         print(f"generated {written} file(s)")
     return 0
