@@ -1,0 +1,14 @@
+// Browser bridge for the workshop page: the library compiled to JavaScript,
+// called from the page, so the page shows this library's arithmetic and not a
+// second implementation of it. Build it with
+//
+//     moon build --target js --release src/examples/web
+//
+// and the page reads `globalThis.moonmath.project(...)`.
+pkgtype(kind: "executable")
+
+supported_targets = "js"
+
+import {
+  "moonbitstack/moonmath",
+}
