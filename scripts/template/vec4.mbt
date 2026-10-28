@@ -10,9 +10,13 @@
 ///
 /// Values are immutable; every operation returns a new one.
 pub(all) struct Vec4 {
+  /// The x component: east.
   x : {{S}}
+  /// The y component: north.
   y : {{S}}
+  /// The z component: towards the viewer.
   z : {{S}}
+  /// The fourth component: one for a point, zero for a direction.
   w : {{S}}
 } derive(Eq)
 

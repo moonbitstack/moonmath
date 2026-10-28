@@ -12,7 +12,9 @@
 ///
 /// Values are immutable.
 pub(all) struct Rect {
+  /// The corner with the smallest coordinate on each axis.
   origin : Vec2
+  /// How far it extends along each axis; never negative.
   size : Vec2
 } derive(Eq)
 

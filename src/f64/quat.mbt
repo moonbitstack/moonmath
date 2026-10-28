@@ -16,17 +16,29 @@
 /// a convention of the file format or the editor that produced the angles, not
 /// of the arithmetic.
 pub(all) enum EulerOrder {
+  /// Turns about x, then y, then z: the family that locks at a quarter turn of y.
   Xyz
+  /// Turns about x, then z, then y.
   Xzy
+  /// Turns about y, then x, then z.
   Yxz
+  /// Turns about y, then z, then x.
   Yzx
+  /// Turns about z, then x, then y.
   Zxy
+  /// Turns about z, then y, then x: yaw, pitch and roll, in that order.
   Zyx
+  /// Turns about x, then y, then x again: the first and third share an axis.
   Xyx
+  /// Turns about x, then z, then x again.
   Xzx
+  /// Turns about y, then x, then y again.
   Yxy
+  /// Turns about y, then z, then y again.
   Yzy
+  /// Turns about z, then x, then z again.
   Zxz
+  /// Turns about z, then y, then z again.
   Zyz
 } derive(Eq, Debug)
 
@@ -96,9 +108,13 @@ fn cycle_parity(first : Int32, second : Int32, third : Int32) -> Double {
 /// composes an arbitrary number of them — `rotate`, `to_mat3`, `slerp` — says
 /// when it assumes unit length.
 pub(all) struct Quat {
+  /// The x part of the axis, scaled by the sine of half the angle.
   x : Double
+  /// The y part of the axis, scaled by the sine of half the angle.
   y : Double
+  /// The z part of the axis, scaled by the sine of half the angle.
   z : Double
+  /// The cosine of half the angle.
   w : Double
 } derive(Eq)
 
@@ -151,8 +167,11 @@ pub fn Quat::from_axis_angle(axis : Vec3, radians : Double) -> Quat {
 /// not about the third axis; naming the slots after their place in the order
 /// says exactly what they are.
 pub(all) struct Turns {
+  /// The turn about the first axis the order names.
   first : Double
+  /// The turn about the second axis the order names.
   second : Double
+  /// The turn about the third axis the order names.
   third : Double
 } derive(Eq)
 

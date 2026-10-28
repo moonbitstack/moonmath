@@ -13,6 +13,7 @@
 /// The planes are built for a matrix whose depth range is `0..1`. For an
 /// OpenGL-style matrix, whose near plane sits at -1, use `from_matrix_gl`.
 pub struct Frustum {
+  /// The six planes, in the order left, right, bottom, top, near, far.
   planes : FixedArray[Plane]
 }
 

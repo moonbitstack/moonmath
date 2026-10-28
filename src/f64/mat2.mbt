@@ -11,7 +11,9 @@
 ///
 /// Values are immutable.
 pub(all) struct Mat2 {
+  /// The first column.
   c0 : Vec2
+  /// The second column.
   c1 : Vec2
 } derive(Eq)
 

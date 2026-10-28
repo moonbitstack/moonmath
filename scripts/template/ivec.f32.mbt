@@ -15,7 +15,9 @@
 /// Division is integer division and truncates towards zero, and dividing by
 /// zero aborts, as it does for `Int` itself.
 pub(all) struct IVec2 {
+  /// The x component.
   x : Int
+  /// The y component.
   y : Int
 } derive(Eq, Hash)
 
@@ -166,8 +168,11 @@ pub extend IVec2 with Debug::{to_repr}
 ///|
 /// Three whole numbers: a cell in a voxel grid.
 pub(all) struct IVec3 {
+  /// The x component.
   x : Int
+  /// The y component.
   y : Int
+  /// The z component.
   z : Int
 } derive(Eq, Hash)
 
@@ -316,9 +321,13 @@ pub extend IVec3 with Debug::{to_repr}
 ///|
 /// Four whole numbers.
 pub(all) struct IVec4 {
+  /// The x component.
   x : Int
+  /// The y component.
   y : Int
+  /// The z component.
   z : Int
+  /// The fourth component.
   w : Int
 } derive(Eq, Hash)
 
@@ -508,7 +517,9 @@ pub extend IVec4 with Debug::{to_repr}
 /// There is no `Neg` here for the obvious reason: a negative size is not a
 /// size. Subtraction is present and wraps, as `UInt` subtraction does.
 pub(all) struct UVec2 {
+  /// The x component.
   x : UInt
+  /// The y component.
   y : UInt
 } derive(Eq, Hash)
 
@@ -635,8 +646,11 @@ pub extend UVec2 with Debug::{to_repr}
 ///|
 /// Three unsigned whole numbers.
 pub(all) struct UVec3 {
+  /// The x component.
   x : UInt
+  /// The y component.
   y : UInt
+  /// The z component.
   z : UInt
 } derive(Eq, Hash)
 
@@ -765,9 +779,13 @@ pub extend UVec3 with Debug::{to_repr}
 ///|
 /// Four unsigned whole numbers.
 pub(all) struct UVec4 {
+  /// The x component.
   x : UInt
+  /// The y component.
   y : UInt
+  /// The z component.
   z : UInt
+  /// The fourth component.
   w : UInt
 } derive(Eq, Hash)
 

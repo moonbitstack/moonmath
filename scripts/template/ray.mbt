@@ -32,7 +32,9 @@ fn component3(v : Vec3, index : Int) -> {{S}} {
 ///
 /// Values are immutable.
 pub(all) struct Ray2 {
+  /// Where the ray starts.
   origin : Vec2
+  /// Which way it goes. The intersections report `t` in units of this vector, so a unit direction makes `t` a distance.
   direction : Vec2
 } derive(Eq)
 
@@ -190,7 +192,9 @@ pub extend Ray2 with Debug::{to_repr}
 ///
 /// Values are immutable.
 pub(all) struct Ray3 {
+  /// Where the ray starts.
   origin : Vec3
+  /// Which way it goes. The intersections report `t` in units of this vector, so a unit direction makes `t` a distance.
   direction : Vec3
 } derive(Eq)
 

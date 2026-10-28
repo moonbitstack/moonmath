@@ -12,8 +12,11 @@
 /// The operators take two vectors of the same type. Scalar scaling is `scale`
 /// and `divide`, not `*` and `/`, which belong to the component-wise product.
 pub(all) struct Vec3 {
+  /// The x component: east.
   x : Double
+  /// The y component: north.
   y : Double
+  /// The z component: towards the viewer.
   z : Double
 } derive(Eq)
 

@@ -14,7 +14,9 @@
 /// because a value can only carry one `Mul` implementation here: scalar scaling
 /// is `scale`, its inverse `divide`.
 pub(all) struct Vec2 {
+  /// The x component: east.
   x : Float
+  /// The y component: north.
   y : Float
 } derive(Eq)
 

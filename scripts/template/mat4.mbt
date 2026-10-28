@@ -12,9 +12,13 @@
 ///
 /// Values are immutable.
 pub(all) struct Mat4 {
+  /// The first column.
   c0 : Vec4
+  /// The second column.
   c1 : Vec4
+  /// The third column.
   c2 : Vec4
+  /// The fourth column: the translation, for an affine matrix.
   c3 : Vec4
 } derive(Eq)
 
@@ -29,8 +33,11 @@ pub extend Mat4 with Eq::{equal, not_equal}
 /// way, and what a scene graph stores per node — the three pieces are what an
 /// animation edits, and a decomposition keeps them editable.
 pub(all) struct Trs {
+  /// Where the frame sits.
   translation : Vec3
+  /// How it is turned.
   rotation : Quat
+  /// How far it is stretched, per axis.
   scale : Vec3
 } derive(Eq)
 

@@ -12,7 +12,9 @@
 ///
 /// Values are immutable.
 pub(all) struct Affine2 {
+  /// The part that turns and scales: a 2×2 matrix.
   linear : Mat2
+  /// The part that moves.
   translation : Vec2
 } derive(Eq)
 
@@ -184,7 +186,9 @@ pub extend Affine2 with Debug::{to_repr}
 ///
 /// Values are immutable.
 pub(all) struct Affine3 {
+  /// The part that turns and scales: a 3×3 matrix.
   linear : Mat3
+  /// The part that moves.
   translation : Vec3
 } derive(Eq)
 

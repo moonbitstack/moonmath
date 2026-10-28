@@ -11,7 +11,9 @@
 ///
 /// Values are immutable.
 pub(all) struct Plane {
+  /// The unit normal: which side is out.
   normal : Vec3
+  /// How far the plane is from the origin, measured along the normal.
   distance : {{S}}
 } derive(Eq)
 
@@ -125,7 +127,9 @@ pub extend Plane with Debug::{to_repr}
 ///
 /// Values are immutable.
 pub(all) struct Sphere {
+  /// The centre.
   center : Vec3
+  /// The radius.
   radius : {{S}}
 } derive(Eq)
 
@@ -209,8 +213,11 @@ pub extend Sphere with Debug::{to_repr}
 ///
 /// Values are immutable.
 pub(all) struct Triangle {
+  /// The first corner.
   a : Vec3
+  /// The second corner.
   b : Vec3
+  /// The third corner.
   c : Vec3
 } derive(Eq)
 

@@ -12,7 +12,9 @@
 ///
 /// Values are immutable.
 pub(all) struct Aabb2 {
+  /// The corner with the smallest coordinate on each axis.
   min : Vec2
+  /// The corner with the largest coordinate on each axis.
   max : Vec2
 } derive(Eq)
 
@@ -195,7 +197,9 @@ pub extend Aabb2 with Debug::{to_repr}
 ///
 /// Values are immutable.
 pub(all) struct Aabb3 {
+  /// The corner with the smallest coordinate on each axis.
   min : Vec3
+  /// The corner with the largest coordinate on each axis.
   max : Vec3
 } derive(Eq)
 
