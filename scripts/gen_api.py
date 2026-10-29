@@ -637,6 +637,7 @@ TEMPLATE = """<!DOCTYPE html>
       rel="stylesheet"
     />
     <link rel="stylesheet" href="assets/paper.css?v=1" />
+    <script type="module" src="assets/scrollbar.js"></script>
   </head>
   <body>
     <a class="skip" href="#main">Skip to the text</a>
