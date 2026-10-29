@@ -1,4 +1,4 @@
-name: Pages
+name: Docs
 
 # Publish the site: the frontispiece, the guide, the generated lexicon and the
 # workshop. The reference is regenerated here and the build fails if the
@@ -13,7 +13,7 @@ on:
       - "docs/**"
       - "src/**"
       - "scripts/**"
-      - ".github/workflows/pages.yml"
+      - ".github/workflows/docs.yml"
   workflow_dispatch:
 
 permissions:
