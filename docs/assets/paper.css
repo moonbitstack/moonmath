@@ -1771,11 +1771,6 @@ figure.plate figcaption .no {
 
 /* ---------- the scrollbar, in ink ---------- */
 
-* {
-  scrollbar-width: thin;
-  scrollbar-color: color-mix(in srgb, var(--ink-faint) 55%, transparent) transparent;
-}
-
 @supports not selector(::-webkit-scrollbar) {
   * {
     scrollbar-width: thin;
@@ -1948,4 +1943,13 @@ figure.plate figcaption .no {
   .mark-sub {
     transform: none;
   }
+}
+
+/* The page scroll bar shows while the page moves or under the pointer and
+   hides a moment after; it keeps its place, so nothing shifts. */
+@supports selector(::-webkit-scrollbar) {
+  html:not(.scrolling)::-webkit-scrollbar-thumb { background: transparent; border-color: transparent; box-shadow: none; }
+}
+@supports not selector(::-webkit-scrollbar) {
+  html:not(.scrolling) { scrollbar-color: transparent transparent; }
 }
