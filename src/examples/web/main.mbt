@@ -3,7 +3,8 @@
 /// stored on `globalThis.moonmath`.
 extern "js" fn expose(
   project : (Float, Float, Float, Float, Float) -> String,
-) -> Unit = "function(project){ globalThis.moonmath = { project: project }; }"
+  special_curve : () -> String,
+) -> Unit = "function(project, curve){ globalThis.moonmath = { project: project, specialCurve: curve }; }"
 
 ///|
 /// A number as JavaScript reads it: enough digits to see the value, and no
@@ -118,6 +119,37 @@ fn project(
 }
 
 ///|
+/// The error function and its complement over `-3..3`, as JSON the page plots.
+///
+/// The page draws the curve; the numbers come from this library's `special`
+/// package compiled to JavaScript, so the picture is the function itself and not
+/// a second implementation of it.
+fn special_curve() -> String {
+  let steps = 121
+  let from : Float = -3.0
+  let to : Float = 3.0
+  let last = Float::from_double((steps - 1).to_double())
+  let mut xs = ""
+  let mut raised = ""
+  let mut lowered = ""
+  for i in 0..<steps {
+    let t = Float::from_double(i.to_double()) / last
+    let x = from + (to - from) * t
+    let up = @special.erf(x.to_double())
+    let down = @special.erfc(x.to_double())
+    if i > 0 {
+      xs = xs + ","
+      raised = raised + ","
+      lowered = lowered + ","
+    }
+    xs = xs + number(x)
+    raised = raised + number(Float::from_double(up))
+    lowered = lowered + number(Float::from_double(down))
+  }
+  "{\"x\":[" + xs + "],\"erf\":[" + raised + "],\"erfc\":[" + lowered + "]}"
+}
+
+///|
 fn main {
-  expose(project)
+  expose(project, special_curve)
 }

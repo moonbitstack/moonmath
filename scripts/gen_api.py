@@ -100,6 +100,10 @@ GROUPS = [
 # the same names rather than a second copy of the same sentences.
 SECOND = ("moonmath/f64", "src/f64")
 
+# The special-function subpackage, at `Double`, has a section of its own after
+# the second precision.
+SPECIAL = ("moonmath/special", "src/special")
+
 # Methods that a `derive` or an operator implementation writes.
 GENERATED = {
     "add",
@@ -634,6 +638,23 @@ def render_second_hand():
     return data, "".join(rows)
 
 
+def render_special():
+    """The special-function subpackage: one section, its functions in order."""
+    data = load(SPECIAL[0], SPECIAL[1])
+    docs = data["docs"]
+    missing = []
+    entries = []
+    for item in sorted(data["values"], key=lambda entry: entry["name"]):
+        entries.append(render_value(data["name"], item, docs, missing))
+    section = (
+        '<section id="special"><div class="group-head"><h2>Special functions</h2>'
+        '<span class="count">%d</span></div>'
+        '<p class="group-blurb">%s</p>%s</section>'
+        % (len(entries), inline(data["summary"]), "".join(entries))
+    )
+    return missing, section
+
+
 TEMPLATE = """<!DOCTYPE html>
 <html lang="en" data-theme="light">
   <head>
@@ -742,6 +763,7 @@ TEMPLATE = """<!DOCTYPE html>
             </p>
             {{SECOND}}
           </section>
+          {{SPECIAL}}
         </div>
       </div>
     </main>
@@ -787,6 +809,8 @@ TEMPLATE = """<!DOCTYPE html>
 def main():
     data, sections, missing = render_package(("moonmath", "src"))
     second, second_body = render_second_hand()
+    special_missing, special_body = render_special()
+    missing = missing + special_missing
 
     if missing:
         for item in sorted(set(missing)):
@@ -806,12 +830,15 @@ def main():
             % (title.lower().replace(" ", "-"), html.escape(title), links)
         )
     rail.append('<div class="group"><a href="#f64">moonmath/f64</a></div>')
+    rail.append('<div class="group"><a href="#special">Special functions</a></div>')
 
     count = sum(section.count('<article class="entry"') for section in sections)
+    count += special_body.count('<article class="entry"')
     page = (
         TEMPLATE.replace("{{RAIL}}", "".join(rail))
         .replace("{{SECTIONS}}", "".join(sections))
         .replace("{{SECOND}}", second_body)
+        .replace("{{SPECIAL}}", special_body)
         .replace("{{SECOND_SUMMARY}}", inline(second["summary"]))
         .replace("{{COUNT}}", str(count))
     )

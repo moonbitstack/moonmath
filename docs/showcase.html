@@ -245,6 +245,40 @@ let ndc = view_projection.transform_point(corner)</code></pre>
           </p>
         </aside>
       </section>
+
+      <section class="page" id="special-curve">
+        <div class="column">
+          <div class="sec-head">
+            <div class="kicker"><span>§ 3</span></div>
+            <h2>A special function<em>, drawn from the library</em></h2>
+          </div>
+
+          <p>
+            The error function <code>erf(x)</code> and its complement
+            <code>erfc(x)</code>, sampled by <code>moonmath/special</code>
+            compiled to JavaScript and drawn here as ink. The page plots the
+            numbers the library returned, over <code>-3..3</code>.
+          </p>
+
+          <canvas
+            data-special-curve
+            aria-label="The error function and its complement over -3 to 3, as computed by the library."
+            style="width: 100%; aspect-ratio: 2 / 1; display: block; border: 1px solid var(--rule); border-radius: 8px; background: var(--paper-lift)"
+          ></canvas>
+
+          <p class="note" style="margin-top: 0.6rem">
+            The solid line is <code>erf</code>, from -1 to 1; the faint line is
+            <code>erfc</code>, its mirror about one half.
+          </p>
+        </div>
+
+        <aside class="margin">
+          <p class="note">
+            Both values come from one call into the compiled library; the page
+            only decides where the ink goes.
+          </p>
+        </aside>
+      </section>
     </main>
 
     <footer class="colophon">
@@ -290,5 +324,6 @@ let ndc = view_projection.transform_point(corner)</code></pre>
     <script src="assets/site.js?v=1" defer></script>
     <script src="assets/moonmath.js" defer></script>
     <script src="assets/bench.js?v=1" defer></script>
+    <script src="assets/special-curve.js?v=1" defer></script>
   </body>
 </html>

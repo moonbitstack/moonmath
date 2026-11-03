@@ -681,10 +681,125 @@ false</code></pre>
         </aside>
       </section>
 
-      <section class="page" id="double">
+      <section class="page" id="beyond">
         <div class="column">
           <div class="sec-head">
             <div class="kicker"><span>§ 8</span></div>
+            <h2>Beyond the fundamentals<em>: half, shear, colour, intervals and sampling</em></h2>
+          </div>
+
+          <p>
+            Five more shapes sit beside the vectors and the matrices, each
+            answering a question the fundamentals do not. A <code>Half</code> is a
+            sixteen-bit float, the storage a packed vertex uses. A
+            <code>Shear</code> is the off-diagonal linear map a skew is. A
+            <code>Color3</code> carries the arithmetic of a blend, and
+            <code>rgb_to_hsv</code> turns it into the hue, saturation and value an
+            editor shows. An <code>Interval</code> is a one-dimensional range, and
+            a <code>Line3</code> is the infinite line a construction axis or a
+            normal is.
+          </p>
+
+          <div class="slip">
+            <div class="slip-head">
+              <span class="label">listing 15 · a packed vertex, a skew, a colour, a range, a line</span>
+              <button class="copy" type="button" data-copy>copy</button>
+            </div>
+            <pre><code>println(@moonmath.Half::from_float(1.5))
+println(@moonmath.Shear::new(0.3, 0.0, 0.0).to_mat3().get(0, 1))
+println(@moonmath.rgb_to_hsv(@moonmath.Color3::new(1.0, 0.0, 0.0)))
+println(
+  @moonmath.Interval::new(0.0, 1.0).union(@moonmath.Interval::new(2.0, 3.0)),
+)
+let axis = @moonmath.Line3::new(@moonmath.Vec3::zero(), @moonmath.Vec3::unit_x())
+println(axis.distance_to_point(@moonmath.Vec3::new(3.0, 4.0, 0.0)))
+println(@moonmath.Vec3::random_on_sphere(0.5, 0.0))</code></pre>
+          </div>
+
+          <div class="slip output">
+            <div class="slip-head"><span class="label">printed</span></div>
+            <pre><code>Half(1.5)
+0.3
+Color3(0, 1, 1)
+Interval(0, 3)
+4
+Vec3(1, 0, 0)</code></pre>
+          </div>
+
+          <p>
+            The sampling functions take the two or three uniform values in
+            <code>[0, 1)</code> a caller's random source provides, and return the
+            point with the right distribution. Nothing here owns a generator, so
+            the same call with the same values always returns the same point.
+          </p>
+        </div>
+
+        <aside class="margin">
+          <p class="note">
+            <code>rgb_to_hsv</code> returns the hue as a fraction of a turn, so
+            <code>Color3(0, 1, 1)</code> is red at full saturation and value.
+          </p>
+        </aside>
+      </section>
+
+      <section class="page" id="special">
+        <div class="column">
+          <div class="sec-head">
+            <div class="kicker"><span>§ 9</span></div>
+            <h2>Special functions<em>, in double</em></h2>
+          </div>
+
+          <p>
+            <code>moonbitstack/moonmath/special</code> is a second package, at
+            <code>Double</code>, for the functions a probability, a physics or a
+            numerical caller reaches for: the gamma and beta families, the error
+            function, the complete elliptic integrals and the Riemann zeta.
+          </p>
+
+          <div class="slip">
+            <div class="slip-head">
+              <span class="label">listing 16 · the gamma, the error function, an elliptic integral, the zeta</span>
+              <button class="copy" type="button" data-copy>copy</button>
+            </div>
+            <pre><code>println(@special.gamma(0.5))    // the square root of pi
+println(@special.erf(1.0))
+println(@special.erfc(2.0))
+println(@special.ellipk(0.5))
+println(@special.zeta(2.0))     // pi squared over six
+println(@special.beta(2.0, 3.0))</code></pre>
+          </div>
+
+          <div class="slip output">
+            <div class="slip-head"><span class="label">printed</span></div>
+            <pre><code>1.7724538509055159
+0.8427007929497147
+0.004677734981047262
+1.8540746773013717
+1.6449340668482266
+0.08333333333333355</code></pre>
+          </div>
+
+          <p>
+            The elliptic integrals come from the arithmetic-geometric mean, whose
+            convergence is quadratic, and the zeta from Euler-Maclaurin. The values
+            above are the double-precision results, checked against an independent
+            reference rather than a second copy of the same formula.
+          </p>
+        </div>
+
+        <aside class="margin">
+          <p class="note">
+            <code>gamma(0.5)</code> is the square root of pi, the normalising
+            constant behind the normal distribution; <code>zeta(2)</code> is
+            <code>pi²/6</code>.
+          </p>
+        </aside>
+      </section>
+
+      <section class="page" id="double">
+        <div class="column">
+          <div class="sec-head">
+            <div class="kicker"><span>§ 10</span></div>
             <h2>The same library, in double</h2>
           </div>
 
@@ -697,7 +812,7 @@ false</code></pre>
 
           <div class="slip">
             <div class="slip-head">
-              <span class="label">listing 15 · a millimetre, at a billion metres</span>
+              <span class="label">listing 17 · a millimetre, at a billion metres</span>
               <button class="copy" type="button" data-copy>copy</button>
             </div>
             <pre><code>let far = @f64.Vec3::new(1.0e9, 0.0, 0.0)

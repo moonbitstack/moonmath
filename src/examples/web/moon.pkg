@@ -11,4 +11,5 @@ supported_targets = "js"
 
 import {
   "moonbitstack/moonmath",
+  "moonbitstack/moonmath/special",
 }
