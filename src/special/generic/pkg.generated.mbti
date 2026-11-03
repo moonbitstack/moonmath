@@ -1,0 +1,39 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonbitstack/moonmath/special/generic"
+
+import {
+  "moonbitstack/moonmath/special/arb",
+}
+
+// Values
+pub fn bigfloat_ops(Int32) -> Ops[@arb.BigFloat]
+
+pub fn double_ops() -> Ops[Double]
+
+pub fn[T] erf(T, Ops[T]) -> T
+
+// Errors
+
+// Types and methods
+pub struct Ops[T] {
+  zero : T
+  one : T
+  from_int : (Int32) -> T
+  add : (T, T) -> T
+  sub : (T, T) -> T
+  mul : (T, T) -> T
+  div : (T, T) -> T
+  neg : (T) -> T
+  abs : (T) -> T
+  sqrt : (T) -> T
+  exp : (T) -> T
+  ln : (T) -> T
+  pi : T
+  lt : (T, T) -> Bool
+  is_zero : (T) -> Bool
+  to_double : (T) -> Double
+}
+
+// Type aliases
+
+// Traits
