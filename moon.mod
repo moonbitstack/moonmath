@@ -37,11 +37,14 @@ keywords = [
   "random-sampling",
   "special-functions",
   "gamma",
+  "bessel",
+  "hypergeometric",
   "elliptic-integral",
   "zeta",
+  "arbitrary-precision",
   "moonbit",
 ]
 
-description = "Vectors, matrices, quaternions and geometry for MoonBit: column-major, right-handed, and ready to copy into a GPU buffer."
+description = "Vectors, matrices, quaternions and geometry for MoonBit: column-major, right-handed, and ready to copy into a GPU buffer, with a special-function subpackage in double and arbitrary precision."
 
 source = "src"

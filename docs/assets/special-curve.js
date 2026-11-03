@@ -8,12 +8,7 @@
     return value || fallback;
   }
 
-  function draw() {
-    var canvas = document.querySelector("[data-special-curve]");
-    if (!canvas || !window.moonmath || !window.moonmath.specialCurve) {
-      return;
-    }
-    var data = JSON.parse(window.moonmath.specialCurve());
+  function panel(canvas, xs, series, range, xTicks, yTicks) {
     var ratio = window.devicePixelRatio || 1;
     var rect = canvas.getBoundingClientRect();
     var width = rect.width;
@@ -33,16 +28,12 @@
     var pad = { left: 34, right: 14, top: 16, bottom: 28 };
     var plotWidth = width - pad.left - pad.right;
     var plotHeight = height - pad.top - pad.bottom;
-    var xMin = -3;
-    var xMax = 3;
-    var yMin = -1.2;
-    var yMax = 2.2;
 
     function sx(x) {
-      return pad.left + ((x - xMin) / (xMax - xMin)) * plotWidth;
+      return pad.left + ((x - range.xMin) / (range.xMax - range.xMin)) * plotWidth;
     }
     function sy(y) {
-      return pad.top + ((yMax - y) / (yMax - yMin)) * plotHeight;
+      return pad.top + ((range.yMax - y) / (range.yMax - range.yMin)) * plotHeight;
     }
 
     ctx.strokeStyle = rule;
@@ -59,19 +50,24 @@
     ctx.fillStyle = faint;
     ctx.font = "12px 'Courier Prime', monospace";
     ctx.textAlign = "center";
-    ctx.fillText("-3", sx(-3), height - 9);
-    ctx.fillText("0", sx(0), height - 9);
-    ctx.fillText("3", sx(3), height - 9);
+    for (var t = 0; t < xTicks.length; t++) {
+      ctx.fillText(xTicks[t][0], sx(xTicks[t][1]), height - 9);
+    }
     ctx.textAlign = "right";
-    ctx.fillText("1", pad.left - 6, sy(1) + 4);
-    ctx.fillText("0", pad.left - 6, sy(0) + 4);
+    for (var v = 0; v < yTicks.length; v++) {
+      ctx.fillText(yTicks[v][0], pad.left - 6, sy(yTicks[v][1]) + 4);
+    }
 
-    function line(values, color, weight) {
-      ctx.strokeStyle = color;
-      ctx.lineWidth = weight;
+    for (var s = 0; s < series.length; s++) {
+      var values = series[s].values;
+      ctx.strokeStyle = series[s].faint ? faint : ink;
+      ctx.lineWidth = series[s].faint ? 1.4 : 1.7;
       ctx.beginPath();
       for (var i = 0; i < values.length; i++) {
-        var px = sx(data.x[i]);
+        if (values[i] === null) {
+          continue;
+        }
+        var px = sx(xs[i]);
         var py = sy(values[i]);
         if (i === 0) {
           ctx.moveTo(px, py);
@@ -81,9 +77,52 @@
       }
       ctx.stroke();
     }
+  }
 
-    line(data.erf, ink, 1.7);
-    line(data.erfc, faint, 1.4);
+  function draw() {
+    if (!window.moonmath || !window.moonmath.specialCurve) {
+      return;
+    }
+    var data = JSON.parse(window.moonmath.specialCurve());
+
+    var errorCanvas = document.querySelector("[data-special-curve]");
+    if (errorCanvas) {
+      panel(
+        errorCanvas,
+        data.x,
+        [{ values: data.erf }, { values: data.erfc, faint: true }],
+        { xMin: -3, xMax: 3, yMin: -1.2, yMax: 2.2 },
+        [
+          ["-3", -3],
+          ["0", 0],
+          ["3", 3],
+        ],
+        [
+          ["2", 2],
+          ["1", 1],
+          ["0", 0],
+        ]
+      );
+    }
+
+    var drumCanvas = document.querySelector("[data-bessel-curve]");
+    if (drumCanvas) {
+      panel(
+        drumCanvas,
+        data.drumX,
+        [{ values: data.j0 }, { values: data.j1, faint: true }],
+        { xMin: 0, xMax: 20, yMin: -0.7, yMax: 1.15 },
+        [
+          ["0", 0],
+          ["10", 10],
+          ["20", 20],
+        ],
+        [
+          ["1", 1],
+          ["0", 0],
+        ]
+      );
+    }
   }
 
   function ready() {

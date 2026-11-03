@@ -270,6 +270,26 @@ let ndc = view_projection.transform_point(corner)</code></pre>
             The solid line is <code>erf</code>, from -1 to 1; the faint line is
             <code>erfc</code>, its mirror about one half.
           </p>
+
+          <p>
+            The two lowest modes of a circular drum, <code>J_0</code> and
+            <code>J_1</code>, over <code>0..20</code>. They are the same call
+            into the same package, and the curve crosses the point where the
+            series gives way to the asymptotic expansion without a seam — which
+            is the whole reason for choosing between them by argument rather than
+            by taste.
+          </p>
+
+          <canvas
+            data-bessel-curve
+            aria-label="The Bessel functions J0 and J1 over 0 to 20, as computed by the library."
+            style="width: 100%; aspect-ratio: 2 / 1; display: block; border: 1px solid var(--rule); border-radius: 8px; background: var(--paper-lift)"
+          ></canvas>
+
+          <p class="note" style="margin-top: 0.6rem">
+            <code>J_0</code> is the solid line, <code>J_1</code> the faint one;
+            the zeros are where a struck drum has no motion at that radius.
+          </p>
         </div>
 
         <aside class="margin">

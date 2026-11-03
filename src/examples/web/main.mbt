@@ -119,22 +119,27 @@ fn project(
 }
 
 ///|
-/// The error function and its complement over `-3..3`, as JSON the page plots.
+/// The curves the page plots, as JSON.
 ///
-/// The page draws the curve; the numbers come from this library's `special`
-/// package compiled to JavaScript, so the picture is the function itself and not
-/// a second implementation of it.
+/// The page draws them; the numbers come from this library's `special` package
+/// compiled to JavaScript, so the picture is the function itself and not a
+/// second implementation of it.
+///
+/// Two panels: the error function against its complement over `-3..3`, and the
+/// two lowest modes of a circular drum, `J_0` and `J_1`, over `0..20` — the
+/// second one is where the Bessel series gives way to the asymptotic expansion,
+/// and the curve does not know.
 fn special_curve() -> String {
-  let steps = 121
-  let from : Float = -3.0
-  let to : Float = 3.0
-  let last = Float::from_double((steps - 1).to_double())
+  let erf_steps = 121
+  let erf_from : Float = -3.0
+  let erf_to : Float = 3.0
+  let last_erf = Float::from_double((erf_steps - 1).to_double())
   let mut xs = ""
   let mut raised = ""
   let mut lowered = ""
-  for i in 0..<steps {
-    let t = Float::from_double(i.to_double()) / last
-    let x = from + (to - from) * t
+  for i in 0..<erf_steps {
+    let t = Float::from_double(i.to_double()) / last_erf
+    let x = erf_from + (erf_to - erf_from) * t
     let up = @special.erf(x.to_double())
     let down = @special.erfc(x.to_double())
     if i > 0 {
@@ -146,7 +151,38 @@ fn special_curve() -> String {
     raised = raised + number(Float::from_double(up))
     lowered = lowered + number(Float::from_double(down))
   }
-  "{\"x\":[" + xs + "],\"erf\":[" + raised + "],\"erfc\":[" + lowered + "]}"
+  let drum_steps = 241
+  let drum_to : Float = 20.0
+  let last_drum = Float::from_double((drum_steps - 1).to_double())
+  let mut drum_xs = ""
+  let mut zeroth = ""
+  let mut first = ""
+  for i in 0..<drum_steps {
+    let x = drum_to * (Float::from_double(i.to_double()) / last_drum)
+    let zero = @special.bessel_j(0.0, x.to_double())
+    let one = @special.bessel_j(1.0, x.to_double())
+    if i > 0 {
+      drum_xs = drum_xs + ","
+      zeroth = zeroth + ","
+      first = first + ","
+    }
+    drum_xs = drum_xs + number(x)
+    zeroth = zeroth + number(Float::from_double(zero))
+    first = first + number(Float::from_double(one))
+  }
+  "{\"x\":[" +
+  xs +
+  "],\"erf\":[" +
+  raised +
+  "],\"erfc\":[" +
+  lowered +
+  "],\"drumX\":[" +
+  drum_xs +
+  "],\"j0\":[" +
+  zeroth +
+  "],\"j1\":[" +
+  first +
+  "]}"
 }
 
 ///|

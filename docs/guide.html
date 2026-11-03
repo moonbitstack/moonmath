@@ -746,44 +746,73 @@ Vec3(1, 0, 0)</code></pre>
         <div class="column">
           <div class="sec-head">
             <div class="kicker"><span>§ 9</span></div>
-            <h2>Special functions<em>, in double</em></h2>
+            <h2>Special functions<em>, written once</em></h2>
           </div>
 
           <p>
-            <code>moonbitstack/moonmath/special</code> is a second package, at
-            <code>Double</code>, for the functions a probability, a physics or a
-            numerical caller reaches for: the gamma and beta families, the error
-            function, the complete elliptic integrals and the Riemann zeta.
+            <code>moonbitstack/moonmath/special</code> is a second package for the
+            functions a probability, a physics or a numerical caller reaches for:
+            the gamma and beta families with their incomplete and logarithmic
+            forms, the error function and its inverse, the four Bessel functions,
+            the elliptic integrals in Carlson form, the hypergeometric functions
+            and the Riemann zeta.
           </p>
 
           <div class="slip">
             <div class="slip-head">
-              <span class="label">listing 16 · the gamma, the error function, an elliptic integral, the zeta</span>
+              <span class="label">listing 16 · six of them, at double</span>
               <button class="copy" type="button" data-copy>copy</button>
             </div>
-            <pre><code>println(@special.gamma(0.5))    // the square root of pi
-println(@special.erf(1.0))
-println(@special.erfc(2.0))
-println(@special.ellipk(0.5))
-println(@special.zeta(2.0))     // pi squared over six
-println(@special.beta(2.0, 3.0))</code></pre>
+            <pre><code>println(@special.gamma(0.5))              // the square root of pi
+println(@special.bessel_j(0.0, 2.4))      // a struck drum
+println(@special.gammainc(2.0, 1.0))      // the incomplete gamma
+println(@special.incbeta(2.0, 3.0, 0.5))  // the incomplete beta
+println(@special.hyper2f1(1.0, 1.0, 2.0, 0.5))
+println(@special.zeta(2.0))               // pi squared over six</code></pre>
           </div>
 
           <div class="slip output">
             <div class="slip-head"><span class="label">printed</span></div>
-            <pre><code>1.7724538509055159
-0.8427007929497147
-0.004677734981047262
-1.8540746773013717
-1.6449340668482266
-0.08333333333333355</code></pre>
+            <pre><code>1.7724538509055165
+0.002507683297243826
+0.2642411176571134
+0.6875000000000018
+1.3862943611198901
+1.6449340668482266</code></pre>
           </div>
 
           <p>
-            The elliptic integrals come from the arithmetic-geometric mean, whose
-            convergence is quadratic, and the zeta from Euler-Maclaurin. The values
-            above are the double-precision results, checked against an independent
-            reference rather than a second copy of the same formula.
+            Every body is written once. It lives in
+            <code>special/generic</code>, against an <code>Ops</code> record that
+            names the operations and constants a number type has to supply —
+            addition, a square root, a logarithm, pi. The package you call is a
+            face over that body: <code>special</code> hands it the double
+            algebra, <code>special/arb</code> hands it a fixed-point real at
+            whatever width you ask for, and neither can drift from the other
+            because there is only one implementation to drift.
+          </p>
+
+          <div class="slip">
+            <div class="slip-head">
+              <span class="label">listing 17 · the same body at fifty digits</span>
+              <button class="copy" type="button" data-copy>copy</button>
+            </div>
+            <pre><code>let bits = @arb.BigFloat::bits_for_digits(50)
+let ops = @generic.bigfloat_ops(bits)
+let half = @arb.BigFloat::from_decimal("0.5", bits)
+let value = @generic.gamma(half, ops)</code></pre>
+          </div>
+
+          <p>
+            Which method answers is decided by the argument, not by taste. The
+            Bessel functions are a power series while the argument is near the
+            order and an asymptotic expansion once it is well past it; the
+            incomplete gamma and beta are a series on one side of the mean and a
+            continued fraction on the other; <code>K</code>, whose two regimes
+            both degrade, switches at the point where their error estimates
+            cross. The guide's numbers are the double results, checked against
+            <code>mpmath</code> rather than against a second copy of the same
+            formula.
           </p>
         </div>
 
@@ -791,7 +820,8 @@ println(@special.beta(2.0, 3.0))</code></pre>
           <p class="note">
             <code>gamma(0.5)</code> is the square root of pi, the normalising
             constant behind the normal distribution; <code>zeta(2)</code> is
-            <code>pi²/6</code>.
+            <code>pi²/6</code>; <code>bessel_j(0, 2.4)</code> is near the first
+            zero of the struck-drum mode.
           </p>
         </aside>
       </section>
@@ -812,7 +842,7 @@ println(@special.beta(2.0, 3.0))</code></pre>
 
           <div class="slip">
             <div class="slip-head">
-              <span class="label">listing 17 · a millimetre, at a billion metres</span>
+              <span class="label">listing 18 · a millimetre, at a billion metres</span>
               <button class="copy" type="button" data-copy>copy</button>
             </div>
             <pre><code>let far = @f64.Vec3::new(1.0e9, 0.0, 0.0)

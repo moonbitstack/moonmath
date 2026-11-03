@@ -351,20 +351,43 @@ The intersection functions return the `t` of the crossing rather than the point,
 
 ## Special functions
 
-`moonbitstack/moonmath/special` is a subpackage at `Double` for the functions a probability, a physics or a numerical caller reaches for:
+`moonbitstack/moonmath/special` is a subpackage for the functions a probability, a physics or a numerical caller reaches for. Every body is written once, in `special/generic`, against an `Ops` algebra of the number type; `special` is the double-precision face of it and `special/arb` supplies the arbitrary-precision one, so the two precisions cannot drift apart.
 
 | Function | Meaning |
 |:--|:--|
-| `gamma(x)`, `lgamma(x)` | the gamma function and its log; reflection below one half |
+| `gamma(x)`, `lgamma(x)` | the gamma function and its log; Stirling with the reflection below one half |
 | `beta(a, b)`, `lbeta(a, b)` | the beta function and its log |
-| `erf(x)`, `erfc(x)` | the error function and its complement |
-| `ellipk(m)`, `ellipe(m)` | the complete elliptic integrals, by the arithmetic-geometric mean |
-| `zeta(s)` | the Riemann zeta, for `s > 1` |
+| `digamma(x)`, `polygamma(n, x)` | the logarithmic derivative of gamma, and its `n`-th derivative |
+| `gammainc(a, x)`, `gammaincc(a, x)` | the regularised incomplete gamma, lower and upper |
+| `incbeta(a, b, x)` | the regularised incomplete beta |
+| `erf(x)`, `erfc(x)`, `erfcx(x)`, `erfi(x)` | the error function, its complement, the scaled complement, the imaginary one |
+| `erfinv(x)`, `erfcinv(x)` | the inverses of the first two |
+| `bessel_j(v, x)`, `bessel_y(v, x)` | the Bessel functions of the first and second kind, real order |
+| `bessel_i(v, x)`, `bessel_k(v, x)` | the modified ones |
+| `ellipk(m)`, `ellipe(m)`, `ellipkm1(m)` | the complete elliptic integrals, `m` the parameter |
+| `ellipkinc(phi, m)`, `ellipeinc(phi, m)` | the incomplete ones |
+| `elliprf`, `elliprd`, `elliprc`, `elliprg` | the Carlson symmetric forms the others are built on |
+| `hyper0f1(b, x)`, `hyper1f1(a, b, x)`, `hyper2f1(a, b, c, x)` | the hypergeometric functions |
+| `zeta(s)` | the Riemann zeta, above and below one |
 
 ```moonbit
 let root_pi = @special.gamma(0.5)
 let tail = @special.erfc(2.0)
+let drum = @special.bessel_j(0.0, 2.4)
 ```
+
+The arbitrary-precision side runs the same functions on a fixed-point real carried as `mantissa / 2^bits`, at whatever width the caller asks for:
+
+```moonbit
+let bits = @arb.BigFloat::bits_for_digits(50)
+let ops = @generic.bigfloat_ops(bits)
+let x = @arb.BigFloat::from_decimal("0.5", bits)
+let value = @generic.gamma(x, ops)
+```
+
+The precision a caller should expect is not the same for every function, and the tests say so rather than averaging it away: the gamma, error and hypergeometric families agree with `mpmath` to twelve digits in double, the Bessel functions to six where their logarithmic series cancels, and at fifty and a hundred digits the same table is replayed at `1e-45` and `1e-80`.
+
+The reference values in `src/special/special_data_wbtest.mbt` and `src/special/generic/arb_data_wbtest.mbt` come from `scripts/gen_special.py`, which reads `mpmath`; the tables are checked in, so a test run needs neither Python nor the library.
 
 ## Examples
 
