@@ -207,6 +207,38 @@ pub impl Eq for Frustum
 pub impl Show for Frustum
 pub impl @debug.Debug for Frustum
 
+#derive(Eq)
+pub struct Half {
+  bits : UInt16
+}
+pub fn Half::approx(Self, Self, eps? : Float) -> Bool
+pub fn Half::denorm_min() -> Self
+pub fn Half::epsilon() -> Self
+pub fn Half::equal(Self, Self) -> Bool
+pub fn Half::from_bits(UInt16) -> Self
+pub fn Half::from_float(Float) -> Self
+pub fn Half::is_denormal(Self) -> Bool
+pub fn Half::is_finite(Self) -> Bool
+pub fn Half::is_inf(Self) -> Bool
+pub fn Half::is_nan(Self) -> Bool
+pub fn Half::is_normal(Self) -> Bool
+pub fn Half::lowest() -> Self
+pub fn Half::max() -> Self
+pub fn Half::min() -> Self
+pub fn Half::nan() -> Self
+pub fn Half::neg_infinity() -> Self
+pub fn Half::not_equal(Self, Self) -> Bool
+pub fn Half::one() -> Self
+pub fn Half::output(Self, &Logger) -> Unit
+pub fn Half::pos_infinity() -> Self
+pub fn Half::to_bits(Self) -> UInt16
+pub fn Half::to_float(Self) -> Float
+pub fn Half::to_repr(Self) -> @debug.Repr
+pub fn Half::to_string(Self) -> String
+pub fn Half::zero() -> Self
+pub impl Show for Half
+pub impl @debug.Debug for Half
+
 #derive(Eq, Hash)
 pub(all) struct IVec2 {
   x : Int32
