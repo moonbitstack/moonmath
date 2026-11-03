@@ -2,21 +2,67 @@
 package "moonbitstack/moonmath/special"
 
 // Values
+pub fn bessel_i(Double, Double) -> Double
+
+pub fn bessel_j(Double, Double) -> Double
+
+pub fn bessel_k(Double, Double) -> Double
+
+pub fn bessel_y(Double, Double) -> Double
+
 pub fn beta(Double, Double) -> Double
+
+pub fn digamma(Double) -> Double
 
 pub fn ellipe(Double) -> Double
 
+pub fn ellipeinc(Double, Double) -> Double
+
 pub fn ellipk(Double) -> Double
+
+pub fn ellipkinc(Double, Double) -> Double
+
+pub fn ellipkm1(Double) -> Double
+
+pub fn elliprc(Double, Double) -> Double
+
+pub fn elliprd(Double, Double, Double) -> Double
+
+pub fn elliprf(Double, Double, Double) -> Double
+
+pub fn elliprg(Double, Double, Double) -> Double
 
 pub fn erf(Double) -> Double
 
 pub fn erfc(Double) -> Double
 
+pub fn erfcinv(Double) -> Double
+
+pub fn erfcx(Double) -> Double
+
+pub fn erfi(Double) -> Double
+
+pub fn erfinv(Double) -> Double
+
 pub fn gamma(Double) -> Double
+
+pub fn gammainc(Double, Double) -> Double
+
+pub fn gammaincc(Double, Double) -> Double
+
+pub fn hyper0f1(Double, Double) -> Double
+
+pub fn hyper1f1(Double, Double, Double) -> Double
+
+pub fn hyper2f1(Double, Double, Double, Double) -> Double
+
+pub fn incbeta(Double, Double, Double) -> Double
 
 pub fn lbeta(Double, Double) -> Double
 
 pub fn lgamma(Double) -> Double
+
+pub fn polygamma(Int32, Double) -> Double
 
 pub fn zeta(Double) -> Double
 

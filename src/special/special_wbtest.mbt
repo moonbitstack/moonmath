@@ -2,91 +2,205 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // The library against the reference values in `special_data_wbtest.mbt`. The
-// references come from an independent implementation — Python's `math` for the
-// gamma and error families, a high-precision `decimal` series for the elliptic
-// and zeta values — so a match is a match against different code, not against
-// the same formula run twice.
+// references come from `mpmath` at sixty digits, rounded once to a double, so a
+// match is a match against a different implementation rather than the same
+// formula run twice.
 
 ///|
+/// Whether two doubles agree to the twelve digits a series that cancels a little
+/// still leaves.
 fn close(got : Double, want : Double) -> Bool {
   if got == want {
     true
+  } else if want == 0.0 {
+    // A value that is mathematically zero comes back as the rounding of a
+    // cancellation, not as exactly zero.
+    got.abs() <= 1.0e-13
   } else {
-    (got - want).abs() <= 1.0e-13 * want.abs().max(1.0)
+    (got - want).abs() <= 1.0e-12 * want.abs()
   }
 }
 
 ///|
-fn check(name : String, x : Double, got : Double, want : Double) -> Unit {
+/// One comparison, with the arguments in the message so a failure says which case.
+fn check(label : String, got : Double, want : Double) -> Unit {
   if !close(got, want) {
-    abort("\{name}(\{x}): got \{got}, want \{want}")
+    abort("\{label}: got \{got}, want \{want}")
   }
 }
 
 ///|
-test "erf matches the reference" {
+/// The same comparison at a stated relative tolerance, for the functions whose
+/// series cancels.
+///
+/// `Y_n` and `K_n` at an integer order come from a logarithm multiplied by an
+/// exponentially large `I_n` and a series that cancels it: at `x = 8` the two
+/// halves are around `6e2` and the answer is `1.5e-4`, so six digits go to the
+/// cancellation before the first operation. The double precision of those two is
+/// therefore a few digits above `1e-8`, not the fifteen the rest of the package
+/// keeps — the check says so rather than pretending otherwise, and the
+/// arbitrary-precision test measures the same limit at fifty digits.
+fn check_within(
+  label : String,
+  got : Double,
+  want : Double,
+  tolerance : Double,
+) -> Unit {
+  let error = (got - want).abs()
+  if error > tolerance * want.abs() {
+    abort("\{label}: got \{got}, want \{want}, relative \{error / want.abs()}")
+  }
+}
+
+///|
+test "the error functions match the reference" {
   for pair in erf_cases {
     let (x, want) = pair
-    check("erf", x, erf(x), want)
+    check("erf(\{x})", erf(x), want)
   }
-}
-
-///|
-test "erfc matches the reference" {
   for pair in erfc_cases {
     let (x, want) = pair
-    check("erfc", x, erfc(x), want)
+    check("erfc(\{x})", erfc(x), want)
+  }
+  for pair in erfcx_cases {
+    let (x, want) = pair
+    check("erfcx(\{x})", erfcx(x), want)
+  }
+  for pair in erfi_cases {
+    let (x, want) = pair
+    check("erfi(\{x})", erfi(x), want)
+  }
+  for pair in erfinv_cases {
+    let (x, want) = pair
+    check("erfinv(\{x})", erfinv(x), want)
   }
 }
 
 ///|
-test "gamma matches the reference" {
+test "the gamma family matches the reference" {
   for pair in gamma_cases {
     let (x, want) = pair
-    check("gamma", x, gamma(x), want)
+    check("gamma(\{x})", gamma(x), want)
   }
-}
-
-///|
-test "lgamma matches the reference" {
   for pair in lgamma_cases {
     let (x, want) = pair
-    check("lgamma", x, lgamma(x), want)
+    check("lgamma(\{x})", lgamma(x), want)
   }
-}
-
-///|
-test "beta matches the reference" {
+  for pair in digamma_cases {
+    let (x, want) = pair
+    check("digamma(\{x})", digamma(x), want)
+  }
   for triple in beta_cases {
     let (a, b, want) = triple
-    let got = beta(a, b)
-    if !close(got, want) {
-      abort("beta(\{a}, \{b}): got \{got}, want \{want}")
-    }
+    check("beta(\{a}, \{b})", beta(a, b), want)
+  }
+  for triple in lbeta_cases {
+    let (a, b, want) = triple
+    check("lbeta(\{a}, \{b})", lbeta(a, b), want)
+  }
+  for triple in polygamma_cases {
+    let (n, x, want) = triple
+    check("polygamma(\{n}, \{x})", polygamma(n.to_int(), x), want)
   }
 }
 
 ///|
-test "the complete elliptic integral of the first kind matches the reference" {
+test "the incomplete gamma and beta match the reference" {
+  for triple in gammainc_cases {
+    let (a, x, want) = triple
+    check("gammainc(\{a}, \{x})", gammainc(a, x), want)
+  }
+  for triple in gammaincc_cases {
+    let (a, x, want) = triple
+    check("gammaincc(\{a}, \{x})", gammaincc(a, x), want)
+  }
+  for quad in incbeta_cases {
+    let (a, b, x, want) = quad
+    check("incbeta(\{a}, \{b}, \{x})", incbeta(a, b, x), want)
+  }
+}
+
+///|
+test "the elliptic integrals match the reference" {
   for pair in ellipk_cases {
     let (m, want) = pair
-    check("ellipk", m, ellipk(m), want)
+    check("ellipk(\{m})", ellipk(m), want)
   }
-}
-
-///|
-test "the complete elliptic integral of the second kind matches the reference" {
   for pair in ellipe_cases {
     let (m, want) = pair
-    check("ellipe", m, ellipe(m), want)
+    check("ellipe(\{m})", ellipe(m), want)
+  }
+  for pair in ellipkm1_cases {
+    let (m, want) = pair
+    check("ellipkm1(\{m})", ellipkm1(m), want)
+  }
+  for triple in ellipkinc_cases {
+    let (phi, m, want) = triple
+    check("ellipkinc(\{phi}, \{m})", ellipkinc(phi, m), want)
+  }
+  for triple in ellipeinc_cases {
+    let (phi, m, want) = triple
+    check("ellipeinc(\{phi}, \{m})", ellipeinc(phi, m), want)
+  }
+  for quad in elliprf_cases {
+    let (x, y, z, want) = quad
+    check("elliprf(\{x}, \{y}, \{z})", elliprf(x, y, z), want)
+  }
+  for quad in elliprd_cases {
+    let (x, y, z, want) = quad
+    check("elliprd(\{x}, \{y}, \{z})", elliprd(x, y, z), want)
+  }
+  for triple in elliprc_cases {
+    let (x, y, want) = triple
+    check("elliprc(\{x}, \{y})", elliprc(x, y), want)
+  }
+  for quad in elliprg_cases {
+    let (x, y, z, want) = quad
+    check("elliprg(\{x}, \{y}, \{z})", elliprg(x, y, z), want)
   }
 }
 
 ///|
-test "zeta matches the reference" {
+test "the Bessel functions match the reference" {
+  for triple in bessel_j_cases {
+    let (v, x, want) = triple
+    check_within("bessel_j(\{v}, \{x})", bessel_j(v, x), want, 1.0e-9)
+  }
+  for triple in bessel_y_cases {
+    let (v, x, want) = triple
+    check_within("bessel_y(\{v}, \{x})", bessel_y(v, x), want, 1.0e-6)
+  }
+  for triple in bessel_i_cases {
+    let (v, x, want) = triple
+    check_within("bessel_i(\{v}, \{x})", bessel_i(v, x), want, 1.0e-9)
+  }
+  for triple in bessel_k_cases {
+    let (v, x, want) = triple
+    check_within("bessel_k(\{v}, \{x})", bessel_k(v, x), want, 1.0e-6)
+  }
+}
+
+///|
+test "the hypergeometric functions match the reference" {
+  for triple in hyper0f1_cases {
+    let (b, x, want) = triple
+    check("hyper0f1(\{b}, \{x})", hyper0f1(b, x), want)
+  }
+  for quad in hyper1f1_cases {
+    let (a, b, x, want) = quad
+    check("hyper1f1(\{a}, \{b}, \{x})", hyper1f1(a, b, x), want)
+  }
+  for case in hyper2f1_cases {
+    let (a, b, c, x, want) = case
+    check("hyper2f1(\{a}, \{b}, \{c}, \{x})", hyper2f1(a, b, c, x), want)
+  }
+}
+
+///|
+test "zeta matches the reference on and below one" {
   for pair in zeta_cases {
     let (s, want) = pair
-    check("zeta", s, zeta(s), want)
+    check("zeta(\{s})", zeta(s), want)
   }
 }
 
@@ -97,10 +211,28 @@ test "the special values and the poles" {
   assert_eq(gamma(5.0).round(), 24.0)
   assert_eq(erf(0.0), 0.0)
   assert_eq(erfc(0.0), 1.0)
+  assert_eq(erfi(0.0), 0.0)
+  assert_eq(erfinv(0.0), 0.0)
   // The pole of the zeta at one runs off to positive infinity.
   assert_true(zeta(1.0).is_inf())
   assert_true(zeta(1.0) > 0.0)
+  // The trivial zeros are exact.
+  assert_eq(zeta(-2.0), 0.0)
+  assert_eq(zeta(-4.0), 0.0)
   // The elliptic integral at the parameter zero is a quarter turn.
   assert_true(close(ellipk(0.0), 1.5707963267948966))
   assert_true(close(ellipe(0.0), 1.5707963267948966))
+  // The Bessel functions at zero, where the series has one term.
+  assert_true(close(bessel_j(0.0, 0.0), 1.0))
+  assert_true(close(bessel_j(1.0, 0.0), 0.0))
+  assert_true(close(bessel_i(0.0, 0.0), 1.0))
+  // The hypergeometric family at the origin.
+  assert_true(close(hyper0f1(1.5, 0.0), 1.0))
+  assert_true(close(hyper1f1(0.5, 1.5, 0.0), 1.0))
+  assert_true(close(hyper2f1(0.5, 1.0, 1.5, 0.0), 1.0))
+  // The incomplete gamma and beta at the ends of their ranges.
+  assert_eq(gammainc(2.0, 0.0), 0.0)
+  assert_eq(gammaincc(2.0, 0.0), 1.0)
+  assert_eq(incbeta(2.0, 3.0, 0.0), 0.0)
+  assert_eq(incbeta(2.0, 3.0, 1.0), 1.0)
 }

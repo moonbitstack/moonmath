@@ -6,11 +6,75 @@ import {
 }
 
 // Values
+pub fn[T] bessel_i(T, T, Ops[T]) -> T
+
+pub fn[T] bessel_j(T, T, Ops[T]) -> T
+
+pub fn[T] bessel_k(T, T, Ops[T]) -> T
+
+pub fn[T] bessel_y(T, T, Ops[T]) -> T
+
+pub fn[T] beta(T, T, Ops[T]) -> T
+
 pub fn bigfloat_ops(Int32) -> Ops[@arb.BigFloat]
+
+pub fn[T] digamma(T, Ops[T]) -> T
+
+pub let double_algebra : Ops[Double]
 
 pub fn double_ops() -> Ops[Double]
 
+pub fn[T] ellipe(T, Ops[T]) -> T
+
+pub fn[T] ellipeinc(T, T, Ops[T]) -> T
+
+pub fn[T] ellipk(T, Ops[T]) -> T
+
+pub fn[T] ellipkinc(T, T, Ops[T]) -> T
+
+pub fn[T] ellipkm1(T, Ops[T]) -> T
+
+pub fn[T] elliprc(T, T, Ops[T]) -> T
+
+pub fn[T] elliprd(T, T, T, Ops[T]) -> T
+
+pub fn[T] elliprf(T, T, T, Ops[T]) -> T
+
+pub fn[T] elliprg(T, T, T, Ops[T]) -> T
+
 pub fn[T] erf(T, Ops[T]) -> T
+
+pub fn[T] erfc(T, Ops[T]) -> T
+
+pub fn[T] erfcinv(T, Ops[T]) -> T
+
+pub fn[T] erfcx(T, Ops[T]) -> T
+
+pub fn[T] erfi(T, Ops[T]) -> T
+
+pub fn[T] erfinv(T, Ops[T]) -> T
+
+pub fn[T] gamma(T, Ops[T]) -> T
+
+pub fn[T] gammainc(T, T, Ops[T]) -> T
+
+pub fn[T] gammaincc(T, T, Ops[T]) -> T
+
+pub fn[T] hyper0f1(T, T, Ops[T]) -> T
+
+pub fn[T] hyper1f1(T, T, T, Ops[T]) -> T
+
+pub fn[T] hyper2f1(T, T, T, T, Ops[T]) -> T
+
+pub fn[T] incbeta(T, T, T, Ops[T]) -> T
+
+pub fn[T] lbeta(T, T, Ops[T]) -> T
+
+pub fn[T] lgamma(T, Ops[T]) -> T
+
+pub fn[T] polygamma(Int32, T, Ops[T]) -> T
+
+pub fn[T] zeta(T, Ops[T]) -> T
 
 // Errors
 
@@ -19,6 +83,7 @@ pub struct Ops[T] {
   zero : T
   one : T
   from_int : (Int32) -> T
+  from_decimal : (String) -> T
   add : (T, T) -> T
   sub : (T, T) -> T
   mul : (T, T) -> T
@@ -28,9 +93,16 @@ pub struct Ops[T] {
   sqrt : (T) -> T
   exp : (T) -> T
   ln : (T) -> T
+  pow : (T, T) -> T
+  sin : (T) -> T
+  cos : (T) -> T
+  atan : (T) -> T
+  bernoulli : (Int32) -> T
   pi : T
   lt : (T, T) -> Bool
+  le : (T, T) -> Bool
   is_zero : (T) -> Bool
+  digits : Int32
   to_double : (T) -> Double
 }
 
