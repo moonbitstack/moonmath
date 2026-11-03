@@ -16,6 +16,8 @@ pub let default_epsilon : Double
 
 pub let half_pi : Double
 
+pub fn hsv_to_rgb(Color3) -> Color3
+
 pub fn inverse_lerp(Double, Double, Double) -> Double
 
 pub fn lerp(Double, Double, Double) -> Double
@@ -25,6 +27,8 @@ pub let pi : Double
 pub let quarter_pi : Double
 
 pub fn remap(Double, Double, Double, Double, Double) -> Double
+
+pub fn rgb_to_hsv(Color3) -> Color3
 
 pub fn smoothstep(Double, Double, Double) -> Double
 
@@ -94,6 +98,7 @@ pub fn Aabb3::is_empty(Self) -> Bool
 pub fn Aabb3::new(Vec3, Vec3) -> Self
 pub fn Aabb3::not_equal(Self, Self) -> Bool
 pub fn Aabb3::output(Self, &Logger) -> Unit
+pub fn Aabb3::random_point(Self, Double, Double, Double) -> Vec3
 pub fn Aabb3::size(Self) -> Vec3
 pub fn Aabb3::surface_area(Self) -> Double
 pub fn Aabb3::to_repr(Self) -> @debug.Repr
@@ -166,6 +171,76 @@ pub impl Mul for Affine3
 pub impl Show for Affine3
 pub impl @debug.Debug for Affine3
 
+#derive(Eq)
+pub(all) struct Color3 {
+  r : Double
+  g : Double
+  b : Double
+}
+pub fn Color3::add(Self, Self) -> Self
+pub fn Color3::approx(Self, Self, eps? : Double) -> Bool
+pub fn Color3::clamp(Self, Self, Self) -> Self
+pub fn Color3::div(Self, Self) -> Self
+pub fn Color3::equal(Self, Self) -> Bool
+pub fn Color3::is_finite(Self) -> Bool
+pub fn Color3::lerp(Self, Self, Double) -> Self
+pub fn Color3::max(Self, Self) -> Self
+pub fn Color3::min(Self, Self) -> Self
+pub fn Color3::mul(Self, Self) -> Self
+pub fn Color3::neg(Self) -> Self
+pub fn Color3::new(Double, Double, Double) -> Self
+pub fn Color3::not_equal(Self, Self) -> Bool
+pub fn Color3::one() -> Self
+pub fn Color3::output(Self, &Logger) -> Unit
+pub fn Color3::splat(Double) -> Self
+pub fn Color3::sub(Self, Self) -> Self
+pub fn Color3::to_array(Self) -> FixedArray[Double]
+pub fn Color3::to_repr(Self) -> @debug.Repr
+pub fn Color3::to_string(Self) -> String
+pub fn Color3::zero() -> Self
+pub impl Add for Color3
+pub impl Div for Color3
+pub impl Mul for Color3
+pub impl Neg for Color3
+pub impl Show for Color3
+pub impl Sub for Color3
+pub impl @debug.Debug for Color3
+
+#derive(Eq)
+pub(all) struct Color4 {
+  r : Double
+  g : Double
+  b : Double
+  a : Double
+}
+pub fn Color4::add(Self, Self) -> Self
+pub fn Color4::approx(Self, Self, eps? : Double) -> Bool
+pub fn Color4::div(Self, Self) -> Self
+pub fn Color4::equal(Self, Self) -> Bool
+pub fn Color4::from_color3(Color3, Double) -> Self
+pub fn Color4::is_finite(Self) -> Bool
+pub fn Color4::lerp(Self, Self, Double) -> Self
+pub fn Color4::max(Self, Self) -> Self
+pub fn Color4::min(Self, Self) -> Self
+pub fn Color4::mul(Self, Self) -> Self
+pub fn Color4::neg(Self) -> Self
+pub fn Color4::new(Double, Double, Double, Double) -> Self
+pub fn Color4::not_equal(Self, Self) -> Bool
+pub fn Color4::output(Self, &Logger) -> Unit
+pub fn Color4::splat(Double) -> Self
+pub fn Color4::sub(Self, Self) -> Self
+pub fn Color4::to_array(Self) -> FixedArray[Double]
+pub fn Color4::to_color3(Self) -> Color3
+pub fn Color4::to_repr(Self) -> @debug.Repr
+pub fn Color4::to_string(Self) -> String
+pub impl Add for Color4
+pub impl Div for Color4
+pub impl Mul for Color4
+pub impl Neg for Color4
+pub impl Show for Color4
+pub impl Sub for Color4
+pub impl @debug.Debug for Color4
+
 #derive(Eq, @debug.Debug)
 pub(all) enum EulerOrder {
   Xyz
@@ -196,6 +271,7 @@ pub fn Frustum::equal(Self, Self) -> Bool
 pub fn Frustum::from_matrix(Mat4) -> Self?
 pub fn Frustum::from_matrix_gl(Mat4) -> Self?
 pub fn Frustum::intersects_aabb(Self, Aabb3) -> Bool
+pub fn Frustum::intersects_line(Self, Line3) -> Bool
 pub fn Frustum::intersects_sphere(Self, Sphere) -> Bool
 pub fn Frustum::not_equal(Self, Self) -> Bool
 pub fn Frustum::output(Self, &Logger) -> Unit
@@ -206,6 +282,54 @@ pub fn Frustum::to_string(Self) -> String
 pub impl Eq for Frustum
 pub impl Show for Frustum
 pub impl @debug.Debug for Frustum
+
+#derive(Eq)
+pub(all) struct Interval {
+  min : Double
+  max : Double
+}
+pub fn Interval::approx(Self, Self, eps? : Double) -> Bool
+pub fn Interval::center(Self) -> Double
+pub fn Interval::contains(Self, Double) -> Bool
+pub fn Interval::empty() -> Self
+pub fn Interval::equal(Self, Self) -> Bool
+pub fn Interval::expand(Self, Double) -> Self
+pub fn Interval::extend_by(Self, Double) -> Self
+pub fn Interval::intersection(Self, Self) -> Self?
+pub fn Interval::intersects(Self, Self) -> Bool
+pub fn Interval::is_empty(Self) -> Bool
+pub fn Interval::is_finite(Self) -> Bool
+pub fn Interval::new(Double, Double) -> Self
+pub fn Interval::not_equal(Self, Self) -> Bool
+pub fn Interval::output(Self, &Logger) -> Unit
+pub fn Interval::size(Self) -> Double
+pub fn Interval::to_repr(Self) -> @debug.Repr
+pub fn Interval::to_string(Self) -> String
+pub fn Interval::union(Self, Self) -> Self
+pub impl Show for Interval
+pub impl @debug.Debug for Interval
+
+#derive(Eq)
+pub(all) struct Line3 {
+  point : Vec3
+  direction : Vec3
+}
+pub fn Line3::approx(Self, Self, eps? : Double) -> Bool
+pub fn Line3::at(Self, Double) -> Vec3
+pub fn Line3::closest_point_to(Self, Vec3) -> Vec3
+pub fn Line3::closest_point_to_line(Self, Self) -> Vec3
+pub fn Line3::distance_to_line(Self, Self) -> Double
+pub fn Line3::distance_to_point(Self, Vec3) -> Double
+pub fn Line3::equal(Self, Self) -> Bool
+pub fn Line3::intersect_plane(Self, Plane) -> Vec3?
+pub fn Line3::is_finite(Self) -> Bool
+pub fn Line3::new(Vec3, Vec3) -> Self
+pub fn Line3::not_equal(Self, Self) -> Bool
+pub fn Line3::output(Self, &Logger) -> Unit
+pub fn Line3::to_repr(Self) -> @debug.Repr
+pub fn Line3::to_string(Self) -> String
+pub impl Show for Line3
+pub impl @debug.Debug for Line3
 
 #derive(Eq)
 pub(all) struct Mat2 {
@@ -405,6 +529,7 @@ pub fn Quat::nlerp(Self, Self, Double) -> Self
 pub fn Quat::normalize(Self) -> Self
 pub fn Quat::not_equal(Self, Self) -> Bool
 pub fn Quat::output(Self, &Logger) -> Unit
+pub fn Quat::random(Double, Double, Double) -> Self
 pub fn Quat::rotate(Self, Vec3) -> Vec3
 pub fn Quat::slerp(Self, Self, Double) -> Self
 pub fn Quat::to_array(Self) -> FixedArray[Double]
@@ -495,6 +620,26 @@ pub impl Show for Rect
 pub impl @debug.Debug for Rect
 
 #derive(Eq)
+pub(all) struct Shear {
+  xy : Double
+  xz : Double
+  yz : Double
+}
+pub fn Shear::approx(Self, Self, eps? : Double) -> Bool
+pub fn Shear::equal(Self, Self) -> Bool
+pub fn Shear::is_finite(Self) -> Bool
+pub fn Shear::new(Double, Double, Double) -> Self
+pub fn Shear::not_equal(Self, Self) -> Bool
+pub fn Shear::output(Self, &Logger) -> Unit
+pub fn Shear::to_mat3(Self) -> Mat3
+pub fn Shear::to_mat4(Self) -> Mat4
+pub fn Shear::to_repr(Self) -> @debug.Repr
+pub fn Shear::to_string(Self) -> String
+pub fn Shear::zero() -> Self
+pub impl Show for Shear
+pub impl @debug.Debug for Shear
+
+#derive(Eq)
 pub(all) struct Sphere {
   center : Vec3
   radius : Double
@@ -507,6 +652,8 @@ pub fn Sphere::intersects_sphere(Self, Self) -> Bool
 pub fn Sphere::new(Vec3, Double) -> Self
 pub fn Sphere::not_equal(Self, Self) -> Bool
 pub fn Sphere::output(Self, &Logger) -> Unit
+pub fn Sphere::random_inside(Self, Double, Double, Double) -> Vec3
+pub fn Sphere::random_on_surface(Self, Double, Double) -> Vec3
 pub fn Sphere::surface_area(Self) -> Double
 pub fn Sphere::to_repr(Self) -> @debug.Repr
 pub fn Sphere::to_string(Self) -> String
@@ -662,6 +809,8 @@ pub fn Vec3::not_equal(Self, Self) -> Bool
 pub fn Vec3::one() -> Self
 pub fn Vec3::output(Self, &Logger) -> Unit
 pub fn Vec3::project(Self, Self) -> Self
+pub fn Vec3::random_in_ball(Double, Double, Double) -> Self
+pub fn Vec3::random_on_sphere(Double, Double) -> Self
 pub fn Vec3::reflect(Self, Self) -> Self
 pub fn Vec3::refract(Self, Self, Double) -> Self?
 pub fn Vec3::reject(Self, Self) -> Self

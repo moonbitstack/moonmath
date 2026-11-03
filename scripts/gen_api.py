@@ -56,7 +56,7 @@ GROUPS = [
         "moonmath",
         "Matrices",
         "Linear maps, and the four cameras: look_at, perspective, orthographic, frustum.",
-        ["Mat2", "Mat3", "Mat4"],
+        ["Mat2", "Mat3", "Mat4", "Shear"],
     ),
     (
         "moonmath",
@@ -82,9 +82,17 @@ GROUPS = [
             "Ray3",
             "Plane",
             "Sphere",
+            "Line3",
+            "Interval",
             "Triangle",
             "Frustum",
         ],
+    ),
+    (
+        "moonmath",
+        "Colour",
+        "Red, green, blue and alpha, and the hue-saturation-value form of the same.",
+        ["Color3", "Color4"],
     ),
 ]
 
@@ -566,13 +574,26 @@ def render_second_hand():
     for title, names in [
         ("Values", ["__values__"]),
         ("Vectors", ["Vec2", "Vec3", "Vec4"]),
-        ("Matrices", ["Mat2", "Mat3", "Mat4"]),
+        ("Matrices", ["Mat2", "Mat3", "Mat4", "Shear"]),
         ("Rotation", ["Quat", "EulerOrder", "Turns"]),
         ("Placement", ["Trs", "Affine2", "Affine3"]),
         (
             "Geometry",
-            ["Rect", "Aabb2", "Aabb3", "Ray2", "Ray3", "Plane", "Sphere", "Triangle", "Frustum"],
+            [
+                "Rect",
+                "Aabb2",
+                "Aabb3",
+                "Ray2",
+                "Ray3",
+                "Plane",
+                "Sphere",
+                "Line3",
+                "Interval",
+                "Triangle",
+                "Frustum",
+            ],
         ),
+        ("Colour", ["Color3", "Color4"]),
     ]:
         if names == ["__values__"]:
             entries = sorted(data["values"], key=lambda entry: entry["name"])
