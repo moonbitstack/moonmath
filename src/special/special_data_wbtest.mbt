@@ -303,6 +303,13 @@ let elliprg_cases : Array[(Double, Double, Double, Double)] = [
 ]
 
 ///|
+let elliprj_cases : Array[(Double, Double, Double, Double, Double)] = [
+  (1.0, 2.0, 3.0, 4.0, 0.23984809974956775),
+  (0.0, 1.0, 2.0, 3.0, 0.7768862377858233),
+  (2.0, 2.0, 2.0, 5.0, 0.19552991524211266),
+]
+
+///|
 let hyper2f1_cases : Array[(Double, Double, Double, Double, Double)] = [
   (0.5, 0.5, 1.5, 0.5, 1.1107207345395915),
   (1.0, 1.0, 2.0, 0.3, 1.1889164797957745),

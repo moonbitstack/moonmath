@@ -51,6 +51,7 @@ fn evaluate(
     "elliprf" => elliprf(args[0], args[1], args[2], ops)
     "elliprd" => elliprd(args[0], args[1], args[2], ops)
     "elliprg" => elliprg(args[0], args[1], args[2], ops)
+    "elliprj" => elliprj(args[0], args[1], args[2], args[3], ops)
     "hyper2f1" => hyper2f1(args[0], args[1], args[2], args[3], ops)
     _ => abort("no such function: \{name}")
   }

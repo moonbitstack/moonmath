@@ -26,6 +26,15 @@ pub fn elliprc(x : Double, y : Double) -> Double {
 }
 
 ///|
+/// The Carlson symmetric integral of the third kind `R_J(x, y, z, p)`.
+///
+/// It is the form the incomplete elliptic integral of the third kind is written
+/// in: a caller with a potential `1/(t + p)` under the same square root.
+pub fn elliprj(x : Double, y : Double, z : Double, p : Double) -> Double {
+  @generic.elliprj(x, y, z, p, @generic.double_algebra)
+}
+
+///|
 /// The Carlson symmetric integral of the second kind, completely symmetric form
 /// `R_G(x, y, z)`.
 pub fn elliprg(x : Double, y : Double, z : Double) -> Double {

@@ -366,7 +366,7 @@ The intersection functions return the `t` of the crossing rather than the point,
 | `bessel_i(v, x)`, `bessel_k(v, x)` | the modified ones |
 | `ellipk(m)`, `ellipe(m)`, `ellipkm1(m)` | the complete elliptic integrals, `m` the parameter |
 | `ellipkinc(phi, m)`, `ellipeinc(phi, m)` | the incomplete ones |
-| `elliprf`, `elliprd`, `elliprc`, `elliprg` | the Carlson symmetric forms the others are built on |
+| `elliprf`, `elliprd`, `elliprc`, `elliprj`, `elliprg` | the Carlson symmetric forms the others are built on |
 | `hyper0f1(b, x)`, `hyper1f1(a, b, x)`, `hyper2f1(a, b, c, x)` | the hypergeometric functions |
 | `zeta(s)` | the Riemann zeta, above and below one |
 

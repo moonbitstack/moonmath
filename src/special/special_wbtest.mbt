@@ -154,6 +154,10 @@ test "the elliptic integrals match the reference" {
     let (x, y, want) = triple
     check("elliprc(\{x}, \{y})", elliprc(x, y), want)
   }
+  for case in elliprj_cases {
+    let (x, y, z, p, want) = case
+    check("elliprj(\{x}, \{y}, \{z}, \{p})", elliprj(x, y, z, p), want)
+  }
   for quad in elliprg_cases {
     let (x, y, z, want) = quad
     check("elliprg(\{x}, \{y}, \{z})", elliprg(x, y, z), want)

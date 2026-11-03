@@ -32,6 +32,8 @@ pub fn elliprf(Double, Double, Double) -> Double
 
 pub fn elliprg(Double, Double, Double) -> Double
 
+pub fn elliprj(Double, Double, Double, Double) -> Double
+
 pub fn erf(Double) -> Double
 
 pub fn erfc(Double) -> Double

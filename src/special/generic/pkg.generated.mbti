@@ -42,6 +42,8 @@ pub fn[T] elliprf(T, T, T, Ops[T]) -> T
 
 pub fn[T] elliprg(T, T, T, Ops[T]) -> T
 
+pub fn[T] elliprj(T, T, T, T, Ops[T]) -> T
+
 pub fn[T] erf(T, Ops[T]) -> T
 
 pub fn[T] erfc(T, Ops[T]) -> T

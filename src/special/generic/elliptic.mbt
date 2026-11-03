@@ -137,6 +137,70 @@ pub fn[T] elliprc(x : T, y : T, ops : Ops[T]) -> T {
 }
 
 ///|
+/// The Carlson symmetric integral of the third kind,
+/// `R_J(x, y, z, p) = 3/2 ∫_0^∞ dt / ((t+p) sqrt((t+x)(t+y)(t+z)))`.
+///
+/// The same duplication as `R_D`, with one more argument carried along: the term
+/// the step contributes is a degenerate third-kind integral `R_C`, of the pair
+/// `(p(sx+sy+sz) + sx sy sz)` squared and `p (p + lambda)` squared. It is the
+/// form the incomplete elliptic integral of the third kind is written in, and the
+/// one no Legendre integral in this package needs — it is here because a caller
+/// with a potential of their own does.
+pub fn[T] elliprj(x : T, y : T, z : T, p : T, ops : Ops[T]) -> T {
+  let four = (ops.from_int)(4)
+  let three = (ops.from_int)(3)
+  let five = (ops.from_int)(5)
+  let two = (ops.from_int)(2)
+  // The spread quarters each round and the term the loop leaves out is its
+  // square, so stopping at half the width still leaves the whole of it.
+  let tolerance = (ops.from_decimal)("1e-\{ops.digits / 2 + 2}")
+  let mut x = x
+  let mut y = y
+  let mut z = z
+  let mut p = p
+  let mut sum = ops.zero
+  let mut factor = ops.one
+  let mut round : Int32 = 0
+  while round < 400 {
+    let sx = (ops.sqrt)(x)
+    let sy = (ops.sqrt)(y)
+    let sz = (ops.sqrt)(z)
+    let lambda = (ops.add)((ops.mul)(sx, (ops.add)(sy, sz)), (ops.mul)(sy, sz))
+    let root_sum = (ops.add)((ops.add)(sx, sy), sz)
+    let alpha_base = (ops.add)(
+      (ops.mul)(p, root_sum),
+      (ops.mul)((ops.mul)(sx, sy), sz),
+    )
+    let alpha = (ops.mul)(alpha_base, alpha_base)
+    let beta_base = (ops.add)(p, lambda)
+    let beta = (ops.mul)(p, (ops.mul)(beta_base, beta_base))
+    sum = (ops.add)(sum, (ops.mul)(factor, elliprc(alpha, beta, ops)))
+    factor = (ops.div)(factor, four)
+    x = (ops.div)((ops.add)(x, lambda), four)
+    y = (ops.div)((ops.add)(y, lambda), four)
+    z = (ops.div)((ops.add)(z, lambda), four)
+    p = (ops.div)((ops.add)(p, lambda), four)
+    let average = (ops.div)(
+      (ops.add)((ops.add)((ops.add)(x, y), z), (ops.mul)(two, p)),
+      five,
+    )
+    let dx = (ops.div)((ops.sub)(average, x), average)
+    let dy = (ops.div)((ops.sub)(average, y), average)
+    let dz = (ops.div)((ops.sub)(average, z), average)
+    let dp = (ops.div)((ops.sub)(average, p), average)
+    if (ops.lt)(largest_four(dx, dy, dz, dp, ops), tolerance) {
+      let root = (ops.sqrt)(average)
+      return (ops.add)(
+        (ops.mul)(three, sum),
+        (ops.div)(factor, (ops.mul)(average, root)),
+      )
+    }
+    round = round + 1
+  }
+  abort("elliprj: the duplication did not settle")
+}
+
+///|
 /// The Carlson symmetric integral of the second kind, completely symmetric form,
 /// `R_G(x, y, z) = 1/4 ∫_0^∞ dt / sqrt((t+x)(t+y)(t+z)) · (x/(t+x) + y/(t+y) + z/(t+z))`.
 ///
@@ -230,6 +294,18 @@ pub fn[T] ellipeinc(phi : T, m : T, ops : Ops[T]) -> T {
     three,
   )
   (ops.sub)(base, tail)
+}
+
+///|
+/// The largest of four magnitudes, by the `lt` of the algebra.
+fn[T] largest_four(a : T, b : T, c : T, d : T, ops : Ops[T]) -> T {
+  let best = largest(a, b, c, ops)
+  let fourth = (ops.abs)(d)
+  if (ops.lt)(best, fourth) {
+    fourth
+  } else {
+    best
+  }
 }
 
 ///|
