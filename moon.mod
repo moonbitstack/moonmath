@@ -1,6 +1,6 @@
 name = "moonbitstack/moonmath"
 
-version = "0.1.0"
+version = "0.1.1"
 
 readme = "README.md"
 
@@ -12,11 +12,23 @@ keywords = [
   "math",
   "linear-algebra",
   "vector",
+  "vec2",
+  "vec3",
+  "vec4",
   "matrix",
+  "mat3",
+  "mat4",
   "quaternion",
   "geometry",
+  "transform",
   "graphics",
+  "3d",
+  "gamedev",
+  "column-major",
   "wgsl",
+  "webgpu",
+  "gpu",
+  "glm",
   "moonbit",
 ]
 
