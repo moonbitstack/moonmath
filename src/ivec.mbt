@@ -14,12 +14,13 @@
 ///
 /// Division is integer division and truncates towards zero, and dividing by
 /// zero aborts, as it does for `Int` itself.
+#derive(Eq, Hash)
 pub(all) struct IVec2 {
   /// The x component.
   x : Int32
   /// The y component.
   y : Int32
-} derive(Eq, Hash)
+}
 
 ///|
 pub extend IVec2 with Eq::{equal, not_equal}
@@ -167,6 +168,7 @@ pub extend IVec2 with Debug::{to_repr}
 
 ///|
 /// Three whole numbers: a cell in a voxel grid.
+#derive(Eq, Hash)
 pub(all) struct IVec3 {
   /// The x component.
   x : Int32
@@ -174,7 +176,7 @@ pub(all) struct IVec3 {
   y : Int32
   /// The z component.
   z : Int32
-} derive(Eq, Hash)
+}
 
 ///|
 pub extend IVec3 with Eq::{equal, not_equal}
@@ -324,6 +326,7 @@ pub extend IVec3 with Debug::{to_repr}
 
 ///|
 /// Four whole numbers.
+#derive(Eq, Hash)
 pub(all) struct IVec4 {
   /// The x component.
   x : Int32
@@ -333,7 +336,7 @@ pub(all) struct IVec4 {
   z : Int32
   /// The fourth component.
   w : Int32
-} derive(Eq, Hash)
+}
 
 ///|
 pub extend IVec4 with Eq::{equal, not_equal}
@@ -525,12 +528,13 @@ pub extend IVec4 with Debug::{to_repr}
 ///
 /// There is no `Neg` here for the obvious reason: a negative size is not a
 /// size. Subtraction is present and wraps, as `UInt` subtraction does.
+#derive(Eq, Hash)
 pub(all) struct UVec2 {
   /// The x component.
   x : UInt32
   /// The y component.
   y : UInt32
-} derive(Eq, Hash)
+}
 
 ///|
 pub extend UVec2 with Eq::{equal, not_equal}
@@ -654,6 +658,7 @@ pub extend UVec2 with Debug::{to_repr}
 
 ///|
 /// Three unsigned whole numbers.
+#derive(Eq, Hash)
 pub(all) struct UVec3 {
   /// The x component.
   x : UInt32
@@ -661,7 +666,7 @@ pub(all) struct UVec3 {
   y : UInt32
   /// The z component.
   z : UInt32
-} derive(Eq, Hash)
+}
 
 ///|
 pub extend UVec3 with Eq::{equal, not_equal}
@@ -791,6 +796,7 @@ pub extend UVec3 with Debug::{to_repr}
 
 ///|
 /// Four unsigned whole numbers.
+#derive(Eq, Hash)
 pub(all) struct UVec4 {
   /// The x component.
   x : UInt32
@@ -800,7 +806,7 @@ pub(all) struct UVec4 {
   z : UInt32
   /// The fourth component.
   w : UInt32
-} derive(Eq, Hash)
+}
 
 ///|
 pub extend UVec4 with Eq::{equal, not_equal}

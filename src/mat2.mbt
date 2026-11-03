@@ -10,12 +10,13 @@
 /// a `mat2x2<f32>` in the same order, so `to_array` goes straight into a buffer.
 ///
 /// Values are immutable.
+#derive(Eq)
 pub(all) struct Mat2 {
   /// The first column.
   c0 : Vec2
   /// The second column.
   c1 : Vec2
-} derive(Eq)
+}
 
 ///|
 pub extend Mat2 with Eq::{equal, not_equal}

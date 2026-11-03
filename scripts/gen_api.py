@@ -39,6 +39,12 @@ GROUPS = [
         "Scalars, angles and the easing functions, which belong to no type.",
         ["__values__"],
     ),
+    (
+        "moonmath",
+        "Half precision",
+        "A 16-bit float, the storage format a texture or a packed vertex uses.",
+        ["Half"],
+    ),
     ("moonmath", "Vectors", "Points and directions, and the arithmetic between them.", ["Vec2", "Vec3", "Vec4"]),
     (
         "moonmath",
@@ -247,6 +253,11 @@ def parse_docs(directory):
                 block.append(line)
                 continue
             if not line:
+                continue
+            # An attribute such as `#derive(Eq)` sits between a doc block and the
+            # declaration it describes; it belongs to the declaration, so keep
+            # the pending block and let the declaration collect it.
+            if line.startswith("#"):
                 continue
             if owner is not None:
                 if line.startswith("}"):

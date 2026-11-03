@@ -9,6 +9,7 @@
 /// buffer: `to_array` gives the four in the order the buffer wants them.
 ///
 /// Values are immutable; every operation returns a new one.
+#derive(Eq)
 pub(all) struct Vec4 {
   /// The x component: east.
   x : Double
@@ -18,7 +19,7 @@ pub(all) struct Vec4 {
   z : Double
   /// The fourth component: one for a point, zero for a direction.
   w : Double
-} derive(Eq)
+}
 
 ///|
 pub extend Vec4 with Eq::{equal, not_equal}

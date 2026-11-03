@@ -10,12 +10,13 @@
 /// does six times per box.
 ///
 /// Values are immutable.
+#derive(Eq)
 pub(all) struct Plane {
   /// The unit normal: which side is out.
   normal : Vec3
   /// How far the plane is from the origin, measured along the normal.
   distance : Double
-} derive(Eq)
+}
 
 ///|
 pub extend Plane with Eq::{equal, not_equal}
@@ -126,12 +127,13 @@ pub extend Plane with Debug::{to_repr}
 /// A sphere: a centre and a radius.
 ///
 /// Values are immutable.
+#derive(Eq)
 pub(all) struct Sphere {
   /// The centre.
   center : Vec3
   /// The radius.
   radius : Double
-} derive(Eq)
+}
 
 ///|
 pub extend Sphere with Eq::{equal, not_equal}
@@ -212,6 +214,7 @@ pub extend Sphere with Debug::{to_repr}
 /// The winding decides which side the normal faces, by the right-hand rule.
 ///
 /// Values are immutable.
+#derive(Eq)
 pub(all) struct Triangle {
   /// The first corner.
   a : Vec3
@@ -219,7 +222,7 @@ pub(all) struct Triangle {
   b : Vec3
   /// The third corner.
   c : Vec3
-} derive(Eq)
+}
 
 ///|
 pub extend Triangle with Eq::{equal, not_equal}

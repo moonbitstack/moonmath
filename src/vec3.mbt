@@ -11,6 +11,7 @@
 ///
 /// The operators take two vectors of the same type. Scalar scaling is `scale`
 /// and `divide`, not `*` and `/`, which belong to the component-wise product.
+#derive(Eq)
 pub(all) struct Vec3 {
   /// The x component: east.
   x : Float
@@ -18,7 +19,7 @@ pub(all) struct Vec3 {
   y : Float
   /// The z component: towards the viewer.
   z : Float
-} derive(Eq)
+}
 
 ///|
 pub extend Vec3 with Eq::{equal, not_equal}

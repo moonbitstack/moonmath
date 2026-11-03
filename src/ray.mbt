@@ -31,12 +31,13 @@ fn component3(v : Vec3, index : Int32) -> Float {
 /// as useful as a unit one, and `t` then reads as time.
 ///
 /// Values are immutable.
+#derive(Eq)
 pub(all) struct Ray2 {
   /// Where the ray starts.
   origin : Vec2
   /// Which way it goes. The intersections report `t` in units of this vector, so a unit direction makes `t` a distance.
   direction : Vec2
-} derive(Eq)
+}
 
 ///|
 pub extend Ray2 with Eq::{equal, not_equal}
@@ -190,12 +191,13 @@ pub extend Ray2 with Debug::{to_repr}
 /// multiplication away.
 ///
 /// Values are immutable.
+#derive(Eq)
 pub(all) struct Ray3 {
   /// Where the ray starts.
   origin : Vec3
   /// Which way it goes. The intersections report `t` in units of this vector, so a unit direction makes `t` a distance.
   direction : Vec3
-} derive(Eq)
+}
 
 ///|
 pub extend Ray3 with Eq::{equal, not_equal}

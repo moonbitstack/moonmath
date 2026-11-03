@@ -11,12 +11,13 @@
 /// the same points as the equivalent positive one, with the corners swapped.
 ///
 /// Values are immutable.
+#derive(Eq)
 pub(all) struct Rect {
   /// The corner with the smallest coordinate on each axis.
   origin : Vec2
   /// How far it extends along each axis; never negative.
   size : Vec2
-} derive(Eq)
+}
 
 ///|
 pub extend Rect with Eq::{equal, not_equal}

@@ -41,10 +41,11 @@ pub fn wrap_range(Float, Float, Float) -> Float
 // Errors
 
 // Types and methods
+#derive(Eq)
 pub(all) struct Aabb2 {
   min : Vec2
   max : Vec2
-} derive(Eq)
+}
 pub fn Aabb2::approx(Self, Self, eps? : Float) -> Bool
 pub fn Aabb2::area(Self) -> Float
 pub fn Aabb2::center(Self) -> Vec2
@@ -71,10 +72,11 @@ pub fn Aabb2::union(Self, Self) -> Self
 pub impl Show for Aabb2
 pub impl @debug.Debug for Aabb2
 
+#derive(Eq)
 pub(all) struct Aabb3 {
   min : Vec3
   max : Vec3
-} derive(Eq)
+}
 pub fn Aabb3::approx(Self, Self, eps? : Float) -> Bool
 pub fn Aabb3::center(Self) -> Vec3
 pub fn Aabb3::contains(Self, Self) -> Bool
@@ -102,10 +104,11 @@ pub fn Aabb3::volume(Self) -> Float
 pub impl Show for Aabb3
 pub impl @debug.Debug for Aabb3
 
+#derive(Eq)
 pub(all) struct Affine2 {
   linear : Mat2
   translation : Vec2
-} derive(Eq)
+}
 pub fn Affine2::approx(Self, Self, eps? : Float) -> Bool
 pub fn Affine2::div(Self, Self) -> Self
 pub fn Affine2::equal(Self, Self) -> Bool
@@ -131,10 +134,11 @@ pub impl Mul for Affine2
 pub impl Show for Affine2
 pub impl @debug.Debug for Affine2
 
+#derive(Eq)
 pub(all) struct Affine3 {
   linear : Mat3
   translation : Vec3
-} derive(Eq)
+}
 pub fn Affine3::approx(Self, Self, eps? : Float) -> Bool
 pub fn Affine3::div(Self, Self) -> Self
 pub fn Affine3::equal(Self, Self) -> Bool
@@ -162,6 +166,7 @@ pub impl Mul for Affine3
 pub impl Show for Affine3
 pub impl @debug.Debug for Affine3
 
+#derive(Eq, @debug.Debug)
 pub(all) enum EulerOrder {
   Xyz
   Xzy
@@ -175,7 +180,7 @@ pub(all) enum EulerOrder {
   Yzy
   Zxz
   Zyz
-} derive(Eq, @debug.Debug)
+}
 pub fn EulerOrder::equal(Self, Self) -> Bool
 pub fn EulerOrder::not_equal(Self, Self) -> Bool
 pub fn EulerOrder::to_repr(Self) -> @debug.Repr
@@ -202,10 +207,11 @@ pub impl Eq for Frustum
 pub impl Show for Frustum
 pub impl @debug.Debug for Frustum
 
+#derive(Eq, Hash)
 pub(all) struct IVec2 {
   x : Int32
   y : Int32
-} derive(Eq, Hash)
+}
 pub fn IVec2::abs(Self) -> Self
 pub fn IVec2::add(Self, Self) -> Self
 pub fn IVec2::as_vec2(Self) -> Vec2
@@ -238,11 +244,12 @@ pub impl Show for IVec2
 pub impl Sub for IVec2
 pub impl @debug.Debug for IVec2
 
+#derive(Eq, Hash)
 pub(all) struct IVec3 {
   x : Int32
   y : Int32
   z : Int32
-} derive(Eq, Hash)
+}
 pub fn IVec3::abs(Self) -> Self
 pub fn IVec3::add(Self, Self) -> Self
 pub fn IVec3::as_vec3(Self) -> Vec3
@@ -275,12 +282,13 @@ pub impl Show for IVec3
 pub impl Sub for IVec3
 pub impl @debug.Debug for IVec3
 
+#derive(Eq, Hash)
 pub(all) struct IVec4 {
   x : Int32
   y : Int32
   z : Int32
   w : Int32
-} derive(Eq, Hash)
+}
 pub fn IVec4::abs(Self) -> Self
 pub fn IVec4::add(Self, Self) -> Self
 pub fn IVec4::as_vec4(Self) -> Vec4
@@ -313,10 +321,11 @@ pub impl Show for IVec4
 pub impl Sub for IVec4
 pub impl @debug.Debug for IVec4
 
+#derive(Eq)
 pub(all) struct Mat2 {
   c0 : Vec2
   c1 : Vec2
-} derive(Eq)
+}
 pub fn Mat2::add(Self, Self) -> Self
 pub fn Mat2::approx(Self, Self, eps? : Float) -> Bool
 pub fn Mat2::col(Self, Int32) -> Vec2
@@ -353,11 +362,12 @@ pub impl Show for Mat2
 pub impl Sub for Mat2
 pub impl @debug.Debug for Mat2
 
+#derive(Eq)
 pub(all) struct Mat3 {
   c0 : Vec3
   c1 : Vec3
   c2 : Vec3
-} derive(Eq)
+}
 pub fn Mat3::add(Self, Self) -> Self
 pub fn Mat3::approx(Self, Self, eps? : Float) -> Bool
 pub fn Mat3::col(Self, Int32) -> Vec3
@@ -397,12 +407,13 @@ pub impl Show for Mat3
 pub impl Sub for Mat3
 pub impl @debug.Debug for Mat3
 
+#derive(Eq)
 pub(all) struct Mat4 {
   c0 : Vec4
   c1 : Vec4
   c2 : Vec4
   c3 : Vec4
-} derive(Eq)
+}
 pub fn Mat4::add(Self, Self) -> Self
 pub fn Mat4::approx(Self, Self, eps? : Float) -> Bool
 pub fn Mat4::col(Self, Int32) -> Vec4
@@ -456,10 +467,11 @@ pub impl Show for Mat4
 pub impl Sub for Mat4
 pub impl @debug.Debug for Mat4
 
+#derive(Eq)
 pub(all) struct Plane {
   normal : Vec3
   distance : Float
-} derive(Eq)
+}
 pub fn Plane::approx(Self, Self, eps? : Float) -> Bool
 pub fn Plane::equal(Self, Self) -> Bool
 pub fn Plane::flip(Self) -> Self
@@ -477,12 +489,13 @@ pub fn Plane::to_string(Self) -> String
 pub impl Show for Plane
 pub impl @debug.Debug for Plane
 
+#derive(Eq)
 pub(all) struct Quat {
   x : Float
   y : Float
   z : Float
   w : Float
-} derive(Eq)
+}
 pub fn Quat::approx(Self, Self, eps? : Float) -> Bool
 pub fn Quat::conjugate(Self) -> Self
 pub fn Quat::div(Self, Self) -> Self
@@ -522,10 +535,11 @@ pub impl Neg for Quat
 pub impl Show for Quat
 pub impl @debug.Debug for Quat
 
+#derive(Eq)
 pub(all) struct Ray2 {
   origin : Vec2
   direction : Vec2
-} derive(Eq)
+}
 pub fn Ray2::approx(Self, Self, eps? : Float) -> Bool
 pub fn Ray2::at(Self, Float) -> Vec2
 pub fn Ray2::equal(Self, Self) -> Bool
@@ -541,10 +555,11 @@ pub fn Ray2::to_string(Self) -> String
 pub impl Show for Ray2
 pub impl @debug.Debug for Ray2
 
+#derive(Eq)
 pub(all) struct Ray3 {
   origin : Vec3
   direction : Vec3
-} derive(Eq)
+}
 pub fn Ray3::approx(Self, Self, eps? : Float) -> Bool
 pub fn Ray3::at(Self, Float) -> Vec3
 pub fn Ray3::equal(Self, Self) -> Bool
@@ -561,10 +576,11 @@ pub fn Ray3::to_string(Self) -> String
 pub impl Show for Ray3
 pub impl @debug.Debug for Ray3
 
+#derive(Eq)
 pub(all) struct Rect {
   origin : Vec2
   size : Vec2
-} derive(Eq)
+}
 pub fn Rect::approx(Self, Self, eps? : Float) -> Bool
 pub fn Rect::area(Self) -> Float
 pub fn Rect::center(Self) -> Vec2
@@ -592,10 +608,11 @@ pub fn Rect::width(Self) -> Float
 pub impl Show for Rect
 pub impl @debug.Debug for Rect
 
+#derive(Eq)
 pub(all) struct Sphere {
   center : Vec3
   radius : Float
-} derive(Eq)
+}
 pub fn Sphere::approx(Self, Self, eps? : Float) -> Bool
 pub fn Sphere::contains_point(Self, Vec3) -> Bool
 pub fn Sphere::equal(Self, Self) -> Bool
@@ -611,11 +628,12 @@ pub fn Sphere::volume(Self) -> Float
 pub impl Show for Sphere
 pub impl @debug.Debug for Sphere
 
+#derive(Eq)
 pub(all) struct Triangle {
   a : Vec3
   b : Vec3
   c : Vec3
-} derive(Eq)
+}
 pub fn Triangle::approx(Self, Self, eps? : Float) -> Bool
 pub fn Triangle::area(Self) -> Float
 pub fn Triangle::barycentric(Self, Vec3) -> Vec3?
@@ -630,11 +648,12 @@ pub fn Triangle::to_string(Self) -> String
 pub impl Show for Triangle
 pub impl @debug.Debug for Triangle
 
+#derive(Eq)
 pub(all) struct Trs {
   translation : Vec3
   rotation : Quat
   scale : Vec3
-} derive(Eq)
+}
 pub fn Trs::equal(Self, Self) -> Bool
 pub fn Trs::new(Vec3, Quat, Vec3) -> Self
 pub fn Trs::not_equal(Self, Self) -> Bool
@@ -644,11 +663,12 @@ pub fn Trs::to_string(Self) -> String
 pub impl Show for Trs
 pub impl @debug.Debug for Trs
 
+#derive(Eq)
 pub(all) struct Turns {
   first : Float
   second : Float
   third : Float
-} derive(Eq)
+}
 pub fn Turns::approx(Self, Self, eps? : Float) -> Bool
 pub fn Turns::equal(Self, Self) -> Bool
 pub fn Turns::new(Float, Float, Float) -> Self
@@ -659,10 +679,11 @@ pub fn Turns::to_string(Self) -> String
 pub impl Show for Turns
 pub impl @debug.Debug for Turns
 
+#derive(Eq, Hash)
 pub(all) struct UVec2 {
   x : UInt32
   y : UInt32
-} derive(Eq, Hash)
+}
 pub fn UVec2::add(Self, Self) -> Self
 pub fn UVec2::as_vec2(Self) -> Vec2
 pub fn UVec2::clamp(Self, Self, Self) -> Self
@@ -691,11 +712,12 @@ pub impl Show for UVec2
 pub impl Sub for UVec2
 pub impl @debug.Debug for UVec2
 
+#derive(Eq, Hash)
 pub(all) struct UVec3 {
   x : UInt32
   y : UInt32
   z : UInt32
-} derive(Eq, Hash)
+}
 pub fn UVec3::add(Self, Self) -> Self
 pub fn UVec3::as_vec3(Self) -> Vec3
 pub fn UVec3::clamp(Self, Self, Self) -> Self
@@ -724,12 +746,13 @@ pub impl Show for UVec3
 pub impl Sub for UVec3
 pub impl @debug.Debug for UVec3
 
+#derive(Eq, Hash)
 pub(all) struct UVec4 {
   x : UInt32
   y : UInt32
   z : UInt32
   w : UInt32
-} derive(Eq, Hash)
+}
 pub fn UVec4::add(Self, Self) -> Self
 pub fn UVec4::as_vec4(Self) -> Vec4
 pub fn UVec4::clamp(Self, Self, Self) -> Self
@@ -758,10 +781,11 @@ pub impl Show for UVec4
 pub impl Sub for UVec4
 pub impl @debug.Debug for UVec4
 
+#derive(Eq)
 pub(all) struct Vec2 {
   x : Float
   y : Float
-} derive(Eq)
+}
 pub fn Vec2::abs(Self) -> Self
 pub fn Vec2::add(Self, Self) -> Self
 pub fn Vec2::angle_between(Self, Self) -> Float
@@ -818,11 +842,12 @@ pub impl Show for Vec2
 pub impl Sub for Vec2
 pub impl @debug.Debug for Vec2
 
+#derive(Eq)
 pub(all) struct Vec3 {
   x : Float
   y : Float
   z : Float
-} derive(Eq)
+}
 pub fn Vec3::abs(Self) -> Self
 pub fn Vec3::add(Self, Self) -> Self
 pub fn Vec3::angle_between(Self, Self) -> Float
@@ -885,12 +910,13 @@ pub impl Show for Vec3
 pub impl Sub for Vec3
 pub impl @debug.Debug for Vec3
 
+#derive(Eq)
 pub(all) struct Vec4 {
   x : Float
   y : Float
   z : Float
   w : Float
-} derive(Eq)
+}
 pub fn Vec4::abs(Self) -> Self
 pub fn Vec4::add(Self, Self) -> Self
 pub fn Vec4::approx(Self, Self, eps? : Float) -> Bool

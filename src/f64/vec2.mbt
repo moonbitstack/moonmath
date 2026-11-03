@@ -13,12 +13,13 @@
 /// The operators take two vectors of the same type. There is no `Vec2 * Float`,
 /// because a value can only carry one `Mul` implementation here: scalar scaling
 /// is `scale`, its inverse `divide`.
+#derive(Eq)
 pub(all) struct Vec2 {
   /// The x component: east.
   x : Double
   /// The y component: north.
   y : Double
-} derive(Eq)
+}
 
 ///|
 pub extend Vec2 with Eq::{equal, not_equal}

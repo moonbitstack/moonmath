@@ -15,6 +15,7 @@
 /// them they cover every way to name a rotation by three angles; the choice is
 /// a convention of the file format or the editor that produced the angles, not
 /// of the arithmetic.
+#derive(Eq, Debug)
 pub(all) enum EulerOrder {
   /// Turns about x, then y, then z: the family that locks at a quarter turn of y.
   Xyz
@@ -40,7 +41,7 @@ pub(all) enum EulerOrder {
   Zxz
   /// Turns about z, then y, then z again.
   Zyz
-} derive(Eq, Debug)
+}
 
 ///|
 pub extend EulerOrder with Eq::{equal, not_equal}
@@ -107,6 +108,7 @@ fn cycle_parity(first : Int32, second : Int32, third : Int32) -> Double {
 /// is legitimate and only the end result has to be normal. Anything that
 /// composes an arbitrary number of them — `rotate`, `to_mat3`, `slerp` — says
 /// when it assumes unit length.
+#derive(Eq)
 pub(all) struct Quat {
   /// The x part of the axis, scaled by the sine of half the angle.
   x : Double
@@ -116,7 +118,7 @@ pub(all) struct Quat {
   z : Double
   /// The cosine of half the angle.
   w : Double
-} derive(Eq)
+}
 
 ///|
 pub extend Quat with Eq::{equal, not_equal}
@@ -166,6 +168,7 @@ pub fn Quat::from_axis_angle(axis : Vec3, radians : Double) -> Quat {
 /// components are named after axes, and for those six orders the third turn is
 /// not about the third axis; naming the slots after their place in the order
 /// says exactly what they are.
+#derive(Eq)
 pub(all) struct Turns {
   /// The turn about the first axis the order names.
   first : Double
@@ -173,7 +176,7 @@ pub(all) struct Turns {
   second : Double
   /// The turn about the third axis the order names.
   third : Double
-} derive(Eq)
+}
 
 ///|
 pub extend Turns with Eq::{equal, not_equal}

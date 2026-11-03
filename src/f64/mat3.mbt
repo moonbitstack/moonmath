@@ -10,6 +10,7 @@
 /// `Affine3`.
 ///
 /// Values are immutable.
+#derive(Eq)
 pub(all) struct Mat3 {
   /// The first column.
   c0 : Vec3
@@ -17,7 +18,7 @@ pub(all) struct Mat3 {
   c1 : Vec3
   /// The third column.
   c2 : Vec3
-} derive(Eq)
+}
 
 ///|
 pub extend Mat3 with Eq::{equal, not_equal}
