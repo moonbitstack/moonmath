@@ -141,6 +141,33 @@ let far_away = @f64.Vec3::new(1.0e9, 0.0, 0.0)
 let scaled = far_away.scale(2.0)
 ```
 
+### Half precision
+
+A packed vertex or a texture often carries a sixteen-bit float, and `Half` is that encoding: the bits in and out, the conversion to and from `Float` rounded to nearest with ties to even, and the special values kept.
+
+```moonbit
+let packed = @moonmath.Half::from_float(1.5)
+let restored = packed.to_float()
+let raw = packed.to_bits()
+```
+
+### Colour, shear, intervals and sampling
+
+`Color3` and `Color4` are the component arithmetic a blend or a gradient needs; `rgb_to_hsv` and `hsv_to_rgb` convert between the two forms. `Shear` is the off-diagonal linear map a skew is. `Interval` is a one-dimensional range with union, intersection and growth. `Line3` is an infinite line with the closest-point and plane-intersection questions. The sampling functions turn uniform values in `[0, 1)` into points with the right distribution, and leave the random source to the caller:
+
+```moonbit
+let red = @moonmath.Color3::new(1.0, 0.0, 0.0)
+let hue = @moonmath.rgb_to_hsv(red)
+
+let skew = @moonmath.Shear::new(0.3, 0.0, 0.0).to_mat3()
+let span = @moonmath.Interval::new(0.0, 1.0).union(
+  @moonmath.Interval::new(2.0, 3.0),
+)
+
+// The two values are a uniform random source the caller owns.
+let on_sphere = @moonmath.Vec3::random_on_sphere(0.25, 0.75)
+```
+
 ## The interface
 
 Every type below is a value type: immutable, and returning a new value from every operation. Unless a row says otherwise, each also carries `+ - * /`, unary `-`, `Eq`, `Show` and `Debug`.
@@ -161,6 +188,8 @@ Every type below is a value type: immutable, and returning a new value from ever
 | `approx_angle(a, b, eps? : Float) -> Bool` | the same, for angles that wrap at `tau` |
 | `clamp01(value) -> Float` | pinned to `0..1` |
 | `pi`, `tau`, `half_pi`, `quarter_pi`, `default_epsilon` | the constants |
+
+`Half` is the 16-bit float of a packed vertex or a texture: `from_float`, `to_float`, `from_bits`, `to_bits`, the predicates `is_finite`, `is_nan`, `is_inf`, `is_normal`, `is_denormal`, and the constants from `zero` and `one` to `max`, `min` and `epsilon`.
 
 ### Vectors
 
@@ -247,6 +276,7 @@ What each type adds:
 | | `orthographic(left, right, bottom, top, near, far)` | depth 0..1 |
 | | `frustum(left, right, bottom, top, near, far)` | depth 0..1, off-centre |
 | | `perspective_gl`, `perspective_infinite_gl`, `orthographic_gl`, `frustum_gl` | the same four, depth -1..1 |
+| `Shear` | `new(xy, xz, yz)`, `zero()`, `to_mat3()`, `to_mat4()` | the off-diagonal terms as a linear map |
 
 ### Rotations
 
@@ -305,8 +335,36 @@ What each type adds:
 | `Frustum` | `from_matrix(view_projection) -> Frustum?`, `from_matrix_gl(view_projection) -> Frustum?` | six planes facing inwards |
 | | `planes() -> FixedArray[Plane]`, `plane(i) -> Plane` | left, right, bottom, top, near, far |
 | | `contains_point(p)`, `contains_aabb(box)`, `intersects_aabb(box)`, `contains_sphere(s)`, `intersects_sphere(s)` | |
+| `Line3` | `new(point, direction)`, `at(t)`, `closest_point_to(p)`, `distance_to_point(p)`, `closest_point_to_line(line)`, `distance_to_line(line)`, `intersect_plane(plane) -> Vec3?` | an infinite line |
+| `Interval` | `new(min, max)`, `empty()`, `size()`, `center()`, `contains(x)`, `intersects(other)`, `intersection(other) -> Interval?`, `union(other)`, `extend_by(x)`, `expand(amount)` | a one-dimensional range |
 
 The intersection functions return the `t` of the crossing rather than the point, because the distance is usually what a caller wants and the point is `at(t)`. A ray that starts inside a shape reports the crossing on its way out.
+
+### Colour
+
+| Type | Signature | Meaning |
+|:--|:--|:--|
+| `Color3`, `Color4` | `new(...)`, `splat(v)`, `zero()`, `one()` | red, green and blue, and alpha |
+| | `min(other)`, `max(other)`, `lerp(other, t)` | component-wise |
+| | `to_array()`, `is_finite()`, `approx(other, eps?)` | |
+| | `rgb_to_hsv(c)`, `hsv_to_rgb(c)` | between the two forms; the hue in turns |
+
+## Special functions
+
+`moonbitstack/moonmath/special` is a subpackage at `Double` for the functions a probability, a physics or a numerical caller reaches for:
+
+| Function | Meaning |
+|:--|:--|
+| `gamma(x)`, `lgamma(x)` | the gamma function and its log; reflection below one half |
+| `beta(a, b)`, `lbeta(a, b)` | the beta function and its log |
+| `erf(x)`, `erfc(x)` | the error function and its complement |
+| `ellipk(m)`, `ellipe(m)` | the complete elliptic integrals, by the arithmetic-geometric mean |
+| `zeta(s)` | the Riemann zeta, for `s > 1` |
+
+```moonbit
+let root_pi = @special.gamma(0.5)
+let tail = @special.erfc(2.0)
+```
 
 ## Examples
 

@@ -1,0 +1,9 @@
+// Special functions at double precision: the gamma and error families, the
+// complete elliptic integrals and the Riemann zeta.
+//
+// Double precision only. The parent package holds the vectors and matrices a GPU
+// works in; these functions need the wider mantissa to be worth carrying, and a
+// `Float` copy would spend its accuracy on rounding.
+import {
+  "moonbitlang/core/math",
+}

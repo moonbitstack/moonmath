@@ -1,0 +1,29 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonbitstack/moonmath/special"
+
+// Values
+pub fn beta(Double, Double) -> Double
+
+pub fn ellipe(Double) -> Double
+
+pub fn ellipk(Double) -> Double
+
+pub fn erf(Double) -> Double
+
+pub fn erfc(Double) -> Double
+
+pub fn gamma(Double) -> Double
+
+pub fn lbeta(Double, Double) -> Double
+
+pub fn lgamma(Double) -> Double
+
+pub fn zeta(Double) -> Double
+
+// Errors
+
+// Types and methods
+
+// Type aliases
+
+// Traits

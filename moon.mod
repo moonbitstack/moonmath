@@ -29,6 +29,16 @@ keywords = [
   "webgpu",
   "gpu",
   "glm",
+  "half-precision",
+  "euler-angles",
+  "shear",
+  "color",
+  "interval",
+  "random-sampling",
+  "special-functions",
+  "gamma",
+  "elliptic-integral",
+  "zeta",
   "moonbit",
 ]
 
