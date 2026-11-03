@@ -188,6 +188,11 @@ pub fn BigFloat::exp(self : BigFloat) -> BigFloat {
   }
   let base = BigFloat::ln2(bits)
   let steps = self.div(base).truncate_to_int()
+  // `exp` is a shift by `steps` bits, so a large argument is a value no fixed
+  // point can hold; say so rather than build an astronomically long integer.
+  if steps > 100000 || steps < -100000 {
+    abort("BigFloat::exp: the exponent is beyond the fixed-point range")
+  }
   let rest = self.sub(BigFloat::from_int(steps, bits).mul(base))
   let mut term = BigFloat::one(bits)
   let mut sum = BigFloat::one(bits)

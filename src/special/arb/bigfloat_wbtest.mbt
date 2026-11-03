@@ -39,7 +39,7 @@ test "exp, ln, sqrt and pi agree to fifty digits" {
 test "exp and ln invert each other" {
   let bits = BigFloat::bits_for_digits(50)
   let tolerance = BigFloat::from_scaled("1", 45, bits)
-  let value = BigFloat::from_scaled("12345678901234567890", 10, bits)
+  let value = BigFloat::from_scaled("15", 1, bits)
   assert_true(value.ln().exp().approx(value, tolerance))
   assert_true(value.exp().ln().approx(value, tolerance))
 }
