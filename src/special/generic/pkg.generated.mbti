@@ -16,8 +16,6 @@ pub fn[T] bessel_y(T, T, Ops[T]) -> T
 
 pub fn[T] beta(T, T, Ops[T]) -> T
 
-pub fn bigfloat_ops(Int32) -> Ops[@moonnum.BigFloat]
-
 pub fn[T] digamma(T, Ops[T]) -> T
 
 pub let double_algebra : Ops[Double]
@@ -55,6 +53,8 @@ pub fn[T] erfcx(T, Ops[T]) -> T
 pub fn[T] erfi(T, Ops[T]) -> T
 
 pub fn[T] erfinv(T, Ops[T]) -> T
+
+pub fn fixed_ops(Int32) -> Ops[@moonnum.Fixed]
 
 pub fn[T] gamma(T, Ops[T]) -> T
 

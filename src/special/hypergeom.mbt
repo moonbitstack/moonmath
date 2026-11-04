@@ -8,7 +8,7 @@
 // terms run far above the result and come back to it, and the double that
 // carries them keeps only the digits left over. `1F1` reports the largest term
 // it formed beside the value, and this face — which can see `moonnum`'s
-// arbitrary-precision `BigFloat` — re-runs the sum at forty-five digits when the
+// arbitrary-precision `Fixed` — re-runs the sum at forty-five digits when the
 // terms ran far past the answer, then rounds once. The result is the
 // double-precision answer, computed in the precision that can hold it.
 //
@@ -18,8 +18,8 @@
 
 ///|
 /// `x`, at the width the escalation runs at.
-fn widened(x : Double, bits : Int32) -> @moonnum.BigFloat {
-  @moonnum.BigFloat::of_decimal(x.to_string(), bits)
+fn widened(x : Double, bits : Int32) -> @moonnum.Fixed {
+  @moonnum.Fixed::of_decimal(x.to_string(), bits)
 }
 
 ///|
@@ -64,8 +64,8 @@ pub fn hyper1f1(a : Double, b : Double, x : Double) -> Double {
   if !poor(value, largest) {
     return value
   }
-  let bits = @moonnum.BigFloat::bits_for_digits(45)
-  let ops = @generic.bigfloat_ops(bits)
+  let bits = @moonnum.Fixed::bits_for_digits(45)
+  let ops = @generic.fixed_ops(bits)
   @generic.hyper1f1(widened(a, bits), widened(b, bits), widened(x, bits), ops).to_double()
 }
 

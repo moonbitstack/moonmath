@@ -351,7 +351,7 @@ The intersection functions return the `t` of the crossing rather than the point,
 
 ## Special functions
 
-`moonbitstack/moonmath/special` is a subpackage for the functions a probability, a physics or a numerical caller reaches for. Every body is written once, in `special/generic`, against an `Ops` algebra of the number type; `special` is the double-precision face of it and `moonnum`'s `BigFloat` supplies the arbitrary-precision one, so the two precisions cannot drift apart.
+`moonbitstack/moonmath/special` is a subpackage for the functions a probability, a physics or a numerical caller reaches for. Every body is written once, in `special/generic`, against an `Ops` algebra of the number type; `special` is the double-precision face of it and `moonnum`'s `Fixed` supplies the arbitrary-precision one, so the two precisions cannot drift apart.
 
 | Function | Meaning |
 |:--|:--|
@@ -376,16 +376,16 @@ let tail = @special.erfc(2.0)
 let drum = @special.bessel_j(0.0, 2.4)
 ```
 
-The arbitrary-precision side runs the same functions on `moonnum`'s `BigFloat` — a fixed-point real carried as `mantissa / 2^bits` — at whatever width the caller asks for:
+The arbitrary-precision side runs the same functions on `moonnum`'s `Fixed` — a fixed-point real carried as `mantissa / 2^bits` — at whatever width the caller asks for:
 
 ```moonbit
-let bits = @moonnum.BigFloat::bits_for_digits(50)
-let ops = @generic.bigfloat_ops(bits)
-let x = @moonnum.BigFloat::of_decimal("0.5", bits)
+let bits = @moonnum.Fixed::bits_for_digits(50)
+let ops = @generic.fixed_ops(bits)
+let x = @moonnum.Fixed::of_decimal("0.5", bits)
 let value = @generic.gamma(x, ops)
 ```
 
-`BigFloat` lives in `moonbitstack/moonnum`, which is where a number belongs, and `moonmath` depends on it. Its release predates the type, so until `moonnum` cuts a version with it the dependency is resolved from a sibling checkout through `moon.work`:
+`Fixed` lives in `moonbitstack/moonnum`, which is where a number belongs, and `moonmath` depends on it. Its release predates the type, so until `moonnum` cuts a version with it the dependency is resolved from a sibling checkout through `moon.work`:
 
 ```
 members = [

@@ -11,7 +11,7 @@
 /// type.
 ///
 /// One value of this record is one number type. `double_ops` is the built-in
-/// precision and `bigfloat_ops` the arbitrary precision; a third type needs a
+/// precision and `fixed_ops` the arbitrary precision; a third type needs a
 /// third value and no change to the bodies.
 ///
 /// `digits` is the working precision in decimal digits. It is not used to
@@ -159,13 +159,13 @@ fn decimal_to_double(text : String) -> Double {
 }
 
 ///|
-/// The algebra of a `BigFloat` at `bits` fractional bits.
-pub fn bigfloat_ops(bits : Int32) -> Ops[@moonnum.BigFloat] {
+/// The algebra of a `Fixed` at `bits` fractional bits.
+pub fn fixed_ops(bits : Int32) -> Ops[@moonnum.Fixed] {
   {
-    zero: @moonnum.BigFloat::zero(bits),
-    one: @moonnum.BigFloat::one(bits),
-    from_int: fn(i) { @moonnum.BigFloat::of_int(i, bits) },
-    from_decimal: fn(text) { @moonnum.BigFloat::of_decimal(text, bits) },
+    zero: @moonnum.Fixed::zero(bits),
+    one: @moonnum.Fixed::one(bits),
+    from_int: fn(i) { @moonnum.Fixed::of_int(i, bits) },
+    from_decimal: fn(text) { @moonnum.Fixed::of_decimal(text, bits) },
     add: fn(a, b) { a.add(b) },
     sub: fn(a, b) { a.sub(b) },
     mul: fn(a, b) { a.mul(b) },
@@ -180,13 +180,13 @@ pub fn bigfloat_ops(bits : Int32) -> Ops[@moonnum.BigFloat] {
     cos: fn(x) { x.cos() },
     atan: fn(x) { x.atan() },
     bernoulli: parse_bernoulli(fn(text) {
-      @moonnum.BigFloat::of_decimal(text, bits)
+      @moonnum.Fixed::of_decimal(text, bits)
     }),
-    pi: @moonnum.BigFloat::pi(bits),
-    lt: fn(a, b) { a.lt(b) },
-    le: fn(a, b) { a.le(b) },
+    pi: @moonnum.Fixed::pi(bits),
+    lt: fn(a, b) { a < b },
+    le: fn(a, b) { a <= b },
     is_zero: fn(x) { x.is_zero() },
-    digits: @moonnum.BigFloat::digits_for_bits(bits),
+    digits: @moonnum.Fixed::digits_for_bits(bits),
     to_double: fn(x) { x.to_double() },
   }
 }

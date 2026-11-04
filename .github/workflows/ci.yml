@@ -19,14 +19,6 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: the wider type, from the branch that carries it
-        shell: bash
-        run: |
-          # `moon.work` resolves `moonbitstack/moonnum` from a sibling checkout:
-          # the published release predates `BigFloat`. This step is what that
-          # costs until the release lands, and it is the whole of what has to go.
-          git clone --depth 1 --branch feat/bigfloat https://github.com/moonbitstack/moonnum.git ../moonnum
-
       - name: install-unix
         if: ${{ runner.os != 'Windows' }}
         run: |

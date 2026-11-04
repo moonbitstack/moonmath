@@ -2,17 +2,14 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // The arbitrary-precision side: the same bodies the double package runs, handed
-// the `BigFloat` algebra, checked against `mpmath` at fifty and a hundred digits.
+// the `Fixed` algebra, checked against `mpmath` at fifty and a hundred digits.
 // The vectors in `arb_data_wbtest.mbt` are strings because that is the only way
 // to carry a value past what a double holds.
 
 ///|
-/// A row's arguments, as `BigFloat` values at one width.
-fn arguments(
-  fields : Array[StringView],
-  bits : Int32,
-) -> Array[@moonnum.BigFloat] {
-  fields.map(fn(field) { @moonnum.BigFloat::of_decimal(field.to_owned(), bits) })
+/// A row's arguments, as `Fixed` values at one width.
+fn arguments(fields : Array[StringView], bits : Int32) -> Array[@moonnum.Fixed] {
+  fields.map(fn(field) { @moonnum.Fixed::of_decimal(field.to_owned(), bits) })
 }
 
 ///|
@@ -20,9 +17,9 @@ fn arguments(
 /// place the name and the call meet, so a row that names nothing fails loudly.
 fn evaluate(
   name : String,
-  args : Array[@moonnum.BigFloat],
-  ops : Ops[@moonnum.BigFloat],
-) -> @moonnum.BigFloat {
+  args : Array[@moonnum.Fixed],
+  ops : Ops[@moonnum.Fixed],
+) -> @moonnum.Fixed {
   match name {
     "erf" => erf(args[0], ops)
     "erfc" => erfc(args[0], ops)
@@ -73,28 +70,28 @@ fn replay(
   digits : Int32,
   tolerance : String,
 ) -> Unit {
-  let bits = @moonnum.BigFloat::bits_for_digits(digits)
-  let ops = bigfloat_ops(bits)
-  let allowed = @moonnum.BigFloat::of_decimal(tolerance, bits)
+  let bits = @moonnum.Fixed::bits_for_digits(digits)
+  let ops = fixed_ops(bits)
+  let allowed = @moonnum.Fixed::of_decimal(tolerance, bits)
   // The asymptotic expansion's truncation error, which no width can push below
   // the size of the first omitted term.
-  let asymptotic = @moonnum.BigFloat::of_decimal("1e-18", bits)
+  let asymptotic = @moonnum.Fixed::of_decimal("1e-18", bits)
   // The integer-order `K_n` loses about half its width to the cancellation in
   // its logarithmic series: the logarithm times an exponentially large `I_n` and
   // the series that cancels it are each around a million times the answer, and
   // the fixed point hands back a little under half of what is left.
-  let cancellation = @moonnum.BigFloat::of_decimal("1e-\{digits / 2 - 2}", bits)
+  let cancellation = @moonnum.Fixed::of_decimal("1e-\{digits / 2 - 2}", bits)
   for row in cases {
     let (name, arguments_text, expected) = row
     let fields = arguments_text.split(",").to_array()
     let got = evaluate(name, arguments(fields, bits), ops)
-    let want = @moonnum.BigFloat::of_decimal(expected, bits)
+    let want = @moonnum.Fixed::of_decimal(expected, bits)
     if got.compare(want) != 0 {
       if want.is_zero() {
         // A value that is exactly zero is the one case a relative check cannot
         // state. These functions are all of order one where they vanish, so the
         // relative tolerance serves as an absolute one.
-        if allowed.lt(got.abs()) {
+        if allowed < got.abs() {
           abort("\{name}(\{arguments_text}): got \{got.to_double()}, want zero")
         }
       } else {
@@ -104,7 +101,7 @@ fn replay(
           "bessel_k" => cancellation
           _ => allowed
         }
-        if limit.lt(error) {
+        if limit < error {
           abort(
             "\{name}(\{arguments_text}): relative error \{error.to_double()} at \{digits} digits",
           )
