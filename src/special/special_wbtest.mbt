@@ -30,16 +30,15 @@ fn check(label : String, got : Double, want : Double) -> Unit {
 }
 
 ///|
-/// The same comparison at a stated relative tolerance, for the functions whose
-/// series cancels.
+/// The same comparison at a stated relative tolerance, for the functions that
+/// need one of their own.
 ///
-/// `Y_n` and `K_n` at an integer order come from a logarithm multiplied by an
-/// exponentially large `I_n` and a series that cancels it: at `x = 8` the two
-/// halves are around `6e2` and the answer is `1.5e-4`, so six digits go to the
-/// cancellation before the first operation. The double precision of those two is
-/// therefore a few digits above `1e-8`, not the fifteen the rest of the package
-/// keeps — the check says so rather than pretending otherwise, and the
-/// arbitrary-precision test measures the same limit at fifty digits.
+/// The Bessel functions used to need a loose one here: the series lost six or
+/// seven digits to cancellation once the argument was well past the order. They
+/// no longer do — the continued fractions in `special/generic` closed that — but
+/// the tighter check lives in `boost_check_wbtest`, against Boost's tables and
+/// across the whole range rather than at five points, so this one stays at what
+/// the sampled points need.
 fn check_within(
   label : String,
   got : Double,
@@ -168,19 +167,19 @@ test "the elliptic integrals match the reference" {
 test "the Bessel functions match the reference" {
   for triple in bessel_j_cases {
     let (v, x, want) = triple
-    check_within("bessel_j(\{v}, \{x})", bessel_j(v, x), want, 1.0e-9)
+    check_within("bessel_j(\{v}, \{x})", bessel_j(v, x), want, 1.0e-12)
   }
   for triple in bessel_y_cases {
     let (v, x, want) = triple
-    check_within("bessel_y(\{v}, \{x})", bessel_y(v, x), want, 1.0e-6)
+    check_within("bessel_y(\{v}, \{x})", bessel_y(v, x), want, 1.0e-11)
   }
   for triple in bessel_i_cases {
     let (v, x, want) = triple
-    check_within("bessel_i(\{v}, \{x})", bessel_i(v, x), want, 1.0e-9)
+    check_within("bessel_i(\{v}, \{x})", bessel_i(v, x), want, 1.0e-12)
   }
   for triple in bessel_k_cases {
     let (v, x, want) = triple
-    check_within("bessel_k(\{v}, \{x})", bessel_k(v, x), want, 1.0e-6)
+    check_within("bessel_k(\{v}, \{x})", bessel_k(v, x), want, 1.0e-12)
   }
 }
 

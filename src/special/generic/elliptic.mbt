@@ -265,12 +265,23 @@ pub fn[T] ellipkm1(m1 : T, ops : Ops[T]) -> T {
 ///
 /// `F = sin(phi) R_F(cos²phi, 1 - m sin²phi, 1)`.
 pub fn[T] ellipkinc(phi : T, m : T, ops : Ops[T]) -> T {
-  let sine = (ops.sin)(phi)
-  let cosine = (ops.cos)(phi)
+  // `F` is not periodic — one turn of `π` adds `2K(m)` — so the angle is reduced
+  // to a half turn first and the periods are added back afterwards. The
+  // duplication behind `R_F` is only valid inside that half turn.
+  let pi = ops.pi
+  let turns = (ops.to_double)((ops.div)(phi, pi)).round().to_int()
+  let reduced = (ops.sub)(phi, (ops.mul)(pi, (ops.from_int)(turns)))
+  let sine = (ops.sin)(reduced)
+  let cosine = (ops.cos)(reduced)
   let squared = (ops.mul)(sine, sine)
   let first = (ops.mul)(cosine, cosine)
   let second = (ops.sub)(ops.one, (ops.mul)(m, squared))
-  (ops.mul)(sine, elliprf(first, second, ops.one, ops))
+  let value = (ops.mul)(sine, elliprf(first, second, ops.one, ops))
+  if turns == 0 {
+    value
+  } else {
+    (ops.add)(value, (ops.mul)((ops.from_int)(2 * turns), ellipk(m, ops)))
+  }
 }
 
 ///|
@@ -280,8 +291,12 @@ pub fn[T] ellipkinc(phi : T, m : T, ops : Ops[T]) -> T {
 /// `E = sin(phi) R_F(cos²phi, 1 - m sin²phi, 1) - (m/3) sin³(phi) R_D(...)`.
 pub fn[T] ellipeinc(phi : T, m : T, ops : Ops[T]) -> T {
   let three = (ops.from_int)(3)
-  let sine = (ops.sin)(phi)
-  let cosine = (ops.cos)(phi)
+  // The same reduction, with `2E(m)` per turn of `π` rather than `2K(m)`.
+  let pi = ops.pi
+  let turns = (ops.to_double)((ops.div)(phi, pi)).round().to_int()
+  let reduced = (ops.sub)(phi, (ops.mul)(pi, (ops.from_int)(turns)))
+  let sine = (ops.sin)(reduced)
+  let cosine = (ops.cos)(reduced)
   let squared = (ops.mul)(sine, sine)
   let first = (ops.mul)(cosine, cosine)
   let second = (ops.sub)(ops.one, (ops.mul)(m, squared))
@@ -293,7 +308,12 @@ pub fn[T] ellipeinc(phi : T, m : T, ops : Ops[T]) -> T {
     ),
     three,
   )
-  (ops.sub)(base, tail)
+  let value = (ops.sub)(base, tail)
+  if turns == 0 {
+    value
+  } else {
+    (ops.add)(value, (ops.mul)((ops.from_int)(2 * turns), ellipe(m, ops)))
+  }
 }
 
 ///|

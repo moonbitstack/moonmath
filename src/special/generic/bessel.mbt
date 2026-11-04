@@ -1,11 +1,14 @@
 // Copyright 2026 Leo Cheng
 // SPDX-License-Identifier: Apache-2.0
 
-// The Bessel functions. Two regimes, and the boundary is where each stops being
-// usable: the power series cancels once `x` is well past the order, and the
-// asymptotic expansion only becomes accurate once `x` is well past it. Integer
-// order has closed forms with logarithms that the real order reaches as a limit,
-// so those are written out rather than approached.
+// The Bessel functions. Three regimes, and the boundaries are where each stops
+// being usable: the power series cancels once `x` is well past the order, the
+// asymptotic expansion only becomes accurate once `x` is well past the order
+// squared, and the stretch between the two is answered by continued fractions —
+// Steed's method for the ordinary kinds, and the Thompson and Barnett fractions
+// for the modified ones. Integer order has closed forms with logarithms that the
+// real order reaches as a limit, so those are written out rather than
+// approached.
 
 ///|
 /// The Bessel function of the first kind `J_v(x)`, for `x > 0` and `v >= 0`.
@@ -47,7 +50,33 @@ pub fn[T] bessel_i(v : T, x : T, ops : Ops[T]) -> T {
   if (ops.is_zero)(x) {
     return if (ops.is_zero)(v) { ops.one } else { ops.zero }
   }
-  if use_series(v, x, ops) {
+  // A negative order is not the same function: `I_(-ν) = I_ν + (2/π) sin(πν)
+  // K_ν`. The sine is taken from the fractional part of the order, because at an
+  // order of seventy the full-angle form would lose the digits the reduction
+  // had already spent.
+  if (ops.lt)(v, ops.zero) {
+    let order = (ops.neg)(v)
+    let rounded = (ops.to_double)(order).round().to_int()
+    let remainder = (ops.sub)(order, (ops.from_int)(rounded))
+    let sine = if rounded % 2 == 0 {
+      (ops.sin)((ops.mul)(ops.pi, remainder))
+    } else {
+      (ops.neg)((ops.sin)((ops.mul)(ops.pi, remainder)))
+    }
+    let base = bessel_i(order, x, ops)
+    let correction = (ops.mul)(
+      (ops.div)((ops.mul)((ops.from_int)(2), sine), ops.pi),
+      bessel_k(order, x, ops),
+    )
+    return (ops.add)(base, correction)
+  }
+  // `I`'s series has no alternating sign, so it does not cancel and does not need
+  // the argument to be small — only the room for its largest term, which is
+  // about `e^x`. It is therefore the better method everywhere the sum fits, and
+  // the asymptotic expansion takes over only past that, where the answer is on
+  // the edge of overflow anyway.
+  let room = if ops.digits <= 30 { 690.0 } else { (ops.digits * 2).to_double() }
+  if (ops.to_double)(x) <= room {
     bessel_i_series(v, x, ops)
   } else {
     let pair = bessel_ik_asymptotic(v, x, ops)
@@ -63,19 +92,116 @@ pub fn[T] bessel_i(v : T, x : T, ops : Ops[T]) -> T {
 ///  + (-1)^(n+1) ln(x/2) I_n(x)
 ///  + (-1)^n (1/2)(x/2)^n Σ_k (ψ(k+1) + ψ(n+k+1)) / (k! (n+k)!) (x²/4)^k`.
 pub fn[T] bessel_k(v : T, x : T, ops : Ops[T]) -> T {
-  // `K` is the one function whose two regimes both degrade with `x`. The series
-  // loses a digit for every factor the answer is smaller than the terms that
-  // form it — about `0.43 x` digits — while the asymptotic expansion's first
-  // omitted term falls like `e^-2x`. They cross near `x = digits / 1.3`, and on
-  // either side of that point the better of the two is a long way the better.
-  let crossing = (ops.mul)(x, (ops.from_int)(13))
-  let threshold = (ops.from_int)(ops.digits * 10)
-  if use_series(v, x, ops) && (ops.le)(crossing, threshold) {
-    bessel_k_series(v, x, ops)
+  // `K` is even in its order.
+  let order = if (ops.lt)(v, ops.zero) { (ops.neg)(v) } else { v }
+  // The series and the asymptotic expansion leave a gap between them that no
+  // choice of crossover closes: the series cancels a value orders below the
+  // terms that form it, and the expansion's first correction is only small once
+  // `x` is several times the order squared. The continued fraction below has
+  // neither problem, so at double precision it takes over as soon as it is valid
+  // — at `x > 2`.
+  //
+  // At a wider width the series keeps the digits the fraction would spend on its
+  // own summation: measured at a hundred digits, `K_2(8)` from the fraction
+  // agrees with `mpmath` to thirty-two places and from the series to fifty. The
+  // cancellation the fraction avoids is affordable there, so the older rule
+  // stands — the series near the order, the expansion past it.
+  if ops.digits <= 30 {
+    if (ops.le)(x, (ops.from_int)(2)) {
+      bessel_k_series(order, x, ops)
+    } else {
+      bessel_k_fraction(order, x, ops)
+    }
+  } else if use_series(order, x, ops) {
+    bessel_k_series(order, x, ops)
   } else {
-    let pair = bessel_ik_asymptotic(v, x, ops)
+    let pair = bessel_ik_asymptotic(order, x, ops)
     pair.1
   }
+}
+
+///|
+/// `K_v(x)` for `x > 2`, from the continued fraction of Thompson and Barnett.
+///
+/// The fraction is the ratio of two contiguous confluent hypergeometric
+/// functions, `U(v + 3/2, 2v + 1, 2x) / U(v + 1/2, 2v + 1, 2x)`, evaluated by
+/// Steed's algorithm, and the sum that runs beside it is what turns the ratio
+/// back into `K_v` itself. It converges for every `x > 2` and does not cancel,
+/// which is what closes the gap the series and the expansion leave.
+///
+/// The order is split into an integer and a remainder in `-1/2 .. 1/2`: the
+/// fraction answers for the remainder, and the integer part is raised from it by
+/// `K_(k+1) = (2k/x) K_k + K_(k-1)`, the stable direction for `K`.
+fn[T] bessel_k_fraction(v : T, x : T, ops : Ops[T]) -> T {
+  let two = (ops.from_int)(2)
+  let half = (ops.from_decimal)("0.5")
+  let quarter = (ops.from_decimal)("0.25")
+  let rounded = (ops.to_double)(v).round()
+  let whole = rounded.to_int()
+  let u = (ops.sub)(v, (ops.from_int)(whole))
+  let mu = (ops.sub)((ops.mul)(u, u), quarter)
+  let tolerance = (ops.from_decimal)("1e-\{ops.digits + 2}")
+  let mut a = mu
+  let mut b = (ops.mul)(two, (ops.add)(x, ops.one))
+  let mut d = (ops.div)(ops.one, b)
+  let mut delta = d
+  let mut fraction = d
+  let mut previous = ops.zero
+  let mut current = ops.one
+  let mut c = (ops.neg)(mu)
+  let mut q_sum = (ops.neg)(mu)
+  let mut sum = (ops.add)(ops.one, (ops.mul)(q_sum, delta))
+  let mut k : Int32 = 2
+  while k < 4000 {
+    a = (ops.sub)(a, (ops.mul)(two, (ops.from_int)(k - 1)))
+    b = (ops.add)(b, two)
+    d = (ops.div)(ops.one, (ops.add)(b, (ops.mul)(a, d)))
+    delta = (ops.mul)(delta, (ops.sub)((ops.mul)(b, d), ops.one))
+    fraction = (ops.add)(fraction, delta)
+    let q = (ops.div)(
+      (ops.sub)(previous, (ops.mul)((ops.sub)(b, two), current)),
+      a,
+    )
+    previous = current
+    current = q
+    c = (ops.mul)(c, (ops.div)((ops.neg)(a), (ops.from_int)(k)))
+    q_sum = (ops.add)(q_sum, (ops.mul)(c, q))
+    sum = (ops.add)(sum, (ops.mul)(q_sum, delta))
+    if (ops.lt)(
+        (ops.abs)((ops.mul)(q_sum, delta)),
+        (ops.mul)((ops.abs)(sum), tolerance),
+      ) {
+      break
+    }
+    k = k + 1
+  }
+  let pi = ops.pi
+  let scale = (ops.mul)(
+    (ops.sqrt)((ops.div)(pi, (ops.mul)(two, x))),
+    (ops.exp)((ops.neg)(x)),
+  )
+  let here = (ops.div)(scale, sum)
+  let next = (ops.div)(
+    (ops.mul)(
+      here,
+      (ops.add)((ops.add)((ops.add)(half, u), x), (ops.mul)(mu, fraction)),
+    ),
+    x,
+  )
+  let mut low = here
+  let mut high = next
+  let mut step : Int32 = 1
+  while step <= whole {
+    let factor = (ops.div)(
+      (ops.mul)(two, (ops.add)(u, (ops.from_int)(step))),
+      x,
+    )
+    let raised = (ops.add)((ops.mul)(factor, high), low)
+    low = high
+    high = raised
+    step = step + 1
+  }
+  low
 }
 
 ///|
@@ -108,8 +234,32 @@ fn[T] bessel_jy(v : T, x : T, ops : Ops[T]) -> (T, T) {
     abort("bessel_j: x must be positive")
   }
   let order = bessel_integer_order(v, ops)
-  if !use_series(v, x, ops) {
-    return bessel_jy_asymptotic(v, x, ops)
+  // Three regimes. The series holds up to `x = 1`; past that the asymptotic
+  // expansion takes over once its first correction stops being negligible —
+  // it falls like `(v²)² / x`, so `x` has to be several times the order
+  // squared — and Steed's method fills the stretch in between.
+  if (ops.lt)(ops.one, x) {
+    let reach = (ops.add)(
+      (ops.mul)((ops.from_int)(8), (ops.mul)(v, v)),
+      (ops.from_int)(40),
+    )
+    if (ops.lt)(reach, x) {
+      return bessel_jy_asymptotic(v, x, ops)
+    }
+    // Steed's method starts its backward recurrence from an arbitrary tiny
+    // value, which needs an exponent range to hold; the fixed point at fifty
+    // digits has none to spare, and does not need one — at that width the
+    // series can afford the cancellation. So the method is the double-precision
+    // answer to this stretch of the range, and the series stays for width.
+    if ops.digits <= 30 {
+      return bessel_jy_steed(v, x, ops)
+    }
+    // At a width that can afford the cancellation, the series is the better
+    // tool while `x` is still near the order, and the expansion takes over once
+    // it is not.
+    if !use_series(v, x, ops) {
+      return bessel_jy_asymptotic(v, x, ops)
+    }
   }
   let j = bessel_j_series(v, x, ops)
   let y = if order >= 0 {
@@ -371,6 +521,161 @@ fn[T] bessel_k_direct(n : Int32, x : T, ops : Ops[T]) -> T {
 }
 
 ///|
+/// `J_v` and `Y_v` for `2 < x < 8v² + 40`, by Steed's method.
+///
+/// The series cannot serve here — it cancels a value orders of magnitude below
+/// the terms that form it — and the asymptotic expansion has not started to
+/// converge. Steed's method is the standard answer: a continued fraction for
+/// `J_(v+1)/J_v`, a second (complex) one for the ratio `Y_v/J_v`, and the
+/// Wronskian to fix the scale. The order is split into an integer and a
+/// remainder; the fraction answers for the remainder and the integer part is
+/// reached by recurrence, backwards for `J` (the stable direction) and forwards
+/// for `Y`.
+///
+/// The recurrence starts from an arbitrary tiny value because only ratios of its
+/// terms are read at the end; the value is a guard against overflow, not a
+/// datum. That guard is also why the method is used at double precision only:
+/// `1e-150` is representable in a `Double` and is nothing at all in a fixed
+/// point of fifty digits, where the recurrence would begin at zero.
+fn[T] bessel_jy_steed(v : T, x : T, ops : Ops[T]) -> (T, T) {
+  let two = (ops.from_int)(2)
+  let pi = ops.pi
+  let rounded = (ops.to_double)(v).round()
+  let whole = rounded.to_int()
+  let u = (ops.sub)(v, (ops.from_int)(whole))
+  let init = (ops.from_decimal)("1e-150")
+  let wronskian = (ops.div)(two, (ops.mul)(x, pi))
+  // CF1: `f = -J_(v+1)/J_v`, and the sign of the denominator it converged on.
+  let tolerance = (ops.from_decimal)("1e-\{ops.digits + 2}")
+  let mut c = init
+  let mut d = ops.zero
+  let mut f = init
+  let mut negative = false
+  // The fraction converges in `O(x)` turns once `x` is past the order, so the
+  // count follows the argument rather than a fixed ceiling.
+  let ceiling = ((ops.to_double)(x) * 2.0 + 400.0).to_int()
+  let mut k : Int32 = 1
+  while k < ceiling {
+    let a = (ops.neg)(ops.one)
+    let b = (ops.div)((ops.mul)(two, (ops.add)(v, (ops.from_int)(k))), x)
+    c = (ops.add)(b, (ops.div)(a, c))
+    d = (ops.add)(b, (ops.mul)(a, d))
+    if (ops.is_zero)(c) {
+      c = init
+    }
+    if (ops.is_zero)(d) {
+      d = init
+    }
+    d = (ops.div)(ops.one, d)
+    let delta = (ops.mul)(c, d)
+    f = (ops.mul)(f, delta)
+    if (ops.lt)(d, ops.zero) {
+      negative = !negative
+    }
+    let gap = (ops.sub)(delta, ops.one)
+    if (ops.lt)((ops.abs)(gap), tolerance) {
+      break
+    }
+    k = k + 1
+  }
+  let sign = if negative { (ops.neg)(ops.one) } else { ops.one }
+  let ratio_fraction = (ops.neg)(f)
+  // The backward recurrence for `J`: only ratios of consecutive terms are read,
+  // so the starting value only has to keep the terms inside the width.
+  let start = (ops.mul)(sign, init)
+  let mut previous = (ops.mul)((ops.mul)(ratio_fraction, sign), init)
+  let mut current = start
+  let mut step = whole
+  while step > 0 {
+    let factor = (ops.div)(
+      (ops.mul)(two, (ops.add)(u, (ops.from_int)(step))),
+      x,
+    )
+    let next = (ops.sub)((ops.mul)(factor, current), previous)
+    previous = current
+    current = next
+    step = step - 1
+  }
+  let ratio = (ops.div)(start, current)
+  let derivative = (ops.div)(previous, current)
+  // CF2: the complex fraction whose real and imaginary parts fix `Y_u/J_u`.
+  let mut cr = (ops.div)((ops.div)((ops.neg)(ops.one), two), x)
+  let mut ci = ops.one
+  let mut fr = cr
+  let mut fi = ci
+  let square = (ops.mul)(u, u)
+  let mut a = (ops.div)((ops.sub)((ops.from_decimal)("0.25"), square), x)
+  let br = (ops.mul)(two, x)
+  let mut bi = two
+  let mut temp = (ops.add)((ops.mul)(cr, cr), ops.one)
+  ci = (ops.add)(bi, (ops.div)((ops.mul)(a, cr), temp))
+  cr = (ops.add)(br, (ops.div)(a, temp))
+  let mut dr = br
+  let mut di = bi
+  temp = (ops.add)((ops.mul)(dr, dr), (ops.mul)(di, di))
+  dr = (ops.div)(dr, temp)
+  di = (ops.div)((ops.neg)(di), temp)
+  let mut delta_r = (ops.sub)((ops.mul)(cr, dr), (ops.mul)(ci, di))
+  let mut delta_i = (ops.add)((ops.mul)(ci, dr), (ops.mul)(cr, di))
+  let hold = fr
+  fr = (ops.sub)((ops.mul)(hold, delta_r), (ops.mul)(fi, delta_i))
+  fi = (ops.add)((ops.mul)(hold, delta_i), (ops.mul)(fi, delta_r))
+  k = 2
+  while k < 4000 {
+    let base = (ops.add)((ops.from_int)(k), (ops.from_decimal)("-0.5"))
+    a = (ops.sub)((ops.mul)(base, base), square)
+    bi = (ops.add)(bi, two)
+    temp = (ops.add)((ops.mul)(cr, cr), (ops.mul)(ci, ci))
+    cr = (ops.add)(br, (ops.div)((ops.mul)(a, cr), temp))
+    ci = (ops.sub)(bi, (ops.div)((ops.mul)(a, ci), temp))
+    dr = (ops.add)(br, (ops.mul)(a, dr))
+    di = (ops.add)(bi, (ops.mul)(a, di))
+    temp = (ops.add)((ops.mul)(dr, dr), (ops.mul)(di, di))
+    dr = (ops.div)(dr, temp)
+    di = (ops.div)((ops.neg)(di), temp)
+    delta_r = (ops.sub)((ops.mul)(cr, dr), (ops.mul)(ci, di))
+    delta_i = (ops.add)((ops.mul)(ci, dr), (ops.mul)(cr, di))
+    let previous_fr = fr
+    fr = (ops.sub)((ops.mul)(previous_fr, delta_r), (ops.mul)(fi, delta_i))
+    fi = (ops.add)((ops.mul)(previous_fr, delta_i), (ops.mul)(fi, delta_r))
+    let gap = (ops.add)(
+      (ops.abs)((ops.sub)(delta_r, ops.one)),
+      (ops.abs)(delta_i),
+    )
+    if (ops.lt)(gap, tolerance) {
+      break
+    }
+    k = k + 1
+  }
+  let slope = (ops.sub)((ops.div)(u, x), derivative)
+  let gamma = (ops.div)((ops.sub)(fr, slope), fi)
+  let j_u = (ops.sqrt)(
+    (ops.div)(wronskian, (ops.add)(fi, (ops.mul)(gamma, (ops.sub)(fr, slope)))),
+  )
+  let signed_j = if (ops.lt)(current, ops.zero) { (ops.neg)(j_u) } else { j_u }
+  let j = (ops.mul)(signed_j, ratio)
+  let y_u = (ops.mul)(gamma, signed_j)
+  let y_next = (ops.mul)(
+    y_u,
+    (ops.sub)((ops.sub)((ops.div)(u, x), fr), (ops.div)(fi, gamma)),
+  )
+  let mut previous_y = y_u
+  let mut current_y = y_next
+  let mut index : Int32 = 1
+  while index <= whole {
+    let factor = (ops.div)(
+      (ops.mul)(two, (ops.add)(u, (ops.from_int)(index))),
+      x,
+    )
+    let next = (ops.sub)((ops.mul)(factor, current_y), previous_y)
+    previous_y = current_y
+    current_y = next
+    index = index + 1
+  }
+  (j, previous_y)
+}
+
+///|
 /// `J_v` and `Y_v` from the asymptotic expansion
 /// `sqrt(2/(πx)) (cos χ P - sin χ Q)` and `sqrt(2/(πx)) (sin χ P + cos χ Q)`,
 /// with `χ = x - (v/2 + 1/4)π` and the auxiliary sums `P` and `Q`.
@@ -446,12 +751,30 @@ fn[T] bessel_jy_asymptotic(v : T, x : T, ops : Ops[T]) -> (T, T) {
   }
   let pi = ops.pi
   let scale = (ops.sqrt)((ops.div)(two, (ops.mul)(pi, x)))
-  let chi = (ops.sub)(
-    x,
-    (ops.mul)((ops.add)((ops.div)(v, two), (ops.div)(ops.one, four)), pi),
+  // The phase is `x - (v/2 + 1/4) π`, and forming it outright loses every digit
+  // that `x` carries past the turn: at `x = 40000` the subtraction leaves a
+  // dozen digits of a number the width had fifteen of. The angle is therefore
+  // reduced to `(v/2 + 1/4) mod 2` turns and the sine and cosine are combined by
+  // the addition formula, where the reduction has been done once, accurately,
+  // and only the small angle is left to multiply.
+  let quarter = (ops.div)(ops.one, four)
+  let turns = (ops.add)((ops.div)(v, two), quarter)
+  // `mod 2`, because the sine and cosine repeat every two turns of `π`.
+  let halves = (ops.to_double)((ops.div)(turns, two)).floor()
+  let reduced = (ops.sub)(
+    turns,
+    (ops.mul)(two, (ops.from_int)(halves.to_int())),
   )
-  let cosine = (ops.cos)(chi)
-  let sine = (ops.sin)(chi)
+  let angle = (ops.mul)(pi, reduced)
+  let sine_v = (ops.sin)(angle)
+  let cosine_v = (ops.cos)(angle)
+  let sine_x = (ops.sin)(x)
+  let cosine_x = (ops.cos)(x)
+  let sine = (ops.sub)((ops.mul)(sine_x, cosine_v), (ops.mul)(sine_v, cosine_x))
+  let cosine = (ops.add)(
+    (ops.mul)(cosine_x, cosine_v),
+    (ops.mul)(sine_x, sine_v),
+  )
   let j = (ops.mul)(scale, (ops.sub)((ops.mul)(cosine, p), (ops.mul)(sine, q)))
   let y = (ops.mul)(scale, (ops.add)((ops.mul)(sine, p), (ops.mul)(cosine, q)))
   (j, y)

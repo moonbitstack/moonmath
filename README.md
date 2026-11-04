@@ -385,9 +385,9 @@ let x = @arb.BigFloat::from_decimal("0.5", bits)
 let value = @generic.gamma(x, ops)
 ```
 
-The precision a caller should expect is not the same for every function, and the tests say so rather than averaging it away: the gamma, error and hypergeometric families agree with `mpmath` to twelve digits in double, the Bessel functions to six where their logarithmic series cancels, and at fifty and a hundred digits the same table is replayed at `1e-45` and `1e-80`.
+The precision a caller should expect is not the same for every function, and the tests say so rather than averaging it away. In double the gamma, error, zeta and elliptic families agree with the references to about `1e-15`; the Bessel functions to about `1e-12`, the widest case being a nearly integer order, where the reflection divides by the sine of a small angle; and at fifty and a hundred digits the same table is replayed at `1e-45` and `1e-80`.
 
-The reference values in `src/special/special_data_wbtest.mbt` and `src/special/generic/arb_data_wbtest.mbt` come from `scripts/gen_special.py`, which reads `mpmath`; the tables are checked in, so a test run needs neither Python nor the library.
+Two independent reference sets back that up. `scripts/gen_special.py` reads `mpmath` at a hundred and thirty working digits and fills both the double and the arbitrary-precision tables. `scripts/gen_boost.py` takes the tables that ship with Boost.Math's own test suite — twenty-six of them, eighty-seven hundred rows, every row that is checkable — and `boost_check_wbtest.mbt` replays them. The tables are checked in, so a test run needs neither Python, `mpmath` nor a Boost checkout.
 
 ## Examples
 

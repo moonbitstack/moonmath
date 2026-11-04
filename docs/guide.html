@@ -805,14 +805,24 @@ let value = @generic.gamma(half, ops)</code></pre>
 
           <p>
             Which method answers is decided by the argument, not by taste. The
-            Bessel functions are a power series while the argument is near the
-            order and an asymptotic expansion once it is well past it; the
-            incomplete gamma and beta are a series on one side of the mean and a
-            continued fraction on the other; <code>K</code>, whose two regimes
-            both degrade, switches at the point where their error estimates
-            cross. The guide's numbers are the double results, checked against
-            <code>mpmath</code> rather than against a second copy of the same
-            formula.
+            Bessel functions are a power series up to <code>x = 1</code>, an
+            asymptotic expansion once <code>x</code> is several times the order
+            squared, and Steed's method in between — a continued fraction for the
+            ratio of neighbouring orders, a second one for the ratio of the two
+            kinds, and the Wronskian to fix the scale. <code>K</code> takes the
+            Thompson&nbsp;and&nbsp;Barnett fraction past <code>x = 2</code> for
+            the same reason: its series and its expansion both degrade, and no
+            choice of crossover closes the gap between them. The incomplete gamma
+            and beta are a series on one side of the mean and a continued
+            fraction on the other.
+          </p>
+
+          <p>
+            The numbers are checked three ways, and only one of them is this
+            package's own arithmetic. <code>mpmath</code> supplies references at
+            double, at fifty and at a hundred digits; Boost.Math's test tables
+            supply twenty-six more across the whole range; and the two agree with
+            each other, which is what makes either worth believing.
           </p>
         </div>
 
