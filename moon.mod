@@ -47,4 +47,8 @@ keywords = [
 
 description = "Vectors, matrices, quaternions and geometry for MoonBit: column-major, right-handed, and ready to copy into a GPU buffer, with a special-function subpackage in double and arbitrary precision."
 
+import {
+  "moonbitstack/moonnum@0.2.2",
+}
+
 source = "src"

@@ -152,6 +152,20 @@ test "the elliptic integrals against boost" {
 }
 
 ///|
+/// Kummer's confluent hypergeometric, over the whole of Boost's table.
+///
+/// That table is the large-parameter region — every row has `max(|a|, |b|, |x|)`
+/// above twenty — which is exactly where the direct series cancels. The
+/// escalation at forty-five digits is what carries it: without it the worst row
+/// is out by `4e-4`, and with it by `1.1e-12`.
+test "the confluent hypergeometric against boost" {
+  for quad in boost_hyper1f1_cases {
+    let (a, b, x, want) = quad
+    match_within("hyper1f1(\{a}, \{b}, \{x})", hyper1f1(a, b, x), want, 1.0e-11)
+  }
+}
+
+///|
 /// The Bessel functions, in all four kinds and at integer and real order.
 ///
 /// The real-order table for the second kind is the widest tolerance here. Its

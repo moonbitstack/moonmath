@@ -1,8 +1,8 @@
 // The special-function algorithms once, over an explicit `Ops[T]` algebra, so
-// the same body serves `Double` and the arbitrary-precision `BigFloat`. The
-// record is the seam: adding a number type means writing one `Ops` value, and
-// every algorithm written against it follows.
+// the same body serves `Double` and `moonnum`'s arbitrary-precision `BigFloat`.
+// The record is the seam: adding a number type means writing one `Ops` value,
+// and every algorithm written against it follows.
 import {
-  "moonbitstack/moonmath/special/arb",
+  "moonbitstack/moonnum",
   "moonbitlang/core/math",
 }

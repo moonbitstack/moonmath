@@ -351,7 +351,7 @@ The intersection functions return the `t` of the crossing rather than the point,
 
 ## Special functions
 
-`moonbitstack/moonmath/special` is a subpackage for the functions a probability, a physics or a numerical caller reaches for. Every body is written once, in `special/generic`, against an `Ops` algebra of the number type; `special` is the double-precision face of it and `special/arb` supplies the arbitrary-precision one, so the two precisions cannot drift apart.
+`moonbitstack/moonmath/special` is a subpackage for the functions a probability, a physics or a numerical caller reaches for. Every body is written once, in `special/generic`, against an `Ops` algebra of the number type; `special` is the double-precision face of it and `moonnum`'s `BigFloat` supplies the arbitrary-precision one, so the two precisions cannot drift apart.
 
 | Function | Meaning |
 |:--|:--|
@@ -376,20 +376,33 @@ let tail = @special.erfc(2.0)
 let drum = @special.bessel_j(0.0, 2.4)
 ```
 
-The arbitrary-precision side runs the same functions on a fixed-point real carried as `mantissa / 2^bits`, at whatever width the caller asks for:
+The arbitrary-precision side runs the same functions on `moonnum`'s `BigFloat` — a fixed-point real carried as `mantissa / 2^bits` — at whatever width the caller asks for:
 
 ```moonbit
-let bits = @arb.BigFloat::bits_for_digits(50)
+let bits = @moonnum.BigFloat::bits_for_digits(50)
 let ops = @generic.bigfloat_ops(bits)
-let x = @arb.BigFloat::from_decimal("0.5", bits)
+let x = @moonnum.BigFloat::of_decimal("0.5", bits)
 let value = @generic.gamma(x, ops)
 ```
 
+`BigFloat` lives in `moonbitstack/moonnum`, which is where a number belongs, and `moonmath` depends on it. Its release predates the type, so until `moonnum` cuts a version with it the dependency is resolved from a sibling checkout through `moon.work`:
+
+```
+members = [
+  ".",
+  "../moonnum",
+]
+```
+
+A checkout of `moonbitstack/moonnum` at branch `feat/bigfloat` alongside this one is therefore required to build. Once the release lands, deleting `moon.work` is the whole of the change; `moon.mod` already names the module.
+
 The precision a caller should expect is not the same for every function, and the tests say so rather than averaging it away. In double the gamma, error, zeta and elliptic families agree with the references to about `1e-15`; the Bessel functions to about `1e-12`, the widest case being a nearly integer order, where the reflection divides by the sine of a small angle; and at fifty and a hundred digits the same table is replayed at `1e-45` and `1e-80`.
 
-The hypergeometric functions are the one family with a stated domain rather than a range: they are summed from their own series, which cancels once the parameters are far past the argument, so `hyper1f1` and `hyper2f1` claim the moderate region — parameters of order ten or so — and say so in their doc comments. Boost's own tables for them live entirely outside that region, which is why those two are checked against `mpmath` alone.
+`hyper1f1` is the one function here that calls the wider type as a working tool rather than as a check: the body reports the largest term its series formed, and the double-precision face re-runs the sum at forty digits and rounds once when that term ran far past the answer. That is what carries the large-parameter region, where the direct sum cancels — against Boost's table, which lives entirely in that region, the worst row goes from `4e-4` to `1.1e-12`.
 
-Two independent reference sets back that up. `scripts/gen_special.py` reads `mpmath` at a hundred and thirty working digits and fills both the double and the arbitrary-precision tables. `scripts/gen_boost.py` takes the tables that ship with Boost.Math's own test suite — twenty-six of them, eighty-seven hundred rows, every row that is checkable — and `boost_check_wbtest.mbt` replays them. The tables are checked in, so a test run needs neither Python, `mpmath` nor a Boost checkout.
+`hyper2f1` has no such rescue and says so in its doc comment: with parameters of order a hundred and the argument near one, its transformation needs six hundred digits of dynamic range, which no fixed point supplies. It claims the moderate region, as does `hyper0f1`, and a caller outside it should not believe a double from it.
+
+Two independent reference sets back that up. `scripts/gen_special.py` reads `mpmath` at a hundred and thirty working digits and fills both the double and the arbitrary-precision tables. `scripts/gen_boost.py` takes the tables that ship with Boost.Math's own test suite — twenty-seven of them, nine thousand rows — and `boost_check_wbtest.mbt` replays them, every row except a documented sample of the `1F1` table, whose escalated rows are the one place the suite spends real time. The tables are checked in, so a test run needs neither Python, `mpmath` nor a Boost checkout.
 
 ## Examples
 

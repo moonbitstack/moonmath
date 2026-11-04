@@ -8,8 +8,11 @@
 
 ///|
 /// A row's arguments, as `BigFloat` values at one width.
-fn arguments(fields : Array[StringView], bits : Int32) -> Array[@arb.BigFloat] {
-  fields.map(fn(field) { @arb.BigFloat::from_decimal(field.to_owned(), bits) })
+fn arguments(
+  fields : Array[StringView],
+  bits : Int32,
+) -> Array[@moonnum.BigFloat] {
+  fields.map(fn(field) { @moonnum.BigFloat::of_decimal(field.to_owned(), bits) })
 }
 
 ///|
@@ -17,9 +20,9 @@ fn arguments(fields : Array[StringView], bits : Int32) -> Array[@arb.BigFloat] {
 /// place the name and the call meet, so a row that names nothing fails loudly.
 fn evaluate(
   name : String,
-  args : Array[@arb.BigFloat],
-  ops : Ops[@arb.BigFloat],
-) -> @arb.BigFloat {
+  args : Array[@moonnum.BigFloat],
+  ops : Ops[@moonnum.BigFloat],
+) -> @moonnum.BigFloat {
   match name {
     "erf" => erf(args[0], ops)
     "erfc" => erfc(args[0], ops)
@@ -70,22 +73,22 @@ fn replay(
   digits : Int32,
   tolerance : String,
 ) -> Unit {
-  let bits = @arb.BigFloat::bits_for_digits(digits)
+  let bits = @moonnum.BigFloat::bits_for_digits(digits)
   let ops = bigfloat_ops(bits)
-  let allowed = @arb.BigFloat::from_decimal(tolerance, bits)
+  let allowed = @moonnum.BigFloat::of_decimal(tolerance, bits)
   // The asymptotic expansion's truncation error, which no width can push below
   // the size of the first omitted term.
-  let asymptotic = @arb.BigFloat::from_decimal("1e-18", bits)
+  let asymptotic = @moonnum.BigFloat::of_decimal("1e-18", bits)
   // The integer-order `K_n` loses about half its width to the cancellation in
   // its logarithmic series: the logarithm times an exponentially large `I_n` and
   // the series that cancels it are each around a million times the answer, and
   // the fixed point hands back a little under half of what is left.
-  let cancellation = @arb.BigFloat::from_decimal("1e-\{digits / 2 - 2}", bits)
+  let cancellation = @moonnum.BigFloat::of_decimal("1e-\{digits / 2 - 2}", bits)
   for row in cases {
     let (name, arguments_text, expected) = row
     let fields = arguments_text.split(",").to_array()
     let got = evaluate(name, arguments(fields, bits), ops)
-    let want = @arb.BigFloat::from_decimal(expected, bits)
+    let want = @moonnum.BigFloat::of_decimal(expected, bits)
     if got.compare(want) != 0 {
       if want.is_zero() {
         // A value that is exactly zero is the one case a relative check cannot

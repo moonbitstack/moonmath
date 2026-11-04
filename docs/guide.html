@@ -787,7 +787,7 @@ println(@special.zeta(2.0))               // pi squared over six</code></pre>
             names the operations and constants a number type has to supply —
             addition, a square root, a logarithm, pi. The package you call is a
             face over that body: <code>special</code> hands it the double
-            algebra, <code>special/arb</code> hands it a fixed-point real at
+            algebra, <code>moonnum</code> hands it a fixed-point real at
             whatever width you ask for, and neither can drift from the other
             because there is only one implementation to drift.
           </p>
@@ -797,9 +797,9 @@ println(@special.zeta(2.0))               // pi squared over six</code></pre>
               <span class="label">listing 17 · the same body at fifty digits</span>
               <button class="copy" type="button" data-copy>copy</button>
             </div>
-            <pre><code>let bits = @arb.BigFloat::bits_for_digits(50)
+            <pre><code>let bits = @moonnum.BigFloat::bits_for_digits(50)
 let ops = @generic.bigfloat_ops(bits)
-let half = @arb.BigFloat::from_decimal("0.5", bits)
+let half = @moonnum.BigFloat::of_decimal("0.5", bits)
 let value = @generic.gamma(half, ops)</code></pre>
           </div>
 

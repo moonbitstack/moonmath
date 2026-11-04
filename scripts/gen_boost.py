@@ -40,6 +40,14 @@ TARGET = ROOT / "src" / "special" / "boost_wbtest.mbt"
 # edit.
 SAMPLE = 100000
 
+# The one table that is sampled, with the reason: a `1F1` row whose series
+# cancels runs the sum a second time at forty digits, so the full two and a half
+# thousand rows cost half a minute of test time on every target. Every fourth
+# row, with the ends kept, covers the range for a quarter of that. The whole
+# table was replayed when the escalation was written; the worst row of it is
+# quoted in the test beside this data.
+CAPS = {"hyper1f1": 640}
+
 HEADER = """\
 // Copyright 2026 Leo Cheng
 // SPDX-License-Identifier: Apache-2.0
@@ -89,6 +97,7 @@ TABLES = [
     ("bessel_y_real", "bessel_yv_data.ipp", "bessel_y", [1, 2], 3, []),
     ("bessel_i", "bessel_i_data.ipp", "bessel_i", [1, 2], 3, []),
     ("bessel_i_int", "bessel_i_int_data.ipp", "bessel_i", [1, 2], 3, []),
+    ("hyper1f1", "hypergeometric_1F1.ipp", "hyper1f1", [1, 2, 3], 4, []),
     ("bessel_k", "bessel_k_data.ipp", "bessel_k", [1, 2], 3, []),
     ("bessel_k_int", "bessel_k_int_data.ipp", "bessel_k", [1, 2], 3, []),
 ]
@@ -99,26 +108,36 @@ WIDTH = re.compile(r"table_type<T>::type, *(\d+)>")
 
 
 def read_rows(path: pathlib.Path) -> list[list[float]]:
-    """Every row of a table, as floats; the width is the one it declares."""
+    """Every row of a table, as floats.
+
+    A row is a line: the data files put one to a line in both of the shapes they
+    come in — `{{ SC_(..), .. }},` inside a declared array, and a bare
+    `{ SC_(..), .. },` for the hypergeometric tables, which declare no width. So
+    the width is read where it is declared and not assumed where it is not.
+    """
     text = path.read_text(encoding="utf-8")
     declared = WIDTH.search(text)
     width = int(declared.group(1)) if declared else None
     rows = []
-    for match in ROW.finditer(text):
-        values = VALUE.findall(match.group(1))
+    for line in text.splitlines():
+        if "SC_(" not in line:
+            continue
+        values = VALUE.findall(line)
+        if not values:
+            continue
         if width is not None and len(values) != width:
             continue
         rows.append([float(value) for value in values])
     return rows
 
 
-def sample(rows: list[list[float]]) -> list[list[float]]:
+def sample(rows: list[list[float]], limit: int = SAMPLE) -> list[list[float]]:
     """Every row, unless the table is longer than the ceiling, in which case an
     even spread with both ends kept."""
-    if len(rows) <= SAMPLE:
+    if len(rows) <= limit:
         return rows
-    step = len(rows) / SAMPLE
-    picked = [rows[int(index * step)] for index in range(SAMPLE)]
+    step = len(rows) / limit
+    picked = [rows[int(index * step)] for index in range(limit)]
     picked[0] = rows[0]
     picked[-1] = rows[-1]
     return picked
@@ -165,7 +184,8 @@ def main() -> None:
         # check and no literal to write: `1e-323` is a denormal that the language
         # rounds to zero on the way in. Those rows are left out.
         rows = [row for row in rows if abs(row[value - 1]) >= 1.0e-300]
-        blocks.append(render(name, sample(rows), arguments, value, transforms))
+        rows = sample(rows, CAPS.get(name, SAMPLE))
+        blocks.append(render(name, rows, arguments, value, transforms))
 
     TARGET.write_text(
         HEADER + "\n" + "\n\n".join(blocks) + "\n", encoding="utf-8", newline="\n"

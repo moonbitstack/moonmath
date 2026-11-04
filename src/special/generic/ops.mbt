@@ -160,12 +160,12 @@ fn decimal_to_double(text : String) -> Double {
 
 ///|
 /// The algebra of a `BigFloat` at `bits` fractional bits.
-pub fn bigfloat_ops(bits : Int32) -> Ops[@arb.BigFloat] {
+pub fn bigfloat_ops(bits : Int32) -> Ops[@moonnum.BigFloat] {
   {
-    zero: @arb.BigFloat::zero(bits),
-    one: @arb.BigFloat::one(bits),
-    from_int: fn(i) { @arb.BigFloat::from_int(i, bits) },
-    from_decimal: fn(text) { @arb.BigFloat::from_decimal(text, bits) },
+    zero: @moonnum.BigFloat::zero(bits),
+    one: @moonnum.BigFloat::one(bits),
+    from_int: fn(i) { @moonnum.BigFloat::of_int(i, bits) },
+    from_decimal: fn(text) { @moonnum.BigFloat::of_decimal(text, bits) },
     add: fn(a, b) { a.add(b) },
     sub: fn(a, b) { a.sub(b) },
     mul: fn(a, b) { a.mul(b) },
@@ -180,13 +180,13 @@ pub fn bigfloat_ops(bits : Int32) -> Ops[@arb.BigFloat] {
     cos: fn(x) { x.cos() },
     atan: fn(x) { x.atan() },
     bernoulli: parse_bernoulli(fn(text) {
-      @arb.BigFloat::from_decimal(text, bits)
+      @moonnum.BigFloat::of_decimal(text, bits)
     }),
-    pi: @arb.BigFloat::pi(bits),
+    pi: @moonnum.BigFloat::pi(bits),
     lt: fn(a, b) { a.lt(b) },
     le: fn(a, b) { a.le(b) },
     is_zero: fn(x) { x.is_zero() },
-    digits: @arb.BigFloat::digits_for_bits(bits),
+    digits: @moonnum.BigFloat::digits_for_bits(bits),
     to_double: fn(x) { x.to_double() },
   }
 }

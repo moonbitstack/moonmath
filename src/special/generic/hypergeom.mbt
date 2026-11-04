@@ -34,22 +34,35 @@ pub fn[T] hyper0f1(b : T, x : T, ops : Ops[T]) -> T {
 /// than the result; Kummer's transformation `1F1(a; b; x) = e^x 1F1(b - a; b; -x)`
 /// turns it into a positive argument, where every term adds.
 pub fn[T] hyper1f1(a : T, b : T, x : T, ops : Ops[T]) -> T {
+  hyper1f1_scaled(a, b, x, ops).0
+}
+
+///|
+/// `1F1` together with the largest term the sum formed.
+///
+/// The pair is what a caller needs to judge the answer: a sum whose terms ran
+/// past the result by `10^d` kept `width - d` digits of it, and a caller with a
+/// wider type available can spend them. The double-precision face does exactly
+/// that — see `special/hypergeom.mbt`.
+pub fn[T] hyper1f1_scaled(a : T, b : T, x : T, ops : Ops[T]) -> (T, T) {
   // The switch is where the series would start to cancel; below it the direct
   // sum is already the better of the two.
   let threshold = (ops.neg)((ops.from_int)(4))
   if (ops.lt)(x, threshold) {
     let mirrored = (ops.sub)(b, a)
-    let value = hyper1f1_series(mirrored, b, (ops.neg)(x), ops)
-    return (ops.mul)((ops.exp)(x), value)
+    let pair = hyper1f1_series(mirrored, b, (ops.neg)(x), ops)
+    let factor = (ops.exp)(x)
+    return ((ops.mul)(factor, pair.0), (ops.mul)(factor, pair.1))
   }
   hyper1f1_series(a, b, x, ops)
 }
 
 ///|
-/// The `1F1` series, without the transformation.
-fn[T] hyper1f1_series(a : T, b : T, x : T, ops : Ops[T]) -> T {
+/// The `1F1` series, without the transformation, with its largest term.
+fn[T] hyper1f1_series(a : T, b : T, x : T, ops : Ops[T]) -> (T, T) {
   let mut term = ops.one
   let mut sum = ops.one
+  let mut largest = ops.one
   let mut k : Int32 = 0
   while k < 5000 {
     k = k + 1
@@ -60,11 +73,15 @@ fn[T] hyper1f1_series(a : T, b : T, x : T, ops : Ops[T]) -> T {
     )
     term = (ops.mul)(term, (ops.div)(numerator, denominator))
     sum = (ops.add)(sum, term)
-    if (ops.lt)((ops.abs)(term), (ops.mul)((ops.abs)(sum), tiny(ops))) {
+    let size = (ops.abs)(term)
+    if (ops.lt)(largest, size) {
+      largest = size
+    }
+    if (ops.lt)(size, (ops.mul)((ops.abs)(sum), tiny(ops))) {
       break
     }
   }
-  sum
+  (sum, largest)
 }
 
 ///|
@@ -77,6 +94,22 @@ fn[T] hyper1f1_series(a : T, b : T, x : T, ops : Ops[T]) -> T {
 ///  + (1-x)^(c-a-b) Γ(c)Γ(a+b-c)/(Γ(a)Γ(b)) 2F1(c-a,c-b;c-a-b+1;1-x)`,
 /// which is the one that keeps both halves inside the fast range. A negative
 /// argument takes Pfaff's transformation instead, which moves it towards zero.
+
+///|
+/// The Gauss hypergeometric `2F1(a, b; c; x) = Σ (a)_k (b)_k / ((c)_k k!) x^k`,
+/// for `|x| < 1`.
+///
+/// Past a half the series converges too slowly to be worth summing, so the
+/// argument is moved to `1 - x` by the linear transformation
+/// `2F1(a,b;c;x) = Γ(c)Γ(c-a-b)/(Γ(c-a)Γ(c-b)) 2F1(a,b;a+b-c+1;1-x)
+///  + (1-x)^(c-a-b) Γ(c)Γ(a+b-c)/(Γ(a)Γ(b)) 2F1(c-a,c-b;c-a-b+1;1-x)`,
+/// which is the one that keeps both halves inside the fast range. A negative
+/// argument takes Pfaff's transformation instead, which moves it towards zero.
+///
+/// Unlike `1F1` this one cannot be rescued by a wider type: with parameters of
+/// order a hundred and the argument near one, the two halves of the
+/// transformation are around `10^450` either side of a result of order one, and
+/// no fixed point carries that. Its accuracy is what the series gives.
 pub fn[T] hyper2f1(a : T, b : T, c : T, x : T, ops : Ops[T]) -> T {
   let one = ops.one
   let magnitude = (ops.abs)(x)

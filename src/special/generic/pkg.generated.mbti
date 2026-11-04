@@ -2,7 +2,7 @@
 package "moonbitstack/moonmath/special/generic"
 
 import {
-  "moonbitstack/moonmath/special/arb",
+  "moonbitstack/moonnum",
 }
 
 // Values
@@ -16,7 +16,7 @@ pub fn[T] bessel_y(T, T, Ops[T]) -> T
 
 pub fn[T] beta(T, T, Ops[T]) -> T
 
-pub fn bigfloat_ops(Int32) -> Ops[@arb.BigFloat]
+pub fn bigfloat_ops(Int32) -> Ops[@moonnum.BigFloat]
 
 pub fn[T] digamma(T, Ops[T]) -> T
 
@@ -65,6 +65,8 @@ pub fn[T] gammaincc(T, T, Ops[T]) -> T
 pub fn[T] hyper0f1(T, T, Ops[T]) -> T
 
 pub fn[T] hyper1f1(T, T, T, Ops[T]) -> T
+
+pub fn[T] hyper1f1_scaled(T, T, T, Ops[T]) -> (T, T)
 
 pub fn[T] hyper2f1(T, T, T, T, Ops[T]) -> T
 

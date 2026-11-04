@@ -4,8 +4,11 @@
 //
 // Every body lives in `special/generic`, written once against an `Ops` algebra,
 // and this package is the double-precision face of it: each function here is the
-// same one the arbitrary-precision package answers, handed `double_ops`. Keeping
-// the two precisions on one body is what stops them from drifting apart.
+// same one the arbitrary-precision package answers, handed `double_algebra`.
+// Keeping the two precisions on one body is what stops them from drifting apart
+// — and the hypergeometric functions use the wider one as a working tool, not
+// only as a check.
 import {
   "moonbitstack/moonmath/special/generic",
+  "moonbitstack/moonnum",
 }
