@@ -65,7 +65,12 @@ jobs:
       - name: compile the library to JavaScript for the workshop
         run: |
           moon build --target js --release src/examples/web
-          cp _build/js/release/build/examples/web/web.js docs/assets/moonmath.js
+          # Found rather than named: a workspace puts the module's name between
+          # `build` and the package, and a path written for one layout breaks in
+          # the other.
+          bundle=$(find _build -path '*js/release/build/*examples/web/web.js' | head -n 1)
+          test -n "$bundle"
+          cp "$bundle" docs/assets/moonmath.js
 
       - uses: actions/configure-pages@v6
         with:
