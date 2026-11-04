@@ -387,6 +387,8 @@ let value = @generic.gamma(x, ops)
 
 The precision a caller should expect is not the same for every function, and the tests say so rather than averaging it away. In double the gamma, error, zeta and elliptic families agree with the references to about `1e-15`; the Bessel functions to about `1e-12`, the widest case being a nearly integer order, where the reflection divides by the sine of a small angle; and at fifty and a hundred digits the same table is replayed at `1e-45` and `1e-80`.
 
+The hypergeometric functions are the one family with a stated domain rather than a range: they are summed from their own series, which cancels once the parameters are far past the argument, so `hyper1f1` and `hyper2f1` claim the moderate region — parameters of order ten or so — and say so in their doc comments. Boost's own tables for them live entirely outside that region, which is why those two are checked against `mpmath` alone.
+
 Two independent reference sets back that up. `scripts/gen_special.py` reads `mpmath` at a hundred and thirty working digits and fills both the double and the arbitrary-precision tables. `scripts/gen_boost.py` takes the tables that ship with Boost.Math's own test suite — twenty-six of them, eighty-seven hundred rows, every row that is checkable — and `boost_check_wbtest.mbt` replays them. The tables are checked in, so a test run needs neither Python, `mpmath` nor a Boost checkout.
 
 ## Examples
