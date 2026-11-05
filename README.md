@@ -395,6 +395,15 @@ For `hyper1f1` that is all it takes: its terms rise above the result by up to fo
 
 `hyper2f1` needed more than a wider type, because the transformation around one multiplies a gamma ratio of `10^60` by series whose own terms reach `10^55`. Holding both and adding them afterwards needs a hundred and thirty digits at fixed point. So the scale is folded into the first term of the series it multiplies: every partial sum stays the size of the answer, and what is left is the cancellation the answer is actually made of. Each scale is one exponential rather than a product of two, and its gamma factors are formed as logarithms, since a single `Γ(180)` overflows a double while the ratio of two of them does not. Against Boost's table — parameters within a hundred of zero, the argument anywhere inside the unit interval, values from `1e-49` to `1e62` — the worst row is out by `2.5e-13`, and the widest needs a hundred and thirty-five digits to keep fifteen.
 
+What that comes to, row for row against Boost's tables:
+
+| Function | Rows replayed | Worst relative error | Tolerance in the test |
+|:--|--:|--:|--:|
+| `hyper1f1` | 2560 | `1.1e-12` | `1e-11` |
+| `hyper1f1`, small arguments | 512 | `4.0e-14` | `1e-13` |
+| `hyper1f1`, negative integer numerator | 24 | `2.1e-15` | `1e-13` |
+| `hyper2f1` | 500 | `2.5e-13` | `1e-12` |
+
 A degenerate `2F1` is summed as it stands: when `c - a - b` is an integer the transformation around one has a logarithm in it instead of two powers, and the series at the argument answers that case, slowly as the argument approaches one.
 
 Three of Boost's `1F1` tables are out of reach and not replayed. Their parameters run past a million — `-814723.75` against `-1222085.5` — where the terms rise roughly `10^450` above the answer and no series, at any width this package will pay for, holds them. That region is what uniform asymptotic expansions are for, and this package does not have them; the general, small-argument and negative-integer tables are complete.
