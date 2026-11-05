@@ -152,16 +152,53 @@ test "the elliptic integrals against boost" {
 }
 
 ///|
-/// Kummer's confluent hypergeometric, over the whole of Boost's table.
+/// Kummer's confluent hypergeometric, over all three of Boost's tables that this
+/// package reaches.
 ///
-/// That table is the large-parameter region — every row has `max(|a|, |b|, |x|)`
-/// above twenty — which is exactly where the direct series cancels. The
-/// escalation at forty-five digits is what carries it: without it the worst row
-/// is out by `4e-4`, and with it by `1.1e-12`.
+/// The general table is the large-parameter region — every row has
+/// `max(|a|, |b|, |x|)` above twenty — which is exactly where the direct series
+/// cancels. The escalation is what carries it: without it the worst row is out by
+/// `4e-4`, and with it by `1.1e-12`. Every row is replayed; the table used to be
+/// sampled every fourth row.
+///
+/// The negative-integer table is the other end: a numerator at `-67228` and a
+/// denominator at `-100004`, where the series ends after sixty-seven thousand
+/// terms. It is summed as the polynomial it is, and Kummer's transformation is
+/// not applied to it, because at a denominator that is a non-positive integer the
+/// transformation is no longer an identity.
 test "the confluent hypergeometric against boost" {
   for quad in boost_hyper1f1_cases {
     let (a, b, x, want) = quad
     match_within("hyper1f1(\{a}, \{b}, \{x})", hyper1f1(a, b, x), want, 1.0e-11)
+  }
+  for quad in boost_hyper1f1_small_cases {
+    let (a, b, x, want) = quad
+    match_within("hyper1f1(\{a}, \{b}, \{x})", hyper1f1(a, b, x), want, 1.0e-13)
+  }
+  for quad in boost_hyper1f1_neg_int_cases {
+    let (a, b, x, want) = quad
+    match_within("hyper1f1(\{a}, \{b}, \{x})", hyper1f1(a, b, x), want, 1.0e-13)
+  }
+}
+
+///|
+/// The Gauss hypergeometric, over the whole of Boost's table.
+///
+/// Every row has parameters within a hundred of zero and the argument anywhere
+/// inside the unit interval, which is the region the transformation around one
+/// exists for and the one that has no series that works: the two halves of the
+/// transformation reach `10^55` in front of an answer of `10^-37`. They are
+/// summed with their scales already multiplied in, and the widest row needs a
+/// hundred and thirty-five digits to keep fifteen.
+test "the Gauss hypergeometric against boost" {
+  for five in boost_hyper2f1_cases {
+    let (a, b, c, x, want) = five
+    match_within(
+      "hyper2f1(\{a}, \{b}, \{c}, \{x})",
+      hyper2f1(a, b, c, x),
+      want,
+      1.0e-12,
+    )
   }
 }
 

@@ -200,6 +200,39 @@ test "the hypergeometric functions match the reference" {
 }
 
 ///|
+test "the hypergeometric edges" {
+  // A numerator at a non-positive integer ends the series, and a third
+  // parameter at one of its own poles stops being a division by zero when the
+  // numerator ends first: `2F1(-2, 1/2; -3; 1/2)` is the three-term polynomial
+  // `1 + 1/6 + 1/32`.
+  assert_true(close(hyper2f1(-2.0, 0.5, -3.0, 0.5), 1.1979166666666667))
+  // A `c - a - b` at an integer leaves the transformation around one with a
+  // logarithm in it; the series at the argument answers it, and here the
+  // argument is close enough to one that the series has to run for it.
+  assert_true(close(hyper2f1(0.5, 1.0, 1.5, 0.95), 2.234860132717379))
+  // A denominator at a non-positive integer is a pole, unless the numerator
+  // ends before it: Kummer's transformation is not an identity in that case,
+  // and `1F1(-4; -7; -18)` would come back a million times too small if it
+  // were applied.
+  assert_true(close(hyper1f1(-4.0, -7.0, -18.0), 50.885714285714286))
+}
+
+///|
+test "panic hyper2f1 outside the unit interval" {
+  let _ = hyper2f1(0.5, 0.5, 1.5, 1.0)
+}
+
+///|
+test "panic hyper2f1 at a pole the series reaches" {
+  let _ = hyper2f1(0.5, 0.5, -1.0, 0.5)
+}
+
+///|
+test "panic hyper1f1 at a pole the series reaches" {
+  let _ = hyper1f1(0.5, -1.0, 0.5)
+}
+
+///|
 test "zeta matches the reference on and below one" {
   for pair in zeta_cases {
     let (s, want) = pair

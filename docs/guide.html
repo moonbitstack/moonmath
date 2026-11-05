@@ -774,7 +774,7 @@ println(@special.zeta(2.0))               // pi squared over six</code></pre>
           <div class="slip output">
             <div class="slip-head"><span class="label">printed</span></div>
             <pre><code>1.7724538509055165
-0.002507683297243826
+0.002507683297243856
 0.2642411176571134
 0.6875000000000018
 1.3862943611198901
@@ -818,10 +818,26 @@ let value = @generic.gamma(half, ops)</code></pre>
           </p>
 
           <p>
+            The two hypergeometric functions are where double precision stops
+            being enough on its own, and both say how far short they fall. A
+            series multiplies its way up to terms far above the answer and adds
+            them back down, and what survives is the digits the two ends had in
+            common. <code>hyper1f1</code> reports the largest term it formed;
+            <code>hyper2f1</code> reports the same, and past a half its
+            transformation multiplies a gamma ratio of <code>10^60</code> by
+            series whose own terms reach <code>10^55</code>, so those scales are
+            folded into the first term of the series they multiply rather than
+            applied to the sum afterwards. When the report comes back short, the
+            double face re-runs the whole thing on <code>moonnum</code>&rsquo;s
+            <code>Fixed</code> at a width that holds the digits the cancellation
+            took, and rounds once.
+          </p>
+
+          <p>
             The numbers are checked three ways, and only one of them is this
             package's own arithmetic. <code>mpmath</code> supplies references at
             double, at fifty and at a hundred digits; Boost.Math's test tables
-            supply twenty-six more across the whole range; and the two agree with
+            supply thirty more, twelve thousand rows, across the whole range; and the two agree with
             each other, which is what makes either worth believing.
           </p>
         </div>

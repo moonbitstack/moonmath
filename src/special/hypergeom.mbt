@@ -6,15 +6,17 @@
 //
 // A hypergeometric series cancels: with parameters well past the argument its
 // terms run far above the result and come back to it, and the double that
-// carries them keeps only the digits left over. `1F1` reports the largest term
-// it formed beside the value, and this face — which can see `moonnum`'s
-// arbitrary-precision `Fixed` — re-runs the sum at forty-five digits when the
-// terms ran far past the answer, then rounds once. The result is the
-// double-precision answer, computed in the precision that can hold it.
+// carries them keeps only the digits left over. Each body here reports the
+// largest term it formed beside the value, so this face — which can see
+// `moonnum`'s arbitrary-precision `Fixed` — can measure how many digits the run
+// kept and re-run the sum at a width that holds them, then round once. The
+// result is the double-precision answer, computed in the precision it needs.
 //
-// `2F1` has no such rescue and says so: its transformation needs six hundred
-// digits of dynamic range at parameters of order a hundred, which no fixed point
-// supplies.
+// How much wider is decided by the run itself rather than fixed in advance. The
+// `2F1` transformation around one asks for about twenty more digits than the two
+// halves it cancelled, which is forty-five or so for the parameters Boost's table
+// reaches; the uniform asymptotic region beyond it wants four hundred, and a
+// caller there should not read a number from this function.
 
 ///|
 /// `x`, at the width the escalation runs at.
@@ -23,12 +25,12 @@ fn widened(x : Double, bits : Int32) -> @moonnum.Fixed {
 }
 
 ///|
-/// Whether the double sum kept too few digits to be worth returning.
+/// Whether the double run kept too few digits to be worth returning.
 ///
 /// The test is on the terms, not on the answer: a sum whose largest term ran
 /// past the result by `10^d` kept `15 - d` digits of it, so `10^3` is the point
-/// where a third of them are gone — more than the check beside this file allows.
-/// A `NaN` or an infinity — the other way a double sum fails here, by
+/// where a third of them are gone — more than the checks beside this file allow.
+/// A `NaN` or an infinity — the other way a double run fails here, by
 /// overflowing on the way — counts as poor as well.
 fn poor(value : Double, largest : Double) -> Bool {
   if value != value {
@@ -38,8 +40,29 @@ fn poor(value : Double, largest : Double) -> Bool {
   if size > 1.0e307 {
     return true
   }
+  if largest != largest {
+    return true
+  }
   largest > size * 1.0e3
 }
+
+///|
+/// The narrowest width the escalation starts at.
+///
+/// Forty-five digits covers the `2F1` table's worst row with twenty to spare, and
+/// is the width the `1F1` escalation has always used.
+let first_width : Int32 = 45
+
+///|
+/// The widest the escalation will go. Past it the cost of a `Fixed` multiply
+/// stops being worth reaching for, and the answer is returned with the digits it
+/// has rather than widened again.
+let last_width : Int32 = 400
+
+///|
+/// The digits a wide run has to leave above its own worst step before the answer
+/// is taken.
+let margin : Int32 = 20
 
 ///|
 /// The confluent limit `0F1(; b; x) = Σ x^k / ((b)_k k!)`.
@@ -54,35 +77,123 @@ pub fn hyper0f1(b : Double, x : Double) -> Double {
 /// Kummer's confluent hypergeometric `1F1(a; b; x) = Σ (a)_k / ((b)_k k!) x^k`.
 ///
 /// The series is summed directly, with Kummer's transformation
-/// `e^x 1F1(b - a; b; -x)` past `x = -4`. Where the terms run a millionfold past
-/// the result the sum is redone at forty-five digits and rounded once, which is
-/// what carries the large-parameter region: `1F1(-19; 24.8; 32.5)` is `-2.2e-8`,
-/// formed from terms around `1e4`.
+/// `e^x 1F1(b - a; b; -x)` past `x = -4`. Where the terms run a thousandfold past
+/// the result the sum is redone at a width that holds the digits the cancellation
+/// took, which is what carries the large-parameter region: `1F1(-19; 24.8; 32.5)`
+/// is `-4.9e-8`, formed from terms around `1e4`.
 pub fn hyper1f1(a : Double, b : Double, x : Double) -> Double {
   let pair = @generic.hyper1f1_scaled(a, b, x, @generic.double_algebra)
   let (value, largest) = pair
   if !poor(value, largest) {
     return value
   }
-  let bits = @moonnum.Fixed::bits_for_digits(45)
-  let ops = @generic.fixed_ops(bits)
-  @generic.hyper1f1(widened(a, bits), widened(b, bits), widened(x, bits), ops).to_double()
+  widen(first_width, fn(bits) {
+    let ops = @generic.fixed_ops(bits)
+    @generic.hyper1f1_scaled(
+      widened(a, bits),
+      widened(b, bits),
+      widened(x, bits),
+      ops,
+    )
+  })
 }
 
 ///|
 /// The Gauss hypergeometric `2F1(a, b; c; x)`, for `|x| < 1`.
 ///
-/// Past a half the series converges too slowly to be worth summing, so the
-/// argument is moved to `1 - x` by the linear transformation, and a negative
-/// argument takes Pfaff's.
+/// Past a half the argument is moved to `1 - x` by the linear transformation, and
+/// a negative argument takes Pfaff's; the body in `special/generic` says which
+/// and why. Both halves of the transformation are formed as logarithms of gamma
+/// factors, because with parameters of order a hundred a single factor is past
+/// `10^370` while the ratio of two of them is not.
 ///
-/// This one has no escalation, and the reason is worth stating: with parameters
-/// of order a hundred and the argument near one, the two halves of the
-/// transformation sit around `10^450` either side of a result of order one. A
-/// fixed point of forty-five digits carries neither, so the wider type is not a
-/// rescue here — it is a different algorithm that is needed, and the doc comment
-/// on the body says what it is. A caller in that region should not read a double
-/// from this function and believe it.
+/// The two halves also cancel, and by more than a double can spare: against
+/// Boost's own table, which lies wholly in this region, the worst row loses
+/// twenty-three digits. Those rows are re-run wider, which is what makes the
+/// table pass at `1e-12`.
 pub fn hyper2f1(a : Double, b : Double, c : Double, x : Double) -> Double {
-  @generic.hyper2f1(a, b, c, x, @generic.double_algebra)
+  let pair = @generic.hyper2f1_scaled(a, b, c, x, @generic.double_algebra)
+  let (value, largest) = pair
+  if !poor(value, largest) {
+    return value
+  }
+  widen(first_width, fn(bits) {
+    let ops = @generic.fixed_ops(bits)
+    @generic.hyper2f1_scaled(
+      widened(a, bits),
+      widened(b, bits),
+      widened(c, bits),
+      widened(x, bits),
+      ops,
+    )
+  })
+}
+
+///|
+/// A run at the first width, then twice as wide while the gap it reports is
+/// still wider than the digits it holds.
+///
+/// Doubling pays for itself: a gap that survived forty-five digits is at least
+/// thirty of them and is answered by ninety. A run still short at the ceiling is
+/// returned as it stands, and the doc comment on the function says as much.
+fn widen(
+  start : Int32,
+  run : (Int32) -> (@moonnum.Fixed, @moonnum.Fixed),
+) -> Double {
+  let mut digits = start
+  let mut best = 0.0
+  for _ in 0..<6 {
+    let bits = @moonnum.Fixed::bits_for_digits(digits)
+    let pair = run(bits)
+    let (value, largest) = pair
+    best = value.to_double()
+    let ops = @generic.fixed_ops(bits)
+    let floor = (ops.from_decimal)("1e\{ops.digits - margin}")
+    let short = (ops.lt)((ops.mul)((ops.abs)(value), floor), (ops.abs)(largest))
+    if !short || digits >= last_width {
+      return best
+    }
+    // The gap the run reports is the count of digits it lost, so the next width
+    // is that count plus the margin rather than twice the last: a row that needs
+    // three hundred digits gets them in one more run instead of three.
+    let next = wanted(largest.to_double(), value.to_double(), digits)
+    let grown = if next > digits * 3 {
+      digits * 3
+    } else if next > digits {
+      next
+    } else {
+      digits * 2
+    }
+    let capped = if grown > last_width { last_width } else { grown }
+    if capped <= digits {
+      return best
+    }
+    digits = capped
+  }
+  best
+}
+
+///|
+/// The width a run needs, read off the gap between its worst term and its answer.
+///
+/// Both readings are doubles and either may have overflowed on the way out of the
+/// fixed point, which is itself a statement that the width was far too narrow;
+/// the doubling below covers that case, so the answer here is never below what
+/// the run already had.
+fn wanted(largest : Double, value : Double, digits : Int32) -> Int32 {
+  if largest != largest || value != value || value == 0.0 {
+    return digits * 2
+  }
+  let ratio = (largest / value).abs()
+  if ratio <= 1.0 {
+    return digits
+  }
+  let needed = @math.log10(ratio) + Double::from_int(margin) + 4.0
+  if needed > 1.0e3 {
+    return 1000
+  }
+  if needed < Double::from_int(digits) {
+    return digits
+  }
+  needed.to_int()
 }

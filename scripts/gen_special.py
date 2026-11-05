@@ -133,8 +133,13 @@ FAMILIES = [
      [(0.5, 0.5), (1.5, 0.5), (1.0, -2.0), (2.5, 3.0)]),
     ("incbeta", 3, incbeta,
      [(0.5, 0.5, 0.9), (2.0, 3.0, 0.5), (1.0, 1.0, 0.25), (3.0, 5.0, 0.75)]),
+    # The confluent hypergeometric: the moderate region, then the two that need
+    # the escalation — a numerator at a negative integer, whose polynomial is a
+    # small answer formed from large terms, and a denominator at one, where the
+    # series ends early and Kummer's transformation no longer applies.
     ("hyper1f1", 3, lambda a, b, x: mp.hyper([a], [b], x),
-     [(0.5, 1.5, 1.0), (1.0, 1.0, 0.5), (2.0, 3.0, -8.0), (0.5, 2.0, 4.0)]),
+     [(0.5, 1.5, 1.0), (1.0, 1.0, 0.5), (2.0, 3.0, -8.0), (0.5, 2.0, 4.0),
+      (-19.0, 24.8, 32.5), (-4.0, -7.0, -18.0), (12.0, 40.0, -30.0)]),
     ("elliprf", 3, lambda x, y, z: mp.elliprf(x, y, z),
      [(1.0, 2.0, 3.0), (0.0, 1.0, 2.0), (2.0, 2.0, 2.0)]),
     ("elliprd", 3, lambda x, y, z: mp.elliprd(x, y, z),
@@ -143,9 +148,17 @@ FAMILIES = [
      [(1.0, 2.0, 3.0), (0.5, 1.5, 2.5), (2.0, 2.0, 2.0)]),
     ("elliprj", 4, lambda x, y, z, p: mp.elliprj(x, y, z, p),
      [(1.0, 2.0, 3.0, 4.0), (0.0, 1.0, 2.0, 3.0), (2.0, 2.0, 2.0, 5.0)]),
+    # The Gauss hypergeometric: the moderate region, then parameters of order a
+    # hundred at arguments either side of the transformation's crossover, a
+    # numerator at a negative integer, and a `c - a - b` at an integer, which is
+    # the one place the transformation around one has a logarithm in it instead
+    # of two powers.
     ("hyper2f1", 4, lambda a, b, c, x: mp.hyp2f1(a, b, c, x),
      [(0.5, 0.5, 1.5, 0.5), (1.0, 1.0, 2.0, 0.3), (0.5, 1.0, 1.5, 0.8),
-      (1.0, 1.0, 2.0, -0.5), (2.0, 0.5, 1.0, 0.2)]),
+      (1.0, 1.0, 2.0, -0.5), (2.0, 0.5, 1.0, 0.2),
+      (85.0, -95.0, 39.0, 0.66), (-81.0, -82.0, 15.0, 0.85),
+      (2.9, 12.4, 76.9, 0.675), (-99.0, 45.0, 60.0, -0.7),
+      (-20.0, 1.5, 3.0, 0.9), (0.5, 1.0, 1.5, 0.95)]),
 ]
 
 

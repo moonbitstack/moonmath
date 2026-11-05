@@ -102,7 +102,19 @@ SECOND = ("moonmath/f64", "src/f64")
 
 # The special-function subpackage, at `Double`, has a section of its own after
 # the second precision.
-SPECIAL = ("moonmath/special", "src/special")
+# The special-function subpackage comes in two layers, and both are public: the
+# double-precision face a caller uses, and the `Ops`-generic bodies it is built
+# from, which are also what the arbitrary-precision caller reaches for. The page
+# carries a section for each.
+SPECIAL = [
+    ("moonmath/special", "src/special", "special", "Special functions"),
+    (
+        "moonmath/special/generic",
+        "src/special/generic",
+        "special-generic",
+        "Special functions, over an algebra",
+    ),
+]
 
 # Methods that a `derive` or an operator implementation writes.
 GENERATED = {
@@ -220,7 +232,9 @@ def parse_interface(path):
                     item["traits"].append(TRAITS.get(trait, trait))
                     break
             continue
-        match = re.match(r"pub (fn|let) (\w+)(::\w+)?(.*)", line)
+        # A generic value carries its type parameters between the keyword and the
+        # name: `pub fn[T] hyper0f1(T, T, Ops[T]) -> T`.
+        match = re.match(r"pub (fn|let)(?:\[[^\]]*\])? (\w+)(::\w+)?(.*)", line)
         if match:
             what, name, method, rest = match.groups()
             entry = {
@@ -284,8 +298,8 @@ def parse_docs(directory):
                 block = []
                 continue
             match = re.match(
-                r"pub\s*(?:\(all\)\s*)?(?:suberror|enum|struct|fn|let)\s+"
-                r"(\w+(?:::\w+)?)",
+                r"pub\s*(?:\(all\)\s*)?(?:suberror|enum|struct|fn|let)"
+                r"(?:\[[^\]]*\])?\s+(\w+(?:::\w+)?)",
                 line,
             )
             if match:
@@ -639,20 +653,23 @@ def render_second_hand():
 
 
 def render_special():
-    """The special-function subpackage: one section, its functions in order."""
-    data = load(SPECIAL[0], SPECIAL[1])
-    docs = data["docs"]
+    """The special-function subpackage: a section per layer, functions in order."""
     missing = []
-    entries = []
-    for item in sorted(data["values"], key=lambda entry: entry["name"]):
-        entries.append(render_value(data["name"], item, docs, missing))
-    section = (
-        '<section id="special"><div class="group-head"><h2>Special functions</h2>'
-        '<span class="count">%d</span></div>'
-        '<p class="group-blurb">%s</p>%s</section>'
-        % (len(entries), inline(data["summary"]), "".join(entries))
-    )
-    return missing, section
+    sections = []
+    for package, path, anchor_id, title in SPECIAL:
+        data = load(package, path)
+        docs = data["docs"]
+        entries = []
+        for item in sorted(data["values"], key=lambda entry: entry["name"]):
+            entries.append(render_value(data["name"], item, docs, missing))
+        sections.append(
+            '<section id="%s"><div class="group-head"><h2>%s</h2>'
+            '<span class="count">%d</span></div>'
+            '<p class="group-blurb">%s</p>%s</section>'
+            % (anchor_id, title, len(entries), inline(data["summary"]),
+               "".join(entries))
+        )
+    return missing, "".join(sections)
 
 
 TEMPLATE = """<!DOCTYPE html>
@@ -830,7 +847,10 @@ def main():
             % (title.lower().replace(" ", "-"), html.escape(title), links)
         )
     rail.append('<div class="group"><a href="#f64">moonmath/f64</a></div>')
-    rail.append('<div class="group"><a href="#special">Special functions</a></div>')
+    for _package, _path, anchor_id, title in SPECIAL:
+        rail.append(
+            '<div class="group"><a href="#%s">%s</a></div>' % (anchor_id, title)
+        )
 
     count = sum(section.count('<article class="entry"') for section in sections)
     count += special_body.count('<article class="entry"')

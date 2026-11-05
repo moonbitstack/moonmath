@@ -9,6 +9,7 @@
 // — and the hypergeometric functions use the wider one as a working tool, not
 // only as a check.
 import {
+  "moonbitlang/core/math",
   "moonbitstack/moonmath/special/generic",
   "moonbitstack/moonnum",
 }

@@ -70,6 +70,8 @@ pub fn[T] hyper1f1_scaled(T, T, T, Ops[T]) -> (T, T)
 
 pub fn[T] hyper2f1(T, T, T, T, Ops[T]) -> T
 
+pub fn[T] hyper2f1_scaled(T, T, T, T, Ops[T]) -> (T, T)
+
 pub fn[T] incbeta(T, T, T, Ops[T]) -> T
 
 pub fn[T] lbeta(T, T, Ops[T]) -> T

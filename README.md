@@ -385,24 +385,21 @@ let x = @moonnum.Fixed::of_decimal("0.5", bits)
 let value = @generic.gamma(x, ops)
 ```
 
-`Fixed` lives in `moonbitstack/moonnum`, which is where a number belongs, and `moonmath` depends on it. Its release predates the type, so until `moonnum` cuts a version with it the dependency is resolved from a sibling checkout through `moon.work`:
-
-```
-members = [
-  ".",
-  "../moonnum",
-]
-```
-
-A checkout of `moonbitstack/moonnum` at branch `feat/bigfloat` alongside this one is therefore required to build. Once the release lands, deleting `moon.work` is the whole of the change; `moon.mod` already names the module.
+`Fixed` lives in `moonbitstack/moonnum`, which is where a number belongs, and `moonmath` depends on it at the version `mooncakes` publishes.
 
 The precision a caller should expect is not the same for every function, and the tests say so rather than averaging it away. In double the gamma, error, zeta and elliptic families agree with the references to about `1e-15`; the Bessel functions to about `1e-12`, the widest case being a nearly integer order, where the reflection divides by the sine of a small angle; and at fifty and a hundred digits the same table is replayed at `1e-45` and `1e-80`.
 
-`hyper1f1` is the one function here that calls the wider type as a working tool rather than as a check: the body reports the largest term its series formed, and the double-precision face re-runs the sum at forty-five digits and rounds once when that term ran far past the answer. That is what carries the large-parameter region, where the direct sum cancels — against Boost's table, which lives entirely in that region, the worst row goes from `4e-4` to `1.1e-12`.
+The two hypergeometric functions are the reason the wider type is here as a working tool rather than only as a check. Both report the largest term their run formed beside the value, and the double-precision face re-runs the sum wider when that term stands far above the answer, then rounds once.
 
-`hyper2f1` has no such rescue and says so in its doc comment: with parameters of order a hundred and the argument near one, its transformation needs six hundred digits of dynamic range, which no fixed point supplies. It claims the moderate region, as does `hyper0f1`, and a caller outside it should not believe a double from it.
+For `hyper1f1` that is all it takes: its terms rise above the result by up to fourteen digits across Boost's general table, and a run at forty-five digits brings the worst row from `4e-4` to `1.1e-12`. A numerator at a non-positive integer ends the sum early and it is evaluated as the polynomial it is; a denominator at one is a pole, and Kummer's transformation — valid for the infinite series — is not applied there.
 
-Two independent reference sets back that up. `scripts/gen_special.py` reads `mpmath` at a hundred and thirty working digits and fills both the double and the arbitrary-precision tables. `scripts/gen_boost.py` takes the tables that ship with Boost.Math's own test suite — twenty-seven of them, nine thousand rows — and `boost_check_wbtest.mbt` replays them, every row except a documented sample of the `1F1` table, whose escalated rows are the one place the suite spends real time. The tables are checked in, so a test run needs neither Python, `mpmath` nor a Boost checkout.
+`hyper2f1` needed more than a wider type, because the transformation around one multiplies a gamma ratio of `10^60` by series whose own terms reach `10^55`. Holding both and adding them afterwards needs a hundred and thirty digits at fixed point. So the scale is folded into the first term of the series it multiplies: every partial sum stays the size of the answer, and what is left is the cancellation the answer is actually made of. Each scale is one exponential rather than a product of two, and its gamma factors are formed as logarithms, since a single `Γ(180)` overflows a double while the ratio of two of them does not. Against Boost's table — parameters within a hundred of zero, the argument anywhere inside the unit interval, values from `1e-49` to `1e62` — the worst row is out by `2.5e-13`, and the widest needs a hundred and thirty-five digits to keep fifteen.
+
+A degenerate `2F1` is summed as it stands: when `c - a - b` is an integer the transformation around one has a logarithm in it instead of two powers, and the series at the argument answers that case, slowly as the argument approaches one.
+
+Three of Boost's `1F1` tables are out of reach and not replayed. Their parameters run past a million — `-814723.75` against `-1222085.5` — where the terms rise roughly `10^450` above the answer and no series, at any width this package will pay for, holds them. That region is what uniform asymptotic expansions are for, and this package does not have them; the general, small-argument and negative-integer tables are complete.
+
+Two independent reference sets back all of it. `scripts/gen_special.py` reads `mpmath` at a hundred and thirty working digits and fills both the double and the arbitrary-precision tables. `scripts/gen_boost.py` takes the tables that ship with Boost.Math's own test suite — thirty of them, twelve thousand rows — and `boost_check_wbtest.mbt` replays every row of every one. The tables are checked in, so a test run needs neither Python, `mpmath` nor a Boost checkout.
 
 ## Examples
 
