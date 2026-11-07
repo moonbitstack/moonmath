@@ -376,22 +376,23 @@ let tail = @special.erfc(2.0)
 let drum = @special.bessel_j(0.0, 2.4)
 ```
 
-The arbitrary-precision side runs the same functions on `moonnum`'s `Fixed` — a fixed-point real carried as `mantissa / 2^bits` — at whatever width the caller asks for:
+The arbitrary-precision side runs the same functions on `moonnum`'s `BigFloat` at whatever width the caller asks for: `bigfloat_ops(digits)` is the algebra, and every `@generic` function takes it as its last argument.
 
 ```moonbit
-let bits = @moonnum.Fixed::bits_for_digits(50)
-let ops = @generic.fixed_ops(bits)
-let x = @moonnum.Fixed::of_decimal("0.5", bits)
+let ops = @generic.bigfloat_ops(50)
+let x = (ops.from_decimal)("0.5")
 let value = @generic.gamma(x, ops)
 ```
 
-`Fixed` lives in `moonbitstack/moonnum`, which is where a number belongs, and `moonmath` depends on it at the version `mooncakes` publishes.
+`BigFloat` lives in `moonbitstack/moonnum`, which is where a number belongs, and `moonmath` depends on it at the version `mooncakes` publishes.
 
 The precision a caller should expect is not the same for every function, and the tests say so rather than averaging it away. In double the gamma, error, zeta and elliptic families agree with the references to about `1e-15`; the Bessel functions to about `1e-12`, the widest case being a nearly integer order, where the reflection divides by the sine of a small angle; and at fifty and a hundred digits the same table is replayed at `1e-45` and `1e-80`.
 
 The two hypergeometric functions are the reason the wider type is here as a working tool rather than only as a check. Both report the largest term their run formed beside the value, and the double-precision face re-runs the sum wider when that term stands far above the answer, then rounds once.
 
-For `hyper1f1` that is all it takes: its terms rise above the result by up to fourteen digits across Boost's general table, and a run at forty-five digits brings the worst row from `4e-4` to `1.1e-12`. A numerator at a non-positive integer ends the sum early and it is evaluated as the polynomial it is; a denominator at one is a pole, and Kummer's transformation — valid for the infinite series — is not applied there.
+For `hyper1f1` that is all it takes up to a point: its terms rise above the result by up to fourteen digits across Boost's general table, and a run at forty-five digits brings the worst row from `4e-4` to `1.1e-12`. A numerator at a non-positive integer ends the sum early and it is evaluated as the polynomial it is; a denominator at one is a pole, and Kummer's transformation — valid for the infinite series — is not applied there.
+
+Past a few hundred the wider type stops being the whole answer, because the terms rise faster than any width this package will pay for can follow: at `a = -814723` the peak of the sum stands `10^450` above the value it is made of. That region is answered by methods chosen per point, and the routing is the split the methods themselves make. Luke's rational continued fraction where its first term is of order one and the argument is small against `b`; the A&S 13.3.6 uniform Bessel expansion where the gap `b - a` is small against the parameters, with the argument moved to a positive one; the large-argument asymptotic where the argument dominates both parameters; and, where `a` and the argument are negative together against a positive `b`, no transformation at all — `(a)_k` and `x^k` take their signs together, so every term of the sum is positive, nothing cancels, and the run costs only the count. Kummer's reflection is what is left for a negative argument the others decline, and the plain series is the last resort. Every one of them reports the largest factor it formed, so the double face still knows when to widen.
 
 `hyper2f1` needed more than a wider type, because the transformation around one multiplies a gamma ratio of `10^60` by series whose own terms reach `10^55`. Holding both and adding them afterwards needs a hundred and thirty digits at fixed point. So the scale is folded into the first term of the series it multiplies: every partial sum stays the size of the answer, and what is left is the cancellation the answer is actually made of. Each scale is one exponential rather than a product of two, and its gamma factors are formed as logarithms, since a single `Γ(180)` overflows a double while the ratio of two of them does not. Against Boost's table — parameters within a hundred of zero, the argument anywhere inside the unit interval, values from `1e-49` to `1e62` — the worst row is out by `2.5e-13`, and the widest needs a hundred and thirty-five digits to keep fifteen.
 
@@ -406,9 +407,9 @@ What that comes to, row for row against Boost's tables:
 
 A degenerate `2F1` is summed as it stands: when `c - a - b` is an integer the transformation around one has a logarithm in it instead of two powers, and the series at the argument answers that case, slowly as the argument approaches one.
 
-Three of Boost's `1F1` tables are out of reach and not replayed. Their parameters run past a million — `-814723.75` against `-1222085.5` — where the terms rise roughly `10^450` above the answer and no series, at any width this package will pay for, holds them. That region is what uniform asymptotic expansions are for, and this package does not have them; the general, small-argument and negative-integer tables are complete.
+The three `1F1` tables whose parameters run past a million are the large-parameter region, and 2,282 of their 2,364 rows are answered here — every row of the double-limited table, and half of those Boost itself marks unsolved. What is left is the corner where `b` is negative and small against `a` and the argument, so that `(b)_k` crosses the origin on its way: the terms there climb by more than four hundred digits before they come back, past any width this package will pay for, and only Boost's method of ratios holds them — a Miller backward recurrence for the ratio of neighbouring solutions, started from an estimate of the minimal one, with the Wronskian to fix the scale. That method is not here, and the routing says so by summing where it stands and reporting the factor it formed, rather than by pretending the answer is good. A 240-row sample of those tables, one from each corner of the routing, is what `large_wbtest.mbt` replays; the tables themselves are not checked in.
 
-Two independent reference sets back all of it. `scripts/gen_special.py` reads `mpmath` at a hundred and thirty working digits and fills both the double and the arbitrary-precision tables. `scripts/gen_boost.py` takes the tables that ship with Boost.Math's own test suite — thirty of them, twelve thousand rows — and `boost_check_wbtest.mbt` replays every row of every one. The tables are checked in, so a test run needs neither Python, `mpmath` nor a Boost checkout.
+Two independent reference sets back all of it. `scripts/gen_special.py` reads `mpmath` at a hundred and thirty working digits and fills both the double and the arbitrary-precision tables. `scripts/gen_boost.py` takes the tables that ship with Boost.Math's own test suite — thirty of them, twelve thousand rows — and `boost_check_wbtest.mbt` replays every row of every one. The tables are checked in, so a test run needs neither Python, `mpmath` nor a Boost checkout. The three `_big` tables are the exception: they are another 2,399 rows, some of whose parameters are past a million, and they are read from a Boost checkout when `gen_boost.py` is pointed at one rather than committed, so what the package carries is the 240-row sample above.
 
 ## Examples
 

@@ -51,6 +51,20 @@ pub fn[T] hyper1f1_uniform(a : T, b : T, x : T, ops : Ops[T]) -> (T, T) {
   if (ops.is_zero)(bma) {
     return ((ops.exp)(x), (ops.exp)(x))
   }
+  // A numerator under a hundredth against a `b` past one. The terms fall a
+  // factor `|a| (|x|/b)^k / k` apart once the numerator's own product has
+  // settled, so the sum is a few dozen terms when the argument is small against
+  // `b` and thousands when it is not — either way a count this can work out, and
+  // the reflection in particular would carry a `e^x` that a narrow width cannot
+  // hold. Note the `(k-1)!` of `(a)_k` cancels only one `k!`: with `|x|` past
+  // `b` the terms climb to `10^122` before they turn over, and the answer with
+  // them.
+  if (ops.lt)((ops.abs)(a), (ops.from_decimal)("0.01")) && (ops.lt)(one, b) {
+    let count = series_count(a, b, x, ops)
+    if count > 0 {
+      return hyper1f1_terms(a, b, x, last_term(a, ops), count, one, ops)
+    }
+  }
   if (ops.is_zero)((ops.sub)(bma, (ops.neg)(one))) {
     if (ops.lt)(a, zero) {
       let whole = (ops.to_double)(a)
@@ -99,6 +113,21 @@ pub fn[T] hyper1f1_uniform(a : T, b : T, x : T, ops : Ops[T]) -> (T, T) {
     ) {
     return hyper1f1_rational(a, b, x, ops)
   }
+  // A negative `a` against a positive `b` at a negative argument: `(a)_k` and
+  // `x^k` take their signs together at every `k`, so every term of the series is
+  // positive. Nothing cancels and the running sum never passes the answer, so
+  // no width is spent on digits that are then thrown away; the only question is
+  // how far the terms climb before they turn over, and that is a count this can
+  // work out. The reflection below would answer the same point by moving it to
+  // an `a` and a `b` within a percent of each other at a positive argument,
+  // where the series climbs to the argument itself — an order of magnitude
+  // further — before it comes back down.
+  if (ops.lt)(a, zero) && (ops.lt)(zero, b) && (ops.lt)(x, zero) {
+    let count = series_count(a, b, x, ops)
+    if count > 0 {
+      return hyper1f1_terms(a, b, x, last_term(a, ops), count, one, ops)
+    }
+  }
   // A negative argument is the trouble: Kummer's relation
   // `1F1(a;b;z) = e^z 1F1(b-a; b; -z)` brings it to a positive one, and the
   // reflected point is answered by the same routing.
@@ -121,6 +150,27 @@ pub fn[T] hyper1f1_uniform(a : T, b : T, x : T, ops : Ops[T]) -> (T, T) {
     let mut largest = (ops.abs)(scale)
     if (ops.lt)(largest, (ops.abs)(value)) {
       largest = (ops.abs)(value)
+    }
+    // The reflected point is not always the kinder one. Where `b - a` lands
+    // within a percent of `b` at a positive argument, the series there climbs to
+    // the argument itself before it turns over and comes back down to a value it
+    // has long since passed: the run reports a factor far above its answer, and
+    // what it carries of that answer is what the two ends had in common. The
+    // point as it stands may be the cheaper sum — all positive terms where the
+    // signs line up, and a peak no larger than the answer. Both are tried when
+    // the reflection comes back that way, and the one that kept more of its
+    // digits is the one returned.
+    if (ops.lt)((ops.mul)((ops.abs)(value), (ops.from_decimal)("1e6")), largest) {
+      let count = series_count(a, b, x, ops)
+      if count > 0 {
+        let direct = hyper1f1_terms(a, b, x, last_term(a, ops), count, one, ops)
+        if (ops.lt)(
+            (ops.mul)(direct.1, (ops.abs)(value)),
+            (ops.mul)(largest, (ops.abs)(direct.0)),
+          ) {
+          return direct
+        }
+      }
     }
     return (value, largest)
   }
@@ -155,6 +205,41 @@ pub fn[T] hyper1f1_uniform(a : T, b : T, x : T, ops : Ops[T]) -> (T, T) {
     return (value, largest)
   }
   hyper1f1_series(a, b, x, ends, one, ops)
+}
+
+///|
+/// How many terms of `1F1(a; b; x)` the plain series needs before its terms
+/// have fallen below the running sum, or `-1` where that is further than a run
+/// can afford and a uniform method is the better tool.
+///
+/// The terms turn over where `(|a| + k)|x|` crosses `(|b| + k)(k + 1)`, so the
+/// count is read by walking the ratio of one term's magnitude to the next until
+/// their product has fallen by the working width. Where the terms are of one
+/// sign the sum is at least the largest of them, so that product bounds the
+/// fraction of the answer still to come; where they are not, the sum tests
+/// against its own running total as it goes, and this only has to say how far it
+/// may run. Either way it is done in double, because a count is all it decides
+/// and the width of the sum is not.
+fn[T] series_count(a : T, b : T, x : T, ops : Ops[T]) -> Int32 {
+  let am = (ops.to_double)((ops.abs)(a))
+  let bd = (ops.to_double)((ops.abs)(b))
+  let xm = (ops.to_double)((ops.abs)(x))
+  if am != am || bd != bd || xm != xm || bd == 0.0 {
+    return -1
+  }
+  let floor_at = @math.pow(10.0, -(ops.digits + 2).to_double())
+  let mut count : Int32 = 0
+  let mut decay = 1.0
+  while decay > floor_at && count < 20000 {
+    count = count + 1
+    let k = count.to_double()
+    decay = decay * ((am + k) * xm / ((bd + k) * (k + 1.0)))
+  }
+  count = count + 20
+  if count > 20000 {
+    return -1
+  }
+  count
 }
 
 ///|

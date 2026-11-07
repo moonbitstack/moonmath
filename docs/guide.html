@@ -787,9 +787,9 @@ println(@special.zeta(2.0))               // pi squared over six</code></pre>
             names the operations and constants a number type has to supply —
             addition, a square root, a logarithm, pi. The package you call is a
             face over that body: <code>special</code> hands it the double
-            algebra, <code>moonnum</code> hands it a fixed-point real at
-            whatever width you ask for, and neither can drift from the other
-            because there is only one implementation to drift.
+            algebra, <code>bigfloat_ops</code> hands it a real at whatever width
+            you ask for, and neither can drift from the other because there is
+            only one implementation to drift.
           </p>
 
           <div class="slip">
@@ -797,9 +797,8 @@ println(@special.zeta(2.0))               // pi squared over six</code></pre>
               <span class="label">listing 17 · the same body at fifty digits</span>
               <button class="copy" type="button" data-copy>copy</button>
             </div>
-            <pre><code>let bits = @moonnum.Fixed::bits_for_digits(50)
-let ops = @generic.fixed_ops(bits)
-let half = @moonnum.Fixed::of_decimal("0.5", bits)
+            <pre><code>let ops = @generic.bigfloat_ops(50)
+let half = (ops.from_decimal)("0.5")
 let value = @generic.gamma(half, ops)</code></pre>
           </div>
 
@@ -829,8 +828,8 @@ let value = @generic.gamma(half, ops)</code></pre>
             folded into the first term of the series they multiply rather than
             applied to the sum afterwards. When the report comes back short, the
             double face re-runs the whole thing on <code>moonnum</code>&rsquo;s
-            <code>Fixed</code> at a width that holds the digits the cancellation
-            took, and rounds once.
+            <code>BigFloat</code> at a width that holds the digits the
+            cancellation took, and rounds once.
           </p>
 
           <p>

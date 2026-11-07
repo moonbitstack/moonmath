@@ -74,3 +74,18 @@ jobs:
         run: |
           python3 scripts/gen_api.py
           git diff --exit-code docs/api.html
+
+      # A reader pastes the blocks of the README and of the skills into a project, so
+      # they have to compile as written, against this commit's source.
+      - name: the code in the docs compiles
+        if: runner.os == 'Linux'
+        run: |
+          python3 scripts/check_snippets.py
+
+      - name: the skills are well formed
+        if: runner.os == 'Linux'
+        run: |
+          for dir in docs/skills/*/; do
+            [ -f "$dir/SKILL.md" ] || continue
+            pipx run --spec skills-ref agentskills validate "$dir"
+          done

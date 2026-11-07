@@ -87,9 +87,12 @@ pub fn hyper0f1(b : Double, x : Double) -> Double {
 /// `e^x 1F1(b - a; b; -x)` past `x = -4`. Past the point where the series's terms
 /// run beyond what any width this package will pay for holds — the large-parameter
 /// region, where a numerator of a few hundred thousand cancels a denominator of a
-/// million — the run falls back to the uniform asymptotic expansion instead, and
-/// where the terms still run a thousandfold past the result the sum is redone at a
-/// width that holds the digits the cancellation took.
+/// million — the routing in `special/generic` picks a method for the point
+/// instead: Luke's rational continued fraction, the A&S 13.3.6 uniform expansion,
+/// the large-argument asymptotic, or the sum at the argument where the numerator
+/// is small enough for it to settle in a handful of terms. Where the terms still
+/// run a thousandfold past the result the sum is redone at a width that holds the
+/// digits the cancellation took.
 pub fn hyper1f1(a : Double, b : Double, x : Double) -> Double {
   let pair = @generic.hyper1f1_scaled(a, b, x, @generic.double_algebra)
   let (value, largest) = pair

@@ -121,6 +121,27 @@ fn[T] hyper1f1_series(
   // count is also the point past which the convergence test may look: before it
   // the terms are still the ones the sum is made of.
   let stop = if ends >= 0 { ends + 2 } else { 5000 }
+  hyper1f1_terms(a, b, x, ends, stop, start, ops)
+}
+
+///|
+/// The same series, summed no further than a count the caller names.
+///
+/// The default five thousand is a guard against a series that has not settled:
+/// past it the answer is not the sum anyway, and the width — not the term count
+/// — is what a caller with a better method should be raising. But a series
+/// whose terms are all one sign has no cancellation to lose, so its only cost
+/// is the count, and a caller that has computed how far its terms climb can
+/// say so.
+fn[T] hyper1f1_terms(
+  a : T,
+  b : T,
+  x : T,
+  ends : Int32,
+  stop : Int32,
+  start : T,
+  ops : Ops[T],
+) -> (T, T) {
   let hold = if ends >= 0 { stop } else { settle([a, b], ops) }
   let mut term = start
   let mut sum = start
