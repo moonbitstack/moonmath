@@ -63,6 +63,23 @@ pub fn[T] hyper1f1_scaled(a : T, b : T, x : T, ops : Ops[T]) -> (T, T) {
       "hyper1f1: the second parameter is a non-positive integer and the series does not end before it",
     )
   }
+  // Past the parameters the plain series answers, the terms grow far past the
+  // result and cancel, and the width is not wide enough to hold them: the run
+  // walks off rather than to the value. The uniform methods answer that region
+  // — see `hypergeom_large` — and are run at whatever width this is called with,
+  // so the wide precision the escalation reaches is what earns the digits. The
+  // gate is on the parameters rather than the argument, because a large-parameter
+  // point can sit at a tiny argument and still be the one the series cannot
+  // reach.
+  let large = if (ops.to_double)(a).abs() > 100.0 ||
+    (ops.to_double)(b).abs() > 100.0 {
+    true
+  } else {
+    false
+  }
+  if large {
+    return hyper1f1_uniform(a, b, x, ops)
+  }
   // The switch is where the series would start to cancel; below it the direct
   // sum is already the better of the two. Kummer's transformation moves a
   // negative argument to a positive one, but it is an identity of the infinite
