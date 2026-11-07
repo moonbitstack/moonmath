@@ -4,7 +4,7 @@
 // The gamma family over `Ops`: the logarithm from the Stirling expansion with
 // the Bernoulli corrections, everything else built from it. One body serves both
 // precisions, and the expansion is chosen by `ops.digits` so a hundred-digit
-// `Fixed` runs it far enough out while a double stops after a dozen terms.
+// `BigFloat` runs it far enough out while a double stops after a dozen terms.
 
 ///|
 /// `ln Γ(x)` for any real `x`, over `Ops`.
@@ -425,8 +425,10 @@ fn[T] tiny(ops : Ops[T]) -> T {
 
 ///|
 /// The floor a modified Lentz step divides by. It only has to be a value the
-/// width can hold and that no legitimate denominator reaches; a hundred-digit
-/// `Fixed` cannot hold `1e-300`, so the floor is stated at its own width.
+/// width can hold and that no legitimate denominator reaches. Stating it a couple
+/// of digits inside the width — rather than at the very bottom the type would
+/// take — keeps the guard from running into the rounding of the last places the
+/// run is still working on.
 fn[T] lentz_floor(ops : Ops[T]) -> T {
   if ops.digits <= 20 {
     (ops.from_decimal)("1e-300")

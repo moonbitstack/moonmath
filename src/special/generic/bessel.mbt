@@ -246,11 +246,9 @@ fn[T] bessel_jy(v : T, x : T, ops : Ops[T]) -> (T, T) {
     if (ops.lt)(reach, x) {
       return bessel_jy_asymptotic(v, x, ops)
     }
-    // Steed's method starts its backward recurrence from an arbitrary tiny
-    // value, which needs an exponent range to hold; the fixed point at fifty
-    // digits has none to spare, and does not need one — at that width the
-    // series can afford the cancellation. So the method is the double-precision
-    // answer to this stretch of the range, and the series stays for width.
+    // At a width where the series cannot yet afford the cancellation the stretch
+    // costs, Steed's method is the better tool: a continued fraction answers the
+    // ratio where the series would need to run long.
     if ops.digits <= 30 {
       return bessel_jy_steed(v, x, ops)
     }
@@ -534,9 +532,9 @@ fn[T] bessel_k_direct(n : Int32, x : T, ops : Ops[T]) -> T {
 ///
 /// The recurrence starts from an arbitrary tiny value because only ratios of its
 /// terms are read at the end; the value is a guard against overflow, not a
-/// datum. That guard is also why the method is used at double precision only:
-/// `1e-150` is representable in a `Double` and is nothing at all in a fixed
-/// point of fifty digits, where the recurrence would begin at zero.
+/// datum. The method is used at the narrow widths where the series cannot yet
+/// afford the cancellation this stretch costs, and left to the series at a width
+/// that can.
 fn[T] bessel_jy_steed(v : T, x : T, ops : Ops[T]) -> (T, T) {
   let two = (ops.from_int)(2)
   let pi = ops.pi

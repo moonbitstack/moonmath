@@ -3,7 +3,7 @@
 
 // The constants the asymptotic expansions need, written out to more digits than
 // any supported width can hold. They are kept as decimal text and parsed by the
-// `Ops` of the moment, so a double rounds them once and a `Fixed` at a
+// `Ops` of the moment, so a double rounds them once and a `BigFloat` at a
 // hundred digits keeps every digit it was given.
 
 ///|

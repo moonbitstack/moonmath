@@ -11,7 +11,7 @@
 /// type.
 ///
 /// One value of this record is one number type. `double_ops` is the built-in
-/// precision and `fixed_ops` the arbitrary precision; a third type needs a
+/// precision and `bigfloat_ops` the arbitrary precision; a third type needs a
 /// third value and no change to the bodies.
 ///
 /// `digits` is the working precision in decimal digits. It is not used to
@@ -106,6 +106,32 @@ pub fn double_ops() -> Ops[Double] {
 pub let double_algebra : Ops[Double] = double_ops()
 
 ///|
+/// The significand width, in bits, a working precision of `digits` decimal
+/// digits needs.
+///
+/// A decimal digit is `log2 10` of a binary bit, and the little slack on top
+/// keeps the decimal-digit reading and the binary width from parting company in
+/// the last place: a width of exactly `digits log2 10` bits rounds the hundredth
+/// decimal digit the wrong way now and then, and one that carries a fraction of
+/// a digit more does not.
+pub fn digits_to_precision(digits : Int32) -> Int32 {
+  @math.ceil(Double::from_int(digits) * 3.32193 + 3.0).to_int()
+}
+
+///|
+/// A decimal literal as a `BigFloat` at `context`: the one reading the constant
+/// tables and the test vectors share, and the one place a literal that does not
+/// parse fails loudly rather than as a wrong number.
+fn decimal_to_bigfloat(
+  text : String,
+  context : @moonnum.Context,
+) -> @moonnum.BigFloat {
+  @moonnum.BigFloat::parse(text, context~) catch {
+    _ => abort("a constant would not parse: \{text}")
+  }
+}
+
+///|
 /// A decimal literal as a double: the digits are accumulated and the exponent
 /// applied once, so a constant written to more places than a double holds still
 /// arrives at the nearest double.
@@ -159,34 +185,39 @@ fn decimal_to_double(text : String) -> Double {
 }
 
 ///|
-/// The algebra of a `Fixed` at `bits` fractional bits.
-pub fn fixed_ops(bits : Int32) -> Ops[@moonnum.Fixed] {
+/// The algebra of a `BigFloat` at `digits` decimal digits.
+///
+/// The binary operations are the context-taking forms rather than the operators:
+/// an operator takes the wider of its two operands and rounds to that, so a value
+/// formed at the working width and a constant that carries one extra bit would
+/// settle at the wider of the two instead of the width the run asks for. Naming
+/// the context on every operation pins the answer to it.
+pub fn bigfloat_ops(digits : Int32) -> Ops[@moonnum.BigFloat] {
+  let c = @moonnum.Context::new(digits_to_precision(digits))
   {
-    zero: @moonnum.Fixed::zero(bits),
-    one: @moonnum.Fixed::one(bits),
-    from_int: fn(i) { @moonnum.Fixed::of_int(i, bits) },
-    from_decimal: fn(text) { @moonnum.Fixed::of_decimal(text, bits) },
-    add: fn(a, b) { a.add(b) },
-    sub: fn(a, b) { a.sub(b) },
-    mul: fn(a, b) { a.mul(b) },
-    div: fn(a, b) { a.div(b) },
-    neg: fn(x) { x.neg() },
+    zero: @moonnum.BigFloat::zero(context=c),
+    one: @moonnum.BigFloat::one(context=c),
+    from_int: fn(i) { @moonnum.BigFloat::of_int(i, context=c) },
+    from_decimal: fn(text) { decimal_to_bigfloat(text, c) },
+    add: fn(a, b) { c.add(a, b) },
+    sub: fn(a, b) { c.sub(a, b) },
+    mul: fn(a, b) { c.mul(a, b) },
+    div: fn(a, b) { c.div(a, b) },
+    neg: fn(x) { -x },
     abs: fn(x) { x.abs() },
-    sqrt: fn(x) { x.sqrt() },
-    exp: fn(x) { x.exp() },
-    ln: fn(x) { x.ln() },
-    pow: fn(x, y) { x.pow(y) },
-    sin: fn(x) { x.sin() },
-    cos: fn(x) { x.cos() },
-    atan: fn(x) { x.atan() },
-    bernoulli: parse_bernoulli(fn(text) {
-      @moonnum.Fixed::of_decimal(text, bits)
-    }),
-    pi: @moonnum.Fixed::pi(bits),
+    sqrt: fn(x) { x.sqrt(context=c) },
+    exp: fn(x) { x.exp(context=c) },
+    ln: fn(x) { x.ln(context=c) },
+    pow: fn(x, y) { x.pow(y, context=c) },
+    sin: fn(x) { x.sin(context=c) },
+    cos: fn(x) { x.cos(context=c) },
+    atan: fn(x) { x.atan(context=c) },
+    bernoulli: parse_bernoulli(fn(text) { decimal_to_bigfloat(text, c) }),
+    pi: @moonnum.BigFloat::pi(context=c),
     lt: fn(a, b) { a < b },
     le: fn(a, b) { a <= b },
     is_zero: fn(x) { x.is_zero() },
-    digits: @moonnum.Fixed::digits_for_bits(bits),
+    digits,
     to_double: fn(x) { x.to_double() },
   }
 }
