@@ -209,14 +209,24 @@ pub fn[T] hyper2f1_scaled(a : T, b : T, c : T, x : T, ops : Ops[T]) -> (T, T) {
   if (ops.le)(x, half) {
     return hyper2f1_series(a, b, c, x, 20000, one, ops)
   }
-  // The linear transformation around one. Two things send the run back to the
-  // plain series: a `c - a - b` at an integer, where the formula has a logarithm
-  // in it instead of the two powers; and a gamma factor at a pole, which is the
-  // same degeneracy seen from the other side.
   let gap = (ops.sub)((ops.sub)(c, a), b)
-  let unusable = integral(gap, ops) ||
-    at_pole((ops.sub)(c, a), ops) ||
-    at_pole((ops.sub)(c, b), ops)
+  // The connection formula at one, and the one the argument is near. When
+  // `c - a - b` is a non-negative integer the coefficient of the second power in
+  // that formula collapses to zero and leaves a logarithm in its place: the two
+  // powers are linearly dependent there, and the series at the argument answers
+  // the case slowly — like `x^k`, so a run that reaches the answer needs terms
+  // on the order of `1 / (1 - x)`, which walks off as the argument closes on one.
+  // The logarithmic form answers it instead: a terminating sum on `1 - x` plus
+  // one power of `1 - x` against its own logarithm, which stays bounded for every
+  // argument inside the interval.
+  let gap_int = gap_to_int(gap, ops)
+  if gap_int >= 0 {
+    return hyper2f1_degenerate(a, b, c, x, gap_int, ops)
+  }
+  // A gamma factor at a pole is the same degeneracy seen from the other side, and
+  // there is no logarithmic form for it: the series at the argument is the only
+  // answer, and it is slow.
+  let unusable = at_pole((ops.sub)(c, a), ops) || at_pole((ops.sub)(c, b), ops)
   if unusable {
     return hyper2f1_series(a, b, c, x, series_limit(x, ops), one, ops)
   }
@@ -356,6 +366,139 @@ fn[T] hyper2f1_series(
 }
 
 ///|
+/// The degenerate Gauss hypergeometric, for `c - a - b = n` a non-negative
+/// integer, from DLMF 15.4.20.
+///
+/// When the gap `c - a - b` is a non-negative integer the two powers of the
+/// connection formula at one are linearly dependent and its second coefficient
+/// vanishes, leaving a logarithm in its place. The series at the argument
+/// answers the case slowly, like `x^k`, so a run that reaches the answer needs
+/// terms on the order of `1 / (1 - x)`, which walks off as the argument closes
+/// on one. This form answers it instead: with `c = a + b + n`, the value is a
+/// terminating sum of length `n` on `1 - x` plus one power of `1 - x` against a
+/// convergent series that carries the logarithm, and both stay bounded for
+/// every argument inside the unit interval.
+///
+/// ```text
+/// 2F1(a, b; a + b + n; x) = S1(a, b, n; 1 - x)
+///   + Γ(c) / (Γ(n + 1) Γ(a) Γ(b)) (1 - x)^n
+///     Σ_{m ≥ 0} (a + n)_m (b + n)_m / ((n + 1)_m m!) (1 - x)^m
+///     · ((-1)^(n + 1) ln(1 - x) + (-1)^n ψ_m)
+/// where S1 is a terminating sum of `n` terms and
+/// ψ_m = ψ(n + 1 + m) + ψ(m + 1) - ψ(a + n + m) - ψ(b + n + m).
+/// ```
+fn[T] hyper2f1_degenerate(
+  a : T,
+  b : T,
+  c : T,
+  x : T,
+  n : Int32,
+  ops : Ops[T],
+) -> (T, T) {
+  let one = ops.one
+  let zero = ops.zero
+  let near = (ops.sub)(one, x)
+  // `A = Γ(c) Γ(n) / (Γ(a + n) Γ(b + n))` carries the first (length-`n`) sum.
+  // It is a ratio of gammas formed as a logarithm with its sign, because the
+  // parameters this is called for reach into the hundreds, where a single
+  // factor is past what a narrow width holds while the ratio is unremarkable.
+  // For `n = 0` the first sum is empty and the whole answer is the logarithmic
+  // part below, so `A` is not formed at all.
+  let mut first : T = if n == 0 {
+    zero
+  } else {
+    let log_a = gamma_log(
+      [
+        (c, true),
+        ((ops.from_int)(n), true),
+        ((ops.add)(a, (ops.from_int)(n)), false),
+        ((ops.add)(b, (ops.from_int)(n)), false),
+      ],
+      ops,
+    )
+    (ops.mul)((ops.exp)(log_a.0), log_a.1)
+  }
+  let mut largest = (ops.abs)(first)
+  // The rest of the first sum is a recurrence: the `k`-th term (counting from
+  // zero) is the previous one times `- (1 - x)(a + k - 1)(b + k - 1) /
+  // ((n - k) k)`, so a run over `k = 1 .. n - 1` reaches the whole sum, which
+  // is `n` terms long.
+  let mut k : Int32 = 1
+  let mut term = first
+  while k < n {
+    let index = (ops.from_int)(k - 1)
+    let numerator = (ops.mul)(
+      (ops.mul)((ops.add)(a, index), (ops.add)(b, index)),
+      near,
+    )
+    let denominator = (ops.mul)((ops.from_int)(n - k), (ops.from_int)(k))
+    term = (ops.mul)(term, (ops.neg)((ops.div)(numerator, denominator)))
+    first = (ops.add)(first, term)
+    let size = (ops.abs)(term)
+    if (ops.lt)(largest, size) {
+      largest = size
+    }
+    k = k + 1
+  }
+  // The logarithmic part: `Γ(c) / (Γ(n + 1) Γ(a) Γ(b)) (1 - x)^n` times a
+  // convergent series on `1 - x`. Its argument `1 - x` is inside `0 .. 1/2`
+  // here (this path is reached only past a half), so the series converges like
+  // a half to a power and the run needs few terms.
+  let log_coeff = gamma_log(
+    [(c, true), ((ops.from_int)(n + 1), false), (a, false), (b, false)],
+    ops,
+  )
+  let coeff = (ops.mul)((ops.exp)(log_coeff.0), log_coeff.1)
+  let sign_even = if n % 2 == 0 { one } else { (ops.neg)(one) }
+  let sign_odd = (ops.neg)(sign_even)
+  let log_t = (ops.ln)(near)
+  let hold = settle([a, b, (ops.from_int)(n + 1)], ops)
+  let mut second_sum = zero
+  let mut am = one
+  let mut m : Int32 = 0
+  while m < 100000 {
+    let nm = (ops.add)((ops.from_int)(n), (ops.from_int)(m))
+    let psi = (ops.sub)(
+      (ops.add)(
+        digamma((ops.from_int)(n + m + 1), ops),
+        digamma((ops.from_int)(m + 1), ops),
+      ),
+      (ops.add)(digamma((ops.add)(a, nm), ops), digamma((ops.add)(b, nm), ops)),
+    )
+    let inner = (ops.add)((ops.mul)(sign_odd, log_t), (ops.mul)(sign_even, psi))
+    second_sum = (ops.add)(second_sum, (ops.mul)(am, inner))
+    let size = (ops.abs)(am)
+    if (ops.lt)(largest, size) {
+      largest = size
+    }
+    if m > hold && (ops.lt)(size, (ops.mul)((ops.abs)(second_sum), tiny(ops))) {
+      break
+    }
+    let denominator = (ops.mul)(
+      (ops.add)((ops.from_int)(n + 1), (ops.from_int)(m)),
+      (ops.from_int)(m + 1),
+    )
+    let numerator = (ops.mul)(
+      (ops.mul)((ops.add)(a, nm), (ops.add)(b, nm)),
+      near,
+    )
+    am = (ops.mul)(am, (ops.div)(numerator, denominator))
+    m = m + 1
+  }
+  let power_n = (ops.pow)(near, (ops.from_int)(n))
+  let second = (ops.mul)(coeff, (ops.mul)(power_n, second_sum))
+  let value = (ops.add)(first, second)
+  // The answer is the difference of the two parts, so a caller judging it also
+  // reads how large each part ran; the larger of the three is the whole loss.
+  for candidate in [(ops.abs)(first), (ops.abs)(second)] {
+    if (ops.lt)(largest, candidate) {
+      largest = candidate
+    }
+  }
+  (value, largest)
+}
+
+///|
 /// The term count below which the convergence test may not fire.
 ///
 /// A term is a running product, and a parameter that is negative makes that
@@ -418,15 +561,32 @@ fn[T] last_term(x : T, ops : Ops[T]) -> Int32 {
 }
 
 ///|
-/// Whether a parameter sits on an integer, where the two powers of the
-/// transformation around one are linearly dependent and a logarithm belongs in
-/// its place.
-fn[T] integral(x : T, ops : Ops[T]) -> Bool {
+/// `x` as a non-negative integer, or `-1` when it is not one.
+///
+/// The degenerate form of `2F1` is indexed by this: the connection formula at
+/// one carries a logarithm exactly when `c - a - b` is a non-negative integer,
+/// and the logarithm sits at that count. The value is read as a double, which is
+/// enough to name the integer and is what `to_double` is for.
+///
+/// The gap is *computed*, and a double `c - a - b` that is mathematically an
+/// integer comes back within a unit in the last place of it — `4.4 - 1.3 - 2.1`
+/// is `0.9999999999999998`, not `1.0`. The comparison is therefore to the nearest
+/// integer at the width's own relative tolerance rather than to the exact value:
+/// a gap that is not within a few parts in a billion of an integer is genuinely
+/// not one, and the two-power form that the tolerance would otherwise be routed
+/// away from is the one that diverges at the near-integer gap it sits beside.
+fn[T] gap_to_int(x : T, ops : Ops[T]) -> Int32 {
   let value = (ops.to_double)(x)
-  if value.abs() > 1.0e15 {
-    return false
+  if value < 0.0 || value > 1.0e15 {
+    return -1
   }
-  (value - @math.round(value)).abs() < 1.0e-9
+  let nearest = @math.round(value)
+  let scale = if value.abs() > 1.0 { value.abs() } else { 1.0 }
+  let tolerance = 1.0e-9 * scale
+  if (value - nearest).abs() > tolerance {
+    return -1
+  }
+  nearest.to_int()
 }
 
 ///|

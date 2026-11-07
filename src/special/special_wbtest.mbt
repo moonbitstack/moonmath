@@ -218,6 +218,33 @@ test "the hypergeometric edges" {
 }
 
 ///|
+/// The degenerate `2F1`, where `c - a - b` is a non-negative integer. The
+/// transformation around one carries a logarithm in that case and the series at
+/// the argument answers it slowly, like `x^k`: at `x = 0.999999` it would need
+/// hundreds of thousands of terms. The logarithmic form answers every one of
+/// these with a sum on `1 - x` that stays bounded as the argument closes on one,
+/// and the arguments are taken close enough to one that only that form keeps
+/// the run inside the ceiling.
+test "the degenerate hypergeometric, the gap an integer" {
+  // A gap of one: the closed form `1F1(1; 3 - 2 - 1; x)` has no logarithm, but
+  // the form still answers it and the argument is close enough to one that the
+  // series at the argument does not reach it.
+  assert_true(close(hyper2f1(1.0, 1.0, 3.0, 0.9), 1.65368269308789))
+  // A gap of two, past a half, where the logarithmic part is present.
+  assert_true(close(hyper2f1(2.5, 1.5, 6.0, 0.995), 3.050222298722096))
+  // A gap of three, with a negative second numerator so the gamma sign is not
+  // the obvious one.
+  assert_true(close(hyper2f1(0.6, 1.2, 4.8, 0.999), 1.236929465119876))
+  // A gap of one with parameters large enough that a single gamma factor is
+  // past a double's range while the ratio that matters is not.
+  assert_true(close(hyper2f1(1.3, 2.1, 4.4, 0.97), 3.2787963588763085))
+  // The argument an order of ten closer to one than the edges test above: the
+  // series at the argument would walk off to the ceiling here and the
+  // logarithmic form is the only answer that does not.
+  assert_true(close(hyper2f1(1.0, 1.0, 2.0, 0.999999), 13.815524373459892))
+}
+
+///|
 test "panic hyper2f1 outside the unit interval" {
   let _ = hyper2f1(0.5, 0.5, 1.5, 1.0)
 }
