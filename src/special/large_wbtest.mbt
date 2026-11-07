@@ -8,6 +8,7 @@
 // Each method is written once in `hypergeom_large` against `Ops`, so this is the
 // test that says the wide-precision side of `1F1` is the same function Boost
 // answers, not merely a consistent one.
+
 ///|
 let cases : Array[(Double, Double, Double, Double)] = [
   (-9.688679710961878e-06, -1222085.5, -1043.7607421875, 0.9999999917215412),
