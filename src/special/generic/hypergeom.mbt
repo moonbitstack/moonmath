@@ -121,7 +121,8 @@ fn[T] hyper1f1_series(
   // count is also the point past which the convergence test may look: before it
   // the terms are still the ones the sum is made of.
   let stop = if ends >= 0 { ends + 2 } else { 5000 }
-  hyper1f1_terms(a, b, x, ends, stop, start, ops)
+  let hold = if ends >= 0 { stop } else { settle([a, b], ops) }
+  hyper1f1_terms(a, b, x, hold, stop, start, ops)
 }
 
 ///|
@@ -137,12 +138,11 @@ fn[T] hyper1f1_terms(
   a : T,
   b : T,
   x : T,
-  ends : Int32,
+  hold : Int32,
   stop : Int32,
   start : T,
   ops : Ops[T],
 ) -> (T, T) {
-  let hold = if ends >= 0 { stop } else { settle([a, b], ops) }
   let mut term = start
   let mut sum = start
   let mut largest = (ops.abs)(start)

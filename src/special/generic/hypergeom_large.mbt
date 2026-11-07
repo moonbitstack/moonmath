@@ -62,7 +62,7 @@ pub fn[T] hyper1f1_uniform(a : T, b : T, x : T, ops : Ops[T]) -> (T, T) {
   if (ops.lt)((ops.abs)(a), (ops.from_decimal)("0.01")) && (ops.lt)(one, b) {
     let count = series_count(a, b, x, ops)
     if count > 0 {
-      return hyper1f1_terms(a, b, x, last_term(a, ops), count, one, ops)
+      return hyper1f1_terms(a, b, x, count, count, one, ops)
     }
   }
   if (ops.is_zero)((ops.sub)(bma, (ops.neg)(one))) {
@@ -96,6 +96,13 @@ pub fn[T] hyper1f1_uniform(a : T, b : T, x : T, ops : Ops[T]) -> (T, T) {
     if (ops.lt)(largest, (ops.abs)(value)) {
       largest = (ops.abs)(value)
     }
+    // The expansion's own worst term rides the same `e^x`, and it is the one the
+    // caller has to hear about: a series that climbed past its answer inside the
+    // bracket lost that many digits of it, whatever the bracket multiplied out to.
+    let carried = (ops.mul)((ops.abs)(scale), inner.1)
+    if (ops.lt)(largest, carried) {
+      largest = carried
+    }
     return (value, largest)
   }
   // The rational approximation, where its continued fraction converges: the
@@ -125,7 +132,7 @@ pub fn[T] hyper1f1_uniform(a : T, b : T, x : T, ops : Ops[T]) -> (T, T) {
   if (ops.lt)(a, zero) && (ops.lt)(zero, b) && (ops.lt)(x, zero) {
     let count = series_count(a, b, x, ops)
     if count > 0 {
-      return hyper1f1_terms(a, b, x, last_term(a, ops), count, one, ops)
+      return hyper1f1_terms(a, b, x, count, count, one, ops)
     }
   }
   // A negative argument is the trouble: Kummer's relation
@@ -151,6 +158,13 @@ pub fn[T] hyper1f1_uniform(a : T, b : T, x : T, ops : Ops[T]) -> (T, T) {
     if (ops.lt)(largest, (ops.abs)(value)) {
       largest = (ops.abs)(value)
     }
+    // The reflected run's own worst term rides the same `e^x`. Reporting only the
+    // bracket would say the reflection kept every digit when the sum inside it
+    // kept none, and the caller would never be told to widen.
+    let carried = (ops.mul)((ops.abs)(scale), inner.1)
+    if (ops.lt)(largest, carried) {
+      largest = carried
+    }
     // The reflected point is not always the kinder one. Where `b - a` lands
     // within a percent of `b` at a positive argument, the series there climbs to
     // the argument itself before it turns over and comes back down to a value it
@@ -163,7 +177,7 @@ pub fn[T] hyper1f1_uniform(a : T, b : T, x : T, ops : Ops[T]) -> (T, T) {
     if (ops.lt)((ops.mul)((ops.abs)(value), (ops.from_decimal)("1e6")), largest) {
       let count = series_count(a, b, x, ops)
       if count > 0 {
-        let direct = hyper1f1_terms(a, b, x, last_term(a, ops), count, one, ops)
+        let direct = hyper1f1_terms(a, b, x, count, count, one, ops)
         if (ops.lt)(
             (ops.mul)(direct.1, (ops.abs)(value)),
             (ops.mul)(largest, (ops.abs)(direct.0)),
@@ -177,34 +191,19 @@ pub fn[T] hyper1f1_uniform(a : T, b : T, x : T, ops : Ops[T]) -> (T, T) {
   // Otherwise the series, run at the width the caller gave it: at the wide
   // precision the escalation reaches, its terms are held rather than
   // overflowed, and this is the best effort for the points no uniform method
-  // has been written for yet. A large negative argument is first moved to a
-  // positive one by Kummer's relation, which is an identity of the infinite
-  // series — the prefactor rides the first term so that it does not run off on
-  // its own.
+  // has been written for yet. It is given the count its own ratio walk asks for
+  // rather than the five-thousand borrow of a series that has not settled: a
+  // point with `a` within a percent of `b` at a large positive argument climbs to
+  // the argument itself before it turns over, and five thousand terms stop it
+  // half way up.
   let ends = last_term(a, ops)
-  let pole = last_term(b, ops)
-  let threshold = (ops.neg)((ops.from_int)(4))
-  if (ops.lt)(x, threshold) && pole < 0 {
-    let scale = (ops.exp)(x)
-    let inner = hyper1f1_series(
-      (ops.sub)(b, a),
-      b,
-      (ops.neg)(x),
-      last_term((ops.sub)(b, a), ops),
-      scale,
-      ops,
-    )
-    let value = (ops.mul)(scale, inner.0)
-    let mut largest = (ops.abs)(scale)
-    if (ops.lt)(largest, inner.1) {
-      largest = inner.1
-    }
-    if (ops.lt)(largest, (ops.abs)(value)) {
-      largest = (ops.abs)(value)
-    }
-    return (value, largest)
-  }
-  hyper1f1_series(a, b, x, ends, one, ops)
+  let reach = series_count(a, b, x, ops)
+  let stop = if reach > 0 { reach } else { 5000 }
+  // A run whose term count this worked out has already looked past the peak, so
+  // the convergence test may look from there; a terminating polynomial must not
+  // be tested before its own end.
+  let hold = if ends >= 0 || reach > 0 { stop } else { settle([a, b], ops) }
+  hyper1f1_terms(a, b, x, hold, stop, one, ops)
 }
 
 ///|
@@ -227,16 +226,24 @@ fn[T] series_count(a : T, b : T, x : T, ops : Ops[T]) -> Int32 {
   if am != am || bd != bd || xm != xm || bd == 0.0 {
     return -1
   }
-  let floor_at = @math.pow(10.0, -(ops.digits + 2).to_double())
+  // The product of the term ratios is followed as a logarithm: with `a` within a
+  // percent of `b` at an argument of `10^4` it climbs past `10^7000` on the way
+  // to the peak, which a double holds as an infinity and would read as a walk
+  // that never comes down.
+  let floor_log = -2.302585092994046 * (ops.digits + 2).to_double()
   let mut count : Int32 = 0
-  let mut decay = 1.0
-  while decay > floor_at && count < 20000 {
+  let mut climb = 0.0
+  while climb > floor_log && count < 60000 {
     count = count + 1
     let k = count.to_double()
-    decay = decay * ((am + k) * xm / ((bd + k) * (k + 1.0)))
+    let ratio = (am + k) * xm / ((bd + k) * (k + 1.0))
+    if !(ratio > 0.0) || ratio > 1.0e300 {
+      return -1
+    }
+    climb = climb + @math.ln(ratio)
   }
   count = count + 20
-  if count > 20000 {
+  if count > 60000 {
     return -1
   }
   count

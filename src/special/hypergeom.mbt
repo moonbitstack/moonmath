@@ -64,7 +64,14 @@ let first_width : Int32 = 45
 /// The widest the escalation will go. Past it the cost of a wide `BigFloat` run
 /// stops being worth reaching for, and the answer is returned with the digits it
 /// has rather than widened again.
-let last_width : Int32 = 400
+///
+/// The ceiling is a thousand because a `1F1` in the large-parameter region can
+/// cancel further than four hundred: `1F1(-13547.7; 19.05; 15.87)` is `3.9e-31`
+/// and the terms of its sum climb to `10^450` on the way, so a run at four
+/// hundred digits has none of it left. Only the rows whose gap survives four
+/// hundred pay for the wider rung, because the escalation stops as soon as a run
+/// comes back whole.
+let last_width : Int32 = 1000
 
 ///|
 /// The digits a wide run has to leave above its own worst step before the answer
@@ -157,7 +164,7 @@ fn widen(
 ) -> Double {
   let mut digits = start
   let mut best = 0.0
-  for _ in 0..<6 {
+  for _ in 0..<8 {
     let pair = run(digits)
     let (value, largest) = pair
     best = value.to_double()
