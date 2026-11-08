@@ -78,6 +78,19 @@ pub fn[T] hyper1f1_uniform(a : T, b : T, x : T, ops : Ops[T]) -> (T, T) {
     let value = (ops.div)((ops.mul)((ops.add)(b, x), (ops.exp)(x)), b)
     return (value, (ops.abs)(value))
   }
+  // A numerator small against the denominator at a negative argument. The terms
+  // fall a factor about `|a||x|/(|b|k)` apart, so the sum settles in a few
+  // hundred terms whatever the argument is, and nothing is formed on its own to
+  // underflow. It is checked before the asymptotic, which also accepts these
+  // points and answers them from the wrong side: its series is in powers of
+  // `1/z` and needs `a` far smaller than this to be the better tool.
+  if (ops.lt)(x, zero) &&
+    (ops.lt)((ops.mul)((ops.abs)(a), (ops.from_int)(50)), (ops.abs)(b)) {
+    let count = series_count(a, b, x, ops)
+    if count > 0 {
+      return hyper1f1_terms(a, b, x, count, count, one, ops)
+    }
+  }
   // The large-argument asymptotic, where the argument dominates both
   // parameters: a small `a` against a `z` of four hundred or more.
   if is_large_z_region(a, b, x, ops) {
@@ -170,10 +183,9 @@ pub fn[T] hyper1f1_uniform(a : T, b : T, x : T, ops : Ops[T]) -> (T, T) {
     // the argument itself before it turns over and comes back down to a value it
     // has long since passed: the run reports a factor far above its answer, and
     // what it carries of that answer is what the two ends had in common. The
-    // point as it stands may be the cheaper sum — all positive terms where the
-    // signs line up, and a peak no larger than the answer. Both are tried when
-    // the reflection comes back that way, and the one that kept more of its
-    // digits is the one returned.
+    // point as it stands is often the cheaper sum. Both are tried when the
+    // reflection comes back that way, and the one that kept more of its digits is
+    // the one returned.
     if (ops.lt)((ops.mul)((ops.abs)(value), (ops.from_decimal)("1e6")), largest) {
       let count = series_count(a, b, x, ops)
       if count > 0 {
@@ -220,27 +232,42 @@ pub fn[T] hyper1f1_uniform(a : T, b : T, x : T, ops : Ops[T]) -> (T, T) {
 /// may run. Either way it is done in double, because a count is all it decides
 /// and the width of the sum is not.
 fn[T] series_count(a : T, b : T, x : T, ops : Ops[T]) -> Int32 {
-  let am = (ops.to_double)((ops.abs)(a))
-  let bd = (ops.to_double)((ops.abs)(b))
-  let xm = (ops.to_double)((ops.abs)(x))
-  if am != am || bd != bd || xm != xm || bd == 0.0 {
+  let ad = (ops.to_double)(a)
+  let bd = (ops.to_double)(b)
+  let xd = (ops.to_double)(x)
+  if ad != ad || bd != bd || xd != xd || bd == 0.0 || xd == 0.0 {
     return -1
   }
-  // The product of the term ratios is followed as a logarithm: with `a` within a
-  // percent of `b` at an argument of `10^4` it climbs past `10^7000` on the way
-  // to the peak, which a double holds as an infinity and would read as a walk
-  // that never comes down.
+  // The product of the term ratios is followed as a logarithm, and the ratio is
+  // the one the sum itself uses rather than its magnitude: with `a` within a
+  // percent of `b` at an argument of `10^4` the product climbs past `10^7000` on
+  // the way to the peak, which a double holds as an infinity and would read as a
+  // walk that never comes down; and with `b` negative the `(b)_k` passes through
+  // the origin at `k = -b`, where the ratio shoots up and only a walk that goes
+  // past it finds the count the sum needs.
   let floor_log = -2.302585092994046 * (ops.digits + 2).to_double()
+  // A negative denominator has a zero of its own at `k = -b`, and the terms climb
+  // again after it: `1F1(-835; -1252.5; 1043.8)` is `-1.9e294`, and its terms fall
+  // by eighteen orders before the crossing and then rise to `10^292`. The walk
+  // may not stop on that first dip, so it is not allowed to stop before the
+  // crossing at all.
+  let crossing = if bd < 0.0 { -bd + 2.0 } else { 0.0 }
   let mut count : Int32 = 0
   let mut climb = 0.0
-  while climb > floor_log && count < 60000 {
+  while count < 60000 {
     count = count + 1
     let k = count.to_double()
-    let ratio = (am + k) * xm / ((bd + k) * (k + 1.0))
-    if !(ratio > 0.0) || ratio > 1.0e300 {
+    let numerator = (ad + k - 1.0) * xd
+    let denominator = (bd + k - 1.0) * k
+    if denominator == 0.0 {
       return -1
     }
-    climb = climb + @math.ln(ratio)
+    if numerator != 0.0 {
+      climb = climb + @math.ln(numerator.abs()) - @math.ln(denominator.abs())
+    }
+    if climb <= floor_log && k >= crossing {
+      break
+    }
   }
   count = count + 20
   if count > 60000 {

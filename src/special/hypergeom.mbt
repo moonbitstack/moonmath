@@ -152,32 +152,62 @@ pub fn hyper2f1(a : Double, b : Double, c : Double, x : Double) -> Double {
 }
 
 ///|
-/// A run at the first width, then twice as wide while the gap it reports is
-/// still wider than the digits it holds.
+/// A run at the first width, then wider while it is either short of digits or
+/// has not yet stopped moving.
 ///
-/// Doubling pays for itself: a gap that survived forty-five digits is at least
-/// thirty of them and is answered by ninety. A run still short at the ceiling is
-/// returned as it stands, and the doc comment on the function says as much.
+/// Two things end it. The first is a run whose gap fits inside its own width and
+/// whose value agrees with the run half as wide — that pair is a sum that has
+/// converged. The second is the ceiling, where a row that still has not is
+/// returned with the digits it has.
+///
+/// The gap alone is not enough, and that is not a detail: at a width below the
+/// cancellation the sum comes back as the noise of its own terms, and noise has a
+/// small gap. `1F1(-9057.9; 19.05; 15.87)` is `1.0e-29`; at forty-five digits it
+/// reads `5.8e245` and reports a gap of twenty-one, which is twenty-four good
+/// digits of nothing. A width where the gap is wider than the width is a run that
+/// does not know its own answer, so the next width is double rather than the one
+/// the gap asks for.
 fn widen(
   start : Int32,
   run : (Int32) -> (@moonnum.BigFloat, @moonnum.BigFloat),
 ) -> Double {
   let mut digits = start
   let mut best = 0.0
-  for _ in 0..<8 {
+  let mut prior = 0.0
+  let mut seen = false
+  for _ in 0..<9 {
     let pair = run(digits)
     let (value, largest) = pair
     best = value.to_double()
     let ops = @generic.bigfloat_ops(digits)
     let floor = (ops.from_decimal)("1e\{ops.digits - margin}")
     let short = (ops.lt)((ops.mul)((ops.abs)(value), floor), (ops.abs)(largest))
-    if !short || digits >= last_width {
+    // A run that reported a gap is not the same as a run that is converged. Where
+    // the cancellation is deeper than the width, the sum comes back as the noise
+    // of the terms rather than their sum: `1F1(-9057.9; 19.05; 15.87)` is
+    // `1.0e-29` and reads `5.8e245` at forty-five digits, `-2.0e200` at ninety
+    // and `-4.5e111` at a hundred and eighty. Two widths that agree is a run
+    // that has stopped moving, and that is the one to return.
+    // A run that came back zero agrees with the one before it for the wrong
+    // reason: both lost the value, and no width was enough. Zero is never the
+    // answer here — the closed forms are answered before this is reached — so it
+    // is not allowed to settle anything.
+    let agree = seen &&
+      best != 0.0 &&
+      (best - prior).abs() <= best.abs() * 1.0e-10
+    if (agree && !short) || digits >= last_width {
       return best
     }
     // The gap the run reports is the count of digits it lost, so the next width
     // is that count plus the margin rather than twice the last: a row that needs
-    // three hundred digits gets them in one more run instead of three.
-    let next = wanted(largest.to_double(), value.to_double(), digits)
+    // three hundred digits gets them in one more run instead of three. But a run
+    // whose gap is wider than its width has not told the truth about the gap —
+    // its value is noise — and the only honest move there is to double.
+    let next = if short {
+      digits * 2
+    } else {
+      wanted(largest.to_double(), value.to_double(), digits)
+    }
     let grown = if next > digits * 3 {
       digits * 3
     } else if next > digits {
@@ -186,10 +216,12 @@ fn widen(
       digits * 2
     }
     let capped = if grown > last_width { last_width } else { grown }
-    if capped <= digits {
-      return best
+    digits = if capped <= digits { digits * 2 } else { capped }
+    if digits > last_width {
+      digits = last_width
     }
-    digits = capped
+    prior = best
+    seen = true
   }
   best
 }
