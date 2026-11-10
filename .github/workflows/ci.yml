@@ -69,6 +69,16 @@ jobs:
           moon fmt
           git diff --exit-code
 
+      # The three large-parameter tables are rebuilt from the copies in
+      # `scripts/boost`, so this runs with no Boost checkout and no network, and
+      # says the checked-in rows are the ones those files hold.
+      - name: the large-parameter tables are what Boost's files say
+        if: runner.os == 'Linux'
+        run: |
+          python3 scripts/gen_boost.py
+          moon fmt
+          git diff --exit-code src/special/boost_big_wbtest.mbt
+
       - name: the reference is generated from the source
         if: runner.os == 'Linux'
         run: |

@@ -1,4 +1,4 @@
-"""Build the Boost.Math cross-check table the special-function tests replay.
+"""Build the Boost.Math cross-check tables the special-function tests replay.
 
 The libraries in this package are written from the algorithms; the numbers they
 are checked against come from somewhere else. `gen_special.py` supplies those at
@@ -12,27 +12,39 @@ under the Boost Software License. Reading them here rather than re-deriving them
 keeps the comparison honest — the values were not produced by the code under
 test, nor by a script written beside it.
 
-Every row of every table is kept, except two kinds that cannot be checked: a
-value below the smallest normal `Double`, where no relative error exists to
-measure and no literal exists to write, and a parameter of zero for `R_J`, which
-is outside this package's domain. Twelve thousand rows in all.
+Two sets come out of it. The thirty tables of Boost's general suite become
+`src/special/boost_wbtest.mbt`, and the three tables of the large-parameter
+`1F1` region become `src/special/boost_big_wbtest.mbt`. The latter are read from
+the copies kept in `scripts/boost/`, at `boost-1.92.0`, so that a run with no
+Boost checkout and no network rebuilds the file CI checks:
 
-    python scripts/gen_boost.py /path/to/boostorg/math
-    python scripts/gen_boost.py            # reads $BOOST_MATH, else /tmp/boostmath
+    python scripts/gen_boost.py                    # the three large-parameter tables
+    python scripts/gen_boost.py /path/to/math      # every table, from a checkout
 
-Writes `src/special/boost_wbtest.mbt`. The tables are checked in, so a test run
-needs neither Boost nor Python.
+Every row of every table is kept, except two kinds: a parameter of zero for
+`R_J`, which is outside this package's domain, and — in the thirty general
+tables, where a row is one comparison and nothing else — a value below the
+smallest normal `Double`, which has no literal to write and no relative error to
+measure. The three large-parameter tables keep those rows as `0.0`, and the
+replay reads that as "below what the type holds": the answer there must also lie
+below the smallest normal double rather than be a number of the wrong size.
+
+The tables are checked in, so a test run needs neither Boost nor Python.
 """
 
 from __future__ import annotations
 
-import os
+import math
 import pathlib
 import re
 import sys
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 TARGET = ROOT / "src" / "special" / "boost_wbtest.mbt"
+BIG_TARGET = ROOT / "src" / "special" / "boost_big_wbtest.mbt"
+# The three large-parameter tables, kept here rather than under `src/` so that
+# the generator and the data it reads sit together.
+BIG_SOURCE = ROOT / "scripts" / "boost"
 
 HEADER = """\
 // Copyright 2026 Leo Cheng
@@ -50,6 +62,28 @@ HEADER = """\
 //
 // The tables are kept whole. `scripts/gen_boost.py` rebuilds this file from a
 // Boost checkout.
+"""
+
+BIG_HEADER = """\
+// Copyright 2026 Leo Cheng
+// SPDX-License-Identifier: Apache-2.0
+//
+// The large-parameter `1F1` tables: values from Boost.Math's own test data.
+//
+// The reference values in this file are taken from `test/*.ipp` in
+// boostorg/math at `boost-1.92.0`. That data is
+//   (C) Copyright John Maddock 2019.
+//   Use, modification and distribution are subject to the
+//   Boost Software License, Version 1.0. (See accompanying file
+//   LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+// It is redistributed here in full, under the same licence. The tables
+// themselves are kept in `scripts/boost/`, and `scripts/gen_boost.py` rebuilds
+// this file from them without a Boost checkout.
+//
+// Every row is kept. A row whose reference is below the smallest normal
+// `Double` — there are twelve across the three tables — is written as
+// `0.0` here, and `large_wbtest.mbt` reads that as a value the type cannot
+// hold rather than as a value of zero.
 """
 
 # name, source file, argument columns (1 based), value column, transforms applied
@@ -88,9 +122,7 @@ TABLES = [
     # package reaches without a uniform asymptotic expansion: the general one,
     # whose every row has a parameter past twenty; the small-argument random
     # one; and the negative-integer one, where a numerator of `-67228` ends the
-    # series after sixty-seven thousand terms. The `_big` tables, whose
-    # parameters run past a million, are a different algorithm and are not here;
-    # `test_hypergeometric_1F1` in this package says so.
+    # series after sixty-seven thousand terms.
     ("hyper1f1", "hypergeometric_1F1.ipp", [1, 2, 3], 4, []),
     ("hyper1f1_small", "hypergeometric_1F1_small_random.ipp", [1, 2, 3], 4, []),
     ("hyper1f1_neg_int", "hypergeometric_1f1_neg_int.ipp", [1, 2, 3], 4, []),
@@ -100,10 +132,35 @@ TABLES = [
     ("hyper2f1", "hypergeometric_2F1.ipp", [1, 2, 3, 4], 5, []),
 ]
 
-ROW = re.compile(r"\{\{([^}]*)\}\}")
-VALUE = re.compile(r"SC_\(([-+0-9.eE]+)\)")
+# The three tables of the large-parameter region: the main one, whose parameters
+# run past a million; the rows that sit at the edge of what a double holds; and
+# the rows Boost itself marks unsolved.
+BIG_TABLES = [
+    ("hyper1f1_big", "hypergeometric_1F1_big.ipp"),
+    ("hyper1f1_big_double", "hypergeometric_1F1_big_double_limited.ipp"),
+    ("hyper1f1_big_unsolved", "hypergeometric_1F1_big_unsolved.ipp"),
+]
+
+# One field of a row: a decimal literal at up to forty digits, or a
+# `std::ldexp` of an integer, which the double-limited table uses for its
+# arguments so that they are exactly representable.
+FIELD = re.compile(
+    r"SC_\(([-+0-9.eE]+)\)"
+    r"|std::ldexp\(\(double\)\s*(-?\d+)\s*,\s*(-?\d+)\s*\)"
+)
 # The two shapes an array of rows is declared in.
 WIDTH = re.compile(r"(?:table_type<T>::type, *|std::array<T, *)(\d+)>")
+
+
+def fields_of(line: str) -> list[float]:
+    """One row's values, left to right."""
+    values = []
+    for found in FIELD.finditer(line):
+        if found.group(1) is not None:
+            values.append(float(found.group(1)))
+        else:
+            values.append(math.ldexp(float(found.group(2)), int(found.group(3))))
+    return values
 
 
 def read_rows(path: pathlib.Path) -> list[list[float]]:
@@ -126,12 +183,12 @@ def read_rows(path: pathlib.Path) -> list[list[float]]:
         # holds, so there is nothing to compare.
         if line.lstrip().startswith("//"):
             continue
-        values = VALUE.findall(line)
+        values = fields_of(line)
         if not values:
             continue
         if width is not None and len(values) != width:
             continue
-        rows.append([float(value) for value in values])
+        rows.append(values)
     return rows
 
 
@@ -156,14 +213,56 @@ def render(name: str, rows: list[list[float]], arguments: list[int], value: int,
     return "\n".join(lines)
 
 
-def main() -> None:
-    source = sys.argv[1] if len(sys.argv) > 1 else os.environ.get(
-        "BOOST_MATH", "/tmp/boostmath"
-    )
-    root = pathlib.Path(source) / "test"
-    if not root.is_dir():
-        raise SystemExit(f"no Boost.Math checkout at {root}")
+# A `1F1` row is `(a, b, x, value)`; the large-parameter tables are all that.
+BIG_ARITY = 4
+# Rows per function. A single literal of three thousand elements would be one
+# initialiser holding every value at once; a few hundred to a function keeps
+# each one inside what a backend will compile, and the array is one value again
+# once the pieces are added.
+CHUNK = 400
 
+
+def render_big(name: str, rows: list[list[float]]) -> str:
+    """One table, split into functions that each build a few hundred rows."""
+    declared = "Double, " * (BIG_ARITY - 1) + "Double"
+    blocks = []
+    for start in range(0, len(rows), CHUNK):
+        piece = rows[start : start + CHUNK]
+        lines = [
+            "///|",
+            f"fn boost_{name}_rows_{start // CHUNK}() -> Array[({declared})] {{",
+            "  [",
+        ]
+        for row in piece:
+            rendered = ", ".join(repr(number) for number in row)
+            lines.append(f"    ({rendered}),")
+        lines.append("  ]")
+        lines.append("}")
+        blocks.append("\n".join(lines))
+    pieces = " + ".join(
+        f"boost_{name}_rows_{start // CHUNK}()" for start in range(0, len(rows), CHUNK)
+    )
+    joined = (
+        f"///|\nlet boost_{name}_cases : Array[({declared})] =\n  {pieces}\n"
+    )
+    return "\n\n".join(blocks) + "\n\n" + joined
+
+
+def write_big(root: pathlib.Path) -> None:
+    blocks = []
+    for name, filename in BIG_TABLES:
+        rows = read_rows(root / filename)
+        if not rows:
+            raise SystemExit(f"{filename}: no rows read")
+        blocks.append(render_big(name, rows))
+    BIG_TARGET.write_text(
+        BIG_HEADER + "\n" + "\n\n".join(blocks) + "\n", encoding="utf-8", newline="\n"
+    )
+    total = sum(block.count("    (") for block in blocks)
+    print(f"wrote {BIG_TARGET.relative_to(ROOT)}: {len(blocks)} tables, {total} rows")
+
+
+def write_general(root: pathlib.Path) -> None:
     blocks = []
     for name, filename, arguments, value, transforms in TABLES:
         rows = read_rows(root / filename)
@@ -174,7 +273,7 @@ def main() -> None:
             rows = [row for row in rows if row[3] > 0]
         # A value below the smallest normal `Double` has no relative accuracy to
         # check and no literal to write: `1e-323` is a denormal that the language
-        # rounds to zero on the way in. Those rows are left out.
+        # rounds to zero on the way in. Those rows are left out of these tables.
         rows = [row for row in rows if abs(row[value - 1]) >= 1.0e-300]
         blocks.append(render(name, rows, arguments, value, transforms))
 
@@ -183,6 +282,18 @@ def main() -> None:
     )
     total = sum(block.count("  (") for block in blocks)
     print(f"wrote {TARGET.relative_to(ROOT)}: {len(blocks)} tables, {total} rows")
+
+
+def main() -> None:
+    source = sys.argv[1] if len(sys.argv) > 1 else None
+    if source is None:
+        write_big(BIG_SOURCE)
+        return
+    root = (pathlib.Path(source) / "test").resolve()
+    if not root.is_dir():
+        raise SystemExit(f"no Boost.Math checkout at {root}")
+    write_general(root)
+    write_big(root)
 
 
 if __name__ == "__main__":

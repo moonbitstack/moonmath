@@ -2,3 +2,4 @@
 *.mbt text eol=lf
 *.mbti text eol=lf
 *.py text eol=lf
+*.ipp text eol=lf
