@@ -829,15 +829,22 @@ let value = @generic.gamma(half, ops)</code></pre>
             applied to the sum afterwards. When the report comes back short, the
             double face re-runs the whole thing on <code>moonnum</code>&rsquo;s
             <code>BigFloat</code> at a width that holds the digits the
-            cancellation took, and rounds once.
+            cancellation took, and rounds once. A <code>2F1</code> whose
+            <code>c - a - b</code> is a whole number is the one case the
+            transformation cannot take: its two powers are linearly dependent
+            there, and the value is read off a logarithm instead, which stays
+            bounded however close the argument gets to one.
           </p>
 
           <p>
             The numbers are checked three ways, and only one of them is this
             package's own arithmetic. <code>mpmath</code> supplies references at
             double, at fifty and at a hundred digits; Boost.Math's test tables
-            supply thirty more, twelve thousand rows, across the whole range; and the two agree with
-            each other, which is what makes either worth believing.
+            supply thirty-three more, fourteen thousand rows, across the whole
+            range — the three large-parameter tables among them, 2,402 rows with
+            parameters past a million, replayed row for row, and those are what
+            pin the routing down — and the two agree with each other, which is
+            what makes either worth believing.
           </p>
         </div>
 
