@@ -206,6 +206,11 @@ Every type below is a value type: immutable, and returning a new value from ever
 | `scale(factor)`, `divide(divisor) -> Vec` | multiplied and divided by a scalar |
 | `lerp(other, t)`, `min(other)`, `max(other)`, `clamp(low, high) -> Vec` | component-wise |
 | `abs()`, `floor()`, `ceil()`, `round()`, `fract() -> Vec` | component-wise rounding; a half rounds up |
+| `min_element()`, `max_element() -> Float` | the smallest and the largest component |
+| `midpoint(other) -> Vec` | half way between two points |
+| `clamp_length(low, high) -> Vec` | the direction kept, the length brought into a range |
+| `move_towards(target, max_delta) -> Vec` | a step of at most `max_delta`, stopping on the target |
+| `with_x(x)`, `with_y(y)`, `with_z(z)`, `with_w(w) -> Vec` | one component replaced, the rest kept |
 | `to_array() -> FixedArray[Float]` | the components in order |
 | `is_finite() -> Bool` | no NaN and no infinity |
 | `approx(other, eps? : Float) -> Bool` | equal to within `eps` |
@@ -221,6 +226,10 @@ What each type adds:
 | | `to_vec3(z)`, `to_vec4(z, w)` | lifted into a higher dimension |
 | `Vec3` | `cross(other) -> Vec3` | the perpendicular, right-handed |
 | | `angle_between(other) -> Float` | the unsigned angle, in `0..pi` |
+| | `rotate_x(radians)`, `rotate_y(radians)`, `rotate_z(radians)`, `rotate_axis(axis, radians) -> Vec3` | turned about an axis, by the right-hand rule |
+| | `slerp(other, t) -> Vec3` | the direction a fraction of the way along the arc |
+| | `any_orthonormal_vector() -> Vec3` | some unit vector perpendicular to this one, always the same one |
+| | `any_orthonormal_pair() -> (Vec3, Vec3)` | two of them, with `u.cross(v)` this direction: a tangent frame |
 | | `xy()`, `xz()`, `yz() -> Vec2` | a plane's worth of components |
 | | `zyx()`, `xzy()`, `yxz()`, `yzx()`, `zxy() -> Vec3` | the six orders of the three components |
 | | `to_vec4(w) -> Vec4` | lifted into 4D |
@@ -296,6 +305,46 @@ What each type adds:
 | `Quat::to_array()`, `is_finite()`, `approx(other, eps?)` | |
 
 `EulerOrder` names the twelve orders: `Xyz`, `Xzy`, `Yxz`, `Yzx`, `Zxy`, `Zyx`, `Xyx`, `Xzx`, `Yxy`, `Yzy`, `Zxz`, `Zyz`. `Turns` is the record of three turns in order — `first`, `second`, `third` — with `Turns::new` and `Turns::approx`.
+
+### Rigid motions
+
+A rotation together with the translation that follows it, as one value. `DualQuat` is the pair of quaternions a skinning blend weights, and the point of the pair is that the blend stays a motion: summing matrices pulls their rotation towards zero, and the scale goes with it, while a pair of quaternions summed and normalized is a rotation and a translation again.
+
+```moonbit
+let bone = @moonmath.DualQuat::from_rotation_translation(
+  @moonmath.Quat::from_axis_angle(@moonmath.Vec3::unit_x(), 0.4),
+  @moonmath.Vec3::new(0.0, 0.0, 1.0),
+)
+let rest = @moonmath.DualQuat::from_rotation_translation(
+  @moonmath.Quat::from_axis_angle(@moonmath.Vec3::unit_x(), 1.2),
+  @moonmath.Vec3::new(0.0, 2.0, 3.0),
+)
+
+// Between two keyframes: the rotation slerped, the translation lerped.
+let half = bone.slerp(rest, 0.5)
+
+// Between two skins: a weighted sum, which is a motion once it is normalized.
+let blended = (bone.scale(0.5) + rest.scale(0.5)).normalize()
+
+let joint = blended.transform_point(@moonmath.Vec3::unit_y())
+let as_matrix = blended.to_mat4()
+```
+
+| Signature | Meaning |
+|:--|:--|
+| `DualQuat::identity()`, `DualQuat::new(real, dual)` | the motion that does nothing, and the two halves as given |
+| `DualQuat::from_rotation_translation(rotation, translation)` | a turn, and then a move |
+| `DualQuat::from_mat4(m) -> DualQuat?` | the motion a matrix describes; `None` when it scales or shears |
+| `to_mat4() -> Mat4`, `rotation() -> Quat`, `translation() -> Vec3` | the matrix, the turn and the move |
+| `transform_point(p) -> Vec3`, `transform_vector(v) -> Vec3` | a point turned and moved, a direction only turned |
+| `scale(factor)`, `a + b`, `-a` | the weighted sum a skinning loop is made of |
+| `normalize() -> DualQuat` | both halves over the length of the rotation: what makes a sum a motion |
+| `dot(other) -> Float` | of the two rotations; a negative one says negate before summing |
+| `slerp(other, t) -> DualQuat` | the rotation slerped, the translation lerped |
+| `inverse() -> DualQuat?` | the motion that undoes this one |
+| `to_array()`, `is_finite()`, `approx(other, eps?)` | |
+
+`a * b` is the motion `b` followed by `a`, the order a matrix product reads in, so `(a * b).to_mat4()` is `a.to_mat4() * b.to_mat4()`. There is no `/`: dividing by a motion is multiplying by its inverse, and `inverse` already says when there is none.
 
 ### Affine transforms
 

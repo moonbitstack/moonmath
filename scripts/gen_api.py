@@ -67,8 +67,8 @@ GROUPS = [
     (
         "moonmath",
         "Placement",
-        "The transforms a scene graph stores: a rotation, a scale and a translation.",
-        ["Trs", "Affine2", "Affine3"],
+        "The transforms a scene graph stores: a rotation, a scale and a translation, apart or as one motion.",
+        ["Trs", "Affine2", "Affine3", "DualQuat"],
     ),
     (
         "moonmath",
@@ -594,7 +594,7 @@ def render_second_hand():
         ("Vectors", ["Vec2", "Vec3", "Vec4"]),
         ("Matrices", ["Mat2", "Mat3", "Mat4", "Shear"]),
         ("Rotation", ["Quat", "EulerOrder", "Turns"]),
-        ("Placement", ["Trs", "Affine2", "Affine3"]),
+        ("Placement", ["Trs", "Affine2", "Affine3", "DualQuat"]),
         (
             "Geometry",
             [
@@ -686,7 +686,7 @@ TEMPLATE = """<!DOCTYPE html>
     <script>
       (function () {
         try {
-          var t = localStorage.getItem("moonmath-theme");
+          var t = sessionStorage.getItem("moonmath-theme");
         } catch (e) {
           t = null;
         }
@@ -823,6 +823,27 @@ TEMPLATE = """<!DOCTYPE html>
 """
 
 
+def interface_names(directory):
+    """Every public name an interface declares, with the trait methods a
+    `derive` or an operator implementation writes left out: the page names
+    those once per type instead of listing them."""
+    names = set()
+    for line in read(os.path.join(ROOT, directory, "pkg.generated.mbti")).splitlines():
+        line = line.strip()
+        if not line.startswith("pub"):
+            continue
+        match = re.match(
+            r"pub(?:\(all\)|\(open\))? (?:fn|let|struct|enum|suberror|type)"
+            r"\s*(?:\[[^\]]*\])?\s*([\w:]+)",
+            line,
+        )
+        if match:
+            name = match.group(1).split("::")[-1]
+            if name not in GENERATED:
+                names.add(name)
+    return names
+
+
 def main():
     data, sections, missing = render_package(("moonmath", "src"))
     second, second_body = render_second_hand()
@@ -865,7 +886,24 @@ def main():
     target = os.path.join(ROOT, "docs", "api.html")
     with open(target, "w", encoding="utf-8", newline="") as handle:
         handle.write(page)
-    print("api: %d entries, %d missing" % (count, len(missing)))
+
+    # A page that lists the types but skips a function is worse than no page: it
+    # looks complete. Every name the four interfaces declare has to be on it, and
+    # a name that is not is a failure here rather than something a reader finds.
+    everywhere = set()
+    for directory in ["src", SECOND[1]] + [entry[1] for entry in SPECIAL]:
+        everywhere |= interface_names(directory)
+    absent = sorted(name for name in everywhere if html.escape(name) not in page)
+    if absent:
+        for name in absent:
+            print("not on the page:", name, file=sys.stderr)
+        print("%d public names are missing from the reference" % len(absent), file=sys.stderr)
+        return 1
+
+    print(
+        "api: %d entries, %d missing, %d public names all listed"
+        % (count, len(missing), len(everywhere))
+    )
     return 0
 
 

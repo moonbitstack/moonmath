@@ -8,12 +8,17 @@
 
   // ---- the lamp ----
 
-  function setTheme(theme) {
+  // The lamp follows the system until the reader turns it, and a turn lasts for
+  // the visit: the choice goes into session storage, so a new visit — and a
+  // reload, which starts the page from the system again — is the system's.
+  function setTheme(theme, remember) {
     root.setAttribute("data-theme", theme);
-    try {
-      localStorage.setItem("moonmath-theme", theme);
-    } catch (e) {
-      /* a reader who keeps no notes */
+    if (remember) {
+      try {
+        sessionStorage.setItem("moonmath-theme", theme);
+      } catch (e) {
+        /* a reader who keeps no notes */
+      }
     }
     var button = document.querySelector("[data-theme-toggle]");
     if (button) {
@@ -30,11 +35,11 @@
   var toggle = document.querySelector("[data-theme-toggle]");
   if (toggle) {
     toggle.addEventListener("click", function () {
-      setTheme(root.getAttribute("data-theme") === "dark" ? "light" : "dark");
+      setTheme(root.getAttribute("data-theme") === "dark" ? "light" : "dark", true);
     });
   }
   // Keep the label right on first paint.
-  setTheme(root.getAttribute("data-theme") === "dark" ? "dark" : "light");
+  setTheme(root.getAttribute("data-theme") === "dark" ? "dark" : "light", false);
 
   // ---- formulae ----
 

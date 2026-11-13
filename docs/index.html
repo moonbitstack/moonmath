@@ -12,7 +12,7 @@
     <script>
       (function () {
         try {
-          var t = localStorage.getItem("moonmath-theme");
+          var t = sessionStorage.getItem("moonmath-theme");
         } catch (e) {
           t = null;
         }
@@ -620,9 +620,8 @@ let double = @f64.Mat4::identity()</code></pre>
             <div class="kicker"><span>§ V</span></div>
             <h2>What is in the box</h2>
             <p>
-              Twenty-seven types, grouped by what they are for. Each links to
-              its entry in the lexicon, where every field, method and value has
-              a sentence.
+              The types, grouped by what they are for. Each links to its entry in
+              the lexicon, where every field, method and value has a sentence.
             </p>
           </div>
 
@@ -684,7 +683,10 @@ let double = @f64.Mat4::identity()</code></pre>
                   <a href="api.html#affine2">Affine2</a>,
                   <a href="api.html#affine3">Affine3</a> — a rotation, a scale and
                   a translation kept apart, and the two transforms that leave the
-                  last row of a matrix alone
+                  last row of a matrix alone;
+                  <a href="api.html#dualquat">DualQuat</a> — the same motion as a
+                  pair of quaternions, which is what a weighted blend of bones
+                  needs
                 </td>
               </tr>
               <tr>

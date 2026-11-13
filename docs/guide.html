@@ -12,7 +12,7 @@
     <script>
       (function () {
         try {
-          var t = localStorage.getItem("moonmath-theme");
+          var t = sessionStorage.getItem("moonmath-theme");
         } catch (e) {
           t = null;
         }
@@ -590,6 +590,56 @@ Quat(-0.041249573, 0.53040975, 0.19361468, 0.8243042)</code></pre>
             <a href="api.html#quat">lexicon</a>, with the angle at which each one
             stops being able to say what it means.
           </p>
+
+          <p>
+            A bone in a skinned mesh is a turn and a move at once, and the two
+            have to be weighted together. <code>DualQuat</code> is that pair:
+            two quaternions, one carrying the rotation and one carrying half the
+            translation turned by it.
+          </p>
+
+          <div class="slip">
+            <div class="slip-head">
+              <span class="label">listing 13 · a motion, between two keyframes and between two skins</span>
+              <button class="copy" type="button" data-copy>copy</button>
+            </div>
+            <pre><code>let bone = @moonmath.DualQuat::from_rotation_translation(
+  @moonmath.Quat::from_axis_angle(@moonmath.Vec3::unit_x(), 0.4),
+  @moonmath.Vec3::new(0.0, 0.0, 1.0),
+)
+let rest = @moonmath.DualQuat::from_rotation_translation(
+  @moonmath.Quat::from_axis_angle(@moonmath.Vec3::unit_x(), 1.2),
+  @moonmath.Vec3::new(0.0, 2.0, 3.0),
+)
+
+let half = bone.slerp(rest, 0.5)
+println(half.rotation())
+println(half.translation())
+println(half.transform_point(@moonmath.Vec3::unit_y()))
+
+let blended = (bone.scale(0.5) + rest.scale(0.5)).normalize()
+println(blended.to_mat4().transform_point(@moonmath.Vec3::unit_y()))
+println(blended.approx(half))</code></pre>
+          </div>
+
+          <div class="slip output">
+            <div class="slip-head"><span class="label">printed</span></div>
+            <pre><code>Quat(0.38941836, 0, 0, 0.92106104)
+Vec3(0, 1, 2.0000002)
+Vec3(0, 1.6967067, 2.7173564)
+Vec3(0, 1.8994168, 2.5146463)
+false</code></pre>
+          </div>
+
+          <p>
+            The two lines that end in a point are two different curves. A slerp
+            takes the rotation along its arc and the translation along the
+            straight line between the two; a weighted sum is what a skinning loop
+            has to do with the bones it is given, and normalizing it divides both
+            halves by the length of the summed rotation, so the translation comes
+            out longer whenever the two rotations differ. Both are here because
+            an animation clip wants the first and a skin wants the second.
+          </p>
         </div>
 
         <aside class="margin">
@@ -597,6 +647,11 @@ Quat(-0.041249573, 0.53040975, 0.19361468, 0.8243042)</code></pre>
             <b>slerp</b> and <b>nlerp</b> are both here: the first walks the arc
             at constant speed, the second is cheaper and looks almost the same for
             small turns.
+          </p>
+          <p class="note">
+            Before summing motions, negate the one whose <code>dot</code> with the
+            first is negative: <code>q</code> and <code>-q</code> are the same
+            rotation, and summing without looking takes the long way round.
           </p>
         </aside>
       </section>
