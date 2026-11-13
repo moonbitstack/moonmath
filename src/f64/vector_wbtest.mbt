@@ -242,3 +242,184 @@ test "printing a vector reads like a vector" {
   assert_eq(Vec4::new(1.0, 2.0, 3.0, 4.0).to_string(), "Vec4(1, 2, 3, 4)")
   assert_true(Vec3::new(1.5, 2.0, 3.0).to_string().contains("1.5"))
 }
+
+///|
+test "a component can be replaced without touching the rest" {
+  let v = Vec3::new(1.0, 2.0, 3.0)
+  assert_eq(v.with_x(4.0), Vec3::new(4.0, 2.0, 3.0))
+  assert_eq(v.with_y(4.0), Vec3::new(1.0, 4.0, 3.0))
+  assert_eq(v.with_z(4.0), Vec3::new(1.0, 2.0, 4.0))
+  assert_eq(v, Vec3::new(1.0, 2.0, 3.0))
+  assert_eq(Vec2::new(1.0, 2.0).with_y(5.0), Vec2::new(1.0, 5.0))
+  assert_eq(Vec2::new(1.0, 2.0).with_x(5.0), Vec2::new(5.0, 2.0))
+  let four = Vec4::new(1.0, 2.0, 3.0, 4.0)
+  assert_eq(four.with_x(9.0), Vec4::new(9.0, 2.0, 3.0, 4.0))
+  assert_eq(four.with_y(9.0), Vec4::new(1.0, 9.0, 3.0, 4.0))
+  assert_eq(four.with_z(9.0), Vec4::new(1.0, 2.0, 9.0, 4.0))
+  assert_eq(four.with_w(9.0), Vec4::new(1.0, 2.0, 3.0, 9.0))
+}
+
+///|
+test "the extreme component and the point between two" {
+  assert_eq(Vec2::new(3.0, -2.0).min_element(), -2.0)
+  assert_eq(Vec2::new(3.0, -2.0).max_element(), 3.0)
+  assert_eq(Vec3::new(3.0, -2.0, 7.0).min_element(), -2.0)
+  assert_eq(Vec3::new(3.0, -2.0, 7.0).max_element(), 7.0)
+  assert_eq(Vec4::new(3.0, -2.0, 7.0, 0.5).min_element(), -2.0)
+  assert_eq(Vec4::new(3.0, -2.0, 7.0, 0.5).max_element(), 7.0)
+  // The point half way, for a position rather than a direction.
+  assert_eq(
+    Vec3::new(0.0, 0.0, 0.0).midpoint(Vec3::new(2.0, 4.0, -6.0)),
+    Vec3::new(1.0, 2.0, -3.0),
+  )
+  assert_eq(
+    Vec2::new(-1.0, 3.0).midpoint(Vec2::new(1.0, 1.0)),
+    Vec2::new(0.0, 2.0),
+  )
+}
+
+///|
+test "a length can be brought into a range without losing the direction" {
+  let v = Vec3::new(0.0, 3.0, 4.0)
+  let shorter = v.clamp_length(0.0, 2.0)
+  assert_true(approx(shorter.length(), 2.0))
+  assert_true(shorter.normalize().approx(v.normalize()))
+  let longer = v.clamp_length(10.0, 20.0)
+  assert_true(approx(longer.length(), 10.0))
+  assert_true(longer.normalize().approx(v.normalize()))
+  // Bounds in either order, and bounds the length already lies between.
+  assert_true(approx(v.clamp_length(2.0, 1.0).length(), 2.0))
+  assert_eq(v.clamp_length(1.0, 10.0), v)
+  // No direction to keep.
+  assert_eq(Vec3::zero().clamp_length(1.0, 2.0), Vec3::zero())
+  assert_true(approx(Vec2::new(3.0, 4.0).clamp_length(0.0, 1.0).length(), 1.0))
+  assert_true(
+    approx(Vec4::new(0.0, 0.0, 0.0, 5.0).clamp_length(0.0, 2.0).length(), 2.0),
+  )
+}
+
+///|
+test "a step towards a target stops on it" {
+  let origin = Vec3::zero()
+  let target = Vec3::new(10.0, 0.0, 0.0)
+  let stepped = origin.move_towards(target, 3.0)
+  assert_true(approx(stepped.length(), 3.0))
+  assert_true(stepped.normalize().approx(Vec3::unit_x()))
+  // Nearer than the step: the target itself, not past it.
+  assert_eq(origin.move_towards(target, 30.0), target)
+  assert_eq(target.move_towards(target, 1.0), target)
+  assert_true(
+    approx(
+      Vec2::new(0.0, 0.0).move_towards(Vec2::new(0.0, 4.0), 1.0).length(),
+      1.0,
+    ),
+  )
+  assert_true(
+    approx(
+      Vec4::new(0.0, 0.0, 0.0, 0.0)
+      .move_towards(Vec4::new(2.0, 0.0, 0.0, 0.0), 1.0)
+      .length(),
+      1.0,
+    ),
+  )
+}
+
+///|
+test "a turn about one axis leaves that axis alone" {
+  let x = Vec3::unit_x()
+  let y = Vec3::unit_y()
+  let z = Vec3::unit_z()
+  // Right-handed: y goes to z about x, z to x about y, x to y about z.
+  assert_true(y.rotate_x(half_pi).approx(z))
+  assert_true(z.rotate_x(half_pi).approx(-y))
+  assert_true(z.rotate_y(half_pi).approx(x))
+  assert_true(x.rotate_y(half_pi).approx(-z))
+  assert_true(x.rotate_z(half_pi).approx(y))
+  assert_true(y.rotate_z(half_pi).approx(-x))
+  // The axis is the one thing a turn about it cannot move.
+  assert_true(x.rotate_x(1.2).approx(x))
+  assert_true(y.rotate_y(1.2).approx(y))
+  assert_true(z.rotate_z(1.2).approx(z))
+  // A turn keeps the length, and a quarter turn four times is none.
+  let v = Vec3::new(1.0, 2.0, 3.0)
+  assert_true(approx(v.rotate_x(0.4).length(), v.length()))
+  let mut turned = v
+  for _ in 0..<4 {
+    turned = turned.rotate_z(half_pi)
+  }
+  assert_true(turned.approx(v))
+}
+
+///|
+test "a turn about an arbitrary axis is the quaternion's turn" {
+  let axis = Vec3::new(1.0, -2.0, 0.5)
+  let v = Vec3::new(0.3, 0.4, -0.5)
+  let expected = Quat::from_axis_angle(axis, 1.1).rotate(v)
+  assert_true(v.rotate_axis(axis, 1.1).approx(expected))
+  // Each of the three axes is the same call with that axis.
+  assert_true(v.rotate_axis(Vec3::unit_x(), 0.8).approx(v.rotate_x(0.8)))
+  assert_true(v.rotate_axis(Vec3::unit_y(), 0.8).approx(v.rotate_y(0.8)))
+  assert_true(v.rotate_axis(Vec3::unit_z(), 0.8).approx(v.rotate_z(0.8)))
+  // No axis, no turn.
+  assert_eq(v.rotate_axis(Vec3::zero(), 1.0), v)
+}
+
+///|
+test "a direction carries a right-handed frame" {
+  for
+    v in [
+      Vec3::unit_x(),
+      Vec3::unit_y(),
+      Vec3::unit_z(),
+      Vec3::new(0.3, -0.7, 0.2),
+      Vec3::new(1.0e-4, 1.0, 0.0),
+    ] {
+    let normal = v.normalize()
+    let u = v.any_orthonormal_vector()
+    let (pair_u, pair_v) = v.any_orthonormal_pair()
+    // Both are unit, perpendicular to the direction and to each other.
+    assert_true(approx(u.length(), 1.0))
+    assert_true(approx(u.dot(normal), 0.0))
+    assert_true(approx(pair_u.length(), 1.0))
+    assert_true(approx(pair_v.length(), 1.0))
+    assert_true(approx(pair_u.dot(normal), 0.0))
+    assert_true(approx(pair_v.dot(normal), 0.0))
+    assert_true(approx(pair_u.dot(pair_v), 0.0))
+    // The same input gives the same frame, and the frame is right-handed.
+    assert_eq(u, v.any_orthonormal_vector())
+    assert_true(pair_u.cross(pair_v).approx(normal))
+  }
+  // No direction: the plane the direction would be in is the one it names.
+  assert_eq(Vec3::zero().any_orthonormal_vector(), Vec3::unit_x())
+  let (u, v) = Vec3::zero().any_orthonormal_pair()
+  assert_eq(u, Vec3::unit_x())
+  assert_eq(v, Vec3::unit_y())
+}
+
+///|
+test "a slerp walks the arc between two directions" {
+  let x = Vec3::unit_x()
+  let y = Vec3::unit_y()
+  // The ends, and the middle of a quarter turn.
+  assert_true(x.slerp(y, 0.0).approx(x))
+  assert_true(x.slerp(y, 1.0).approx(y))
+  assert_true(x.slerp(y, 0.5).approx(Vec3::new(1.0, 1.0, 0.0).normalize()))
+  // Every point on the arc is a direction, and the rate is steady: the angle
+  // from the start grows with `t`.
+  let steps : Array[Double] = [0.1, 0.25, 0.5, 0.75, 0.9]
+  for t in steps {
+    let point = x.slerp(y, t)
+    assert_true(approx(point.length(), 1.0))
+    assert_true(approx(x.angle_between(point), t * half_pi))
+  }
+  // The length of the inputs does not matter, only the direction.
+  assert_true(
+    Vec3::new(5.0, 0.0, 0.0)
+    .slerp(Vec3::new(0.0, -2.0, 0.0), 0.5)
+    .approx(Vec3::new(1.0, -1.0, 0.0).normalize()),
+  )
+  // The same direction, an opposite one, and one with no direction at all.
+  assert_true(x.slerp(x, 0.4).approx(x))
+  assert_true(x.slerp(-x, 0.4).approx(x))
+  assert_eq(Vec3::zero().slerp(y, 0.5), Vec3::zero().lerp(y, 0.5))
+}

@@ -723,6 +723,7 @@ pub fn Vec2::angle_between(Self, Self) -> Double
 pub fn Vec2::approx(Self, Self, eps? : Double) -> Bool
 pub fn Vec2::ceil(Self) -> Self
 pub fn Vec2::clamp(Self, Self, Self) -> Self
+pub fn Vec2::clamp_length(Self, Double, Double) -> Self
 pub fn Vec2::cross(Self, Self) -> Double
 pub fn Vec2::distance(Self, Self) -> Double
 pub fn Vec2::distance_squared(Self, Self) -> Double
@@ -737,7 +738,11 @@ pub fn Vec2::length(Self) -> Double
 pub fn Vec2::length_squared(Self) -> Double
 pub fn Vec2::lerp(Self, Self, Double) -> Self
 pub fn Vec2::max(Self, Self) -> Self
+pub fn Vec2::max_element(Self) -> Double
+pub fn Vec2::midpoint(Self, Self) -> Self
 pub fn Vec2::min(Self, Self) -> Self
+pub fn Vec2::min_element(Self) -> Double
+pub fn Vec2::move_towards(Self, Self, Double) -> Self
 pub fn Vec2::mul(Self, Self) -> Self
 pub fn Vec2::neg(Self) -> Self
 pub fn Vec2::new(Double, Double) -> Self
@@ -763,6 +768,8 @@ pub fn Vec2::to_vec4(Self, Double, Double) -> Vec4
 pub fn Vec2::try_normalize(Self) -> Self?
 pub fn Vec2::unit_x() -> Self
 pub fn Vec2::unit_y() -> Self
+pub fn Vec2::with_x(Self, Double) -> Self
+pub fn Vec2::with_y(Self, Double) -> Self
 pub fn Vec2::yx(Self) -> Self
 pub fn Vec2::zero() -> Self
 pub impl Add for Vec2
@@ -782,9 +789,12 @@ pub(all) struct Vec3 {
 pub fn Vec3::abs(Self) -> Self
 pub fn Vec3::add(Self, Self) -> Self
 pub fn Vec3::angle_between(Self, Self) -> Double
+pub fn Vec3::any_orthonormal_pair(Self) -> (Self, Self)
+pub fn Vec3::any_orthonormal_vector(Self) -> Self
 pub fn Vec3::approx(Self, Self, eps? : Double) -> Bool
 pub fn Vec3::ceil(Self) -> Self
 pub fn Vec3::clamp(Self, Self, Self) -> Self
+pub fn Vec3::clamp_length(Self, Double, Double) -> Self
 pub fn Vec3::cross(Self, Self) -> Self
 pub fn Vec3::distance(Self, Self) -> Double
 pub fn Vec3::distance_squared(Self, Self) -> Double
@@ -799,7 +809,11 @@ pub fn Vec3::length(Self) -> Double
 pub fn Vec3::length_squared(Self) -> Double
 pub fn Vec3::lerp(Self, Self, Double) -> Self
 pub fn Vec3::max(Self, Self) -> Self
+pub fn Vec3::max_element(Self) -> Double
+pub fn Vec3::midpoint(Self, Self) -> Self
 pub fn Vec3::min(Self, Self) -> Self
+pub fn Vec3::min_element(Self) -> Double
+pub fn Vec3::move_towards(Self, Self, Double) -> Self
 pub fn Vec3::mul(Self, Self) -> Self
 pub fn Vec3::neg(Self) -> Self
 pub fn Vec3::new(Double, Double, Double) -> Self
@@ -814,8 +828,13 @@ pub fn Vec3::random_on_sphere(Double, Double) -> Self
 pub fn Vec3::reflect(Self, Self) -> Self
 pub fn Vec3::refract(Self, Self, Double) -> Self?
 pub fn Vec3::reject(Self, Self) -> Self
+pub fn Vec3::rotate_axis(Self, Self, Double) -> Self
+pub fn Vec3::rotate_x(Self, Double) -> Self
+pub fn Vec3::rotate_y(Self, Double) -> Self
+pub fn Vec3::rotate_z(Self, Double) -> Self
 pub fn Vec3::round(Self) -> Self
 pub fn Vec3::scale(Self, Double) -> Self
+pub fn Vec3::slerp(Self, Self, Double) -> Self
 pub fn Vec3::splat(Double) -> Self
 pub fn Vec3::sub(Self, Self) -> Self
 pub fn Vec3::to_array(Self) -> FixedArray[Double]
@@ -826,6 +845,9 @@ pub fn Vec3::try_normalize(Self) -> Self?
 pub fn Vec3::unit_x() -> Self
 pub fn Vec3::unit_y() -> Self
 pub fn Vec3::unit_z() -> Self
+pub fn Vec3::with_x(Self, Double) -> Self
+pub fn Vec3::with_y(Self, Double) -> Self
+pub fn Vec3::with_z(Self, Double) -> Self
 pub fn Vec3::xy(Self) -> Vec2
 pub fn Vec3::xz(Self) -> Vec2
 pub fn Vec3::xzy(Self) -> Self
@@ -855,6 +877,7 @@ pub fn Vec4::add(Self, Self) -> Self
 pub fn Vec4::approx(Self, Self, eps? : Double) -> Bool
 pub fn Vec4::ceil(Self) -> Self
 pub fn Vec4::clamp(Self, Self, Self) -> Self
+pub fn Vec4::clamp_length(Self, Double, Double) -> Self
 pub fn Vec4::distance(Self, Self) -> Double
 pub fn Vec4::distance_squared(Self, Self) -> Double
 pub fn Vec4::div(Self, Self) -> Self
@@ -868,7 +891,10 @@ pub fn Vec4::length(Self) -> Double
 pub fn Vec4::length_squared(Self) -> Double
 pub fn Vec4::lerp(Self, Self, Double) -> Self
 pub fn Vec4::max(Self, Self) -> Self
+pub fn Vec4::max_element(Self) -> Double
 pub fn Vec4::min(Self, Self) -> Self
+pub fn Vec4::min_element(Self) -> Double
+pub fn Vec4::move_towards(Self, Self, Double) -> Self
 pub fn Vec4::mul(Self, Self) -> Self
 pub fn Vec4::neg(Self) -> Self
 pub fn Vec4::new(Double, Double, Double, Double) -> Self
@@ -889,6 +915,10 @@ pub fn Vec4::unit_w() -> Self
 pub fn Vec4::unit_x() -> Self
 pub fn Vec4::unit_y() -> Self
 pub fn Vec4::unit_z() -> Self
+pub fn Vec4::with_w(Self, Double) -> Self
+pub fn Vec4::with_x(Self, Double) -> Self
+pub fn Vec4::with_y(Self, Double) -> Self
+pub fn Vec4::with_z(Self, Double) -> Self
 pub fn Vec4::wzyx(Self) -> Self
 pub fn Vec4::xy(Self) -> Vec2
 pub fn Vec4::xyz(Self) -> Vec3

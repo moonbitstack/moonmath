@@ -192,6 +192,83 @@ pub fn Vec3::clamp(self : Vec3, low : Vec3, high : Vec3) -> Vec3 {
 }
 
 ///|
+/// The same vector with a new x component.
+pub fn Vec3::with_x(self : Vec3, x : Float) -> Vec3 {
+  { x, y: self.y, z: self.z, }
+}
+
+///|
+/// The same vector with a new y component.
+pub fn Vec3::with_y(self : Vec3, y : Float) -> Vec3 {
+  { x: self.x, y, z: self.z, }
+}
+
+///|
+/// The same vector with a new z component.
+pub fn Vec3::with_z(self : Vec3, z : Float) -> Vec3 {
+  { x: self.x, y: self.y, z, }
+}
+
+///|
+/// The smallest of the three components.
+pub fn Vec3::min_element(self : Vec3) -> Float {
+  self.x.min(self.y).min(self.z)
+}
+
+///|
+/// The largest of the three components.
+pub fn Vec3::max_element(self : Vec3) -> Float {
+  self.x.max(self.y).max(self.z)
+}
+
+///|
+/// The point half way between the two.
+pub fn Vec3::midpoint(self : Vec3, other : Vec3) -> Vec3 {
+  {
+    x: (self.x + other.x) * 0.5,
+    y: (self.y + other.y) * 0.5,
+    z: (self.z + other.z) * 0.5,
+  }
+}
+
+///|
+/// The vector shortened to at most `high` and lengthened to at least `low`.
+///
+/// The direction is kept, and a vector with no direction is left as it is: there
+/// is no length to bring into range. The two bounds may be given in either
+/// order.
+pub fn Vec3::clamp_length(self : Vec3, low : Float, high : Float) -> Vec3 {
+  let lower = low.min(high)
+  let upper = low.max(high)
+  let length = self.length()
+  if length == 0.0 {
+    self
+  } else {
+    self.scale(length.clamp(min=lower, max=upper) / length)
+  }
+}
+
+///|
+/// The vector moved towards `target` by at most `max_delta`, without passing it.
+///
+/// A step of a steering or an inverse-kinematics pass: the distance covered is
+/// `max_delta` however far away the target is, and the target itself once it is
+/// nearer than that.
+pub fn Vec3::move_towards(
+  self : Vec3,
+  target : Vec3,
+  max_delta : Float,
+) -> Vec3 {
+  let delta = target - self
+  let length = delta.length()
+  if length <= max_delta || length == 0.0 {
+    target
+  } else {
+    self + delta.scale(max_delta / length)
+  }
+}
+
+///|
 /// The vector with every component replaced by its absolute value.
 pub fn Vec3::abs(self : Vec3) -> Vec3 {
   { x: self.x.abs(), y: self.y.abs(), z: self.z.abs(), }
@@ -306,6 +383,142 @@ pub fn Vec3::refract(self : Vec3, normal : Vec3, eta : Float) -> Vec3? {
     let rest : Float = 1.0 - sin_out_squared
     let cos_out = rest.sqrt()
     Some(self.scale(eta) + normal.scale(eta * cos_in - cos_out))
+  }
+}
+
+///|
+/// The vector turned about +x by `radians`, by the right-hand rule.
+///
+/// The turn looks from +x towards the origin: `unit_y` goes to `unit_z` for a
+/// quarter turn, as a rotation about `x` does everywhere else in the library.
+///
+/// ```mbt check
+/// test {
+///   let quarter : @moonmath.Vec3 = @moonmath.Vec3::unit_y().rotate_x(
+///     @moonmath.half_pi,
+///   )
+///   assert_true(quarter.approx(@moonmath.Vec3::unit_z()))
+/// }
+/// ```
+pub fn Vec3::rotate_x(self : Vec3, radians : Float) -> Vec3 {
+  let cosine = @math.cosf(radians)
+  let sine = @math.sinf(radians)
+  {
+    x: self.x,
+    y: self.y * cosine - self.z * sine,
+    z: self.y * sine + self.z * cosine,
+  }
+}
+
+///|
+/// The vector turned about +y by `radians`, by the right-hand rule.
+pub fn Vec3::rotate_y(self : Vec3, radians : Float) -> Vec3 {
+  let cosine = @math.cosf(radians)
+  let sine = @math.sinf(radians)
+  {
+    x: self.x * cosine + self.z * sine,
+    y: self.y,
+    z: -self.x * sine + self.z * cosine,
+  }
+}
+
+///|
+/// The vector turned about +z by `radians`, by the right-hand rule.
+pub fn Vec3::rotate_z(self : Vec3, radians : Float) -> Vec3 {
+  let cosine = @math.cosf(radians)
+  let sine = @math.sinf(radians)
+  {
+    x: self.x * cosine - self.y * sine,
+    y: self.x * sine + self.y * cosine,
+    z: self.z,
+  }
+}
+
+///|
+/// The vector turned about `axis` by `radians`, by the right-hand rule.
+///
+/// `axis` is normalized first, and a zero axis turns nothing.
+pub fn Vec3::rotate_axis(self : Vec3, axis : Vec3, radians : Float) -> Vec3 {
+  Quat::from_axis_angle(axis, radians).rotate(self)
+}
+
+///|
+/// A unit vector perpendicular to this one.
+///
+/// The choice is fixed rather than arbitrary: the axis this vector leans on
+/// least is crossed with it, which is never near a zero-length product, and the
+/// same input always gives the same answer. A vector with no direction answers
+/// `unit_x`, there being no perpendicular to prefer.
+pub fn Vec3::any_orthonormal_vector(self : Vec3) -> Vec3 {
+  let unit = self.normalize()
+  let absolute = unit.abs()
+  let axis = if absolute.x <= absolute.y && absolute.x <= absolute.z {
+    Vec3::unit_x()
+  } else if absolute.y <= absolute.z {
+    Vec3::unit_y()
+  } else {
+    Vec3::unit_z()
+  }
+  match unit.cross(axis).try_normalize() {
+    Some(perpendicular) => perpendicular
+    None => Vec3::unit_x()
+  }
+}
+
+///|
+/// Two unit vectors that, with this one, form a right-handed frame.
+///
+/// The first is `any_orthonormal_vector`; the second is this vector crossed with
+/// it, so `u.cross(v) == self.normalize()`. What a tangent frame for a normal
+/// map or a tube around a curve is built from. A vector with no direction
+/// answers the `x` and `y` axes.
+pub fn Vec3::any_orthonormal_pair(self : Vec3) -> (Vec3, Vec3) {
+  let unit = self.normalize()
+  if unit == Vec3::zero() {
+    (Vec3::unit_x(), Vec3::unit_y())
+  } else {
+    let u = self.any_orthonormal_vector()
+    (u, unit.cross(u))
+  }
+}
+
+///|
+/// The direction a fraction `t` of the way from this one to `other`, along the
+/// great circle.
+///
+/// Both are read as directions and normalized first, so the result is a unit
+/// vector and the length of the inputs does not matter. Directions that are the
+/// same give the same answer for every `t`; opposite ones have no single arc
+/// between them, and the start is returned. A vector with no direction falls
+/// back to the straight line, there being no arc to take.
+///
+/// ```mbt check
+/// test {
+///   let x : @moonmath.Vec3 = @moonmath.Vec3::unit_x()
+///   let y = @moonmath.Vec3::unit_y()
+///   let half_way = x.slerp(y, 0.5)
+///   let diagonal = @moonmath.Vec3::new(1.0, 1.0, 0.0).normalize()
+///   assert_true(half_way.approx(diagonal))
+/// }
+/// ```
+pub fn Vec3::slerp(self : Vec3, other : Vec3, t : Float) -> Vec3 {
+  match (self.try_normalize(), other.try_normalize()) {
+    (Some(a), Some(b)) => {
+      let cosine = a.dot(b).clamp(min=-1.0, max=1.0)
+      if cosine > 1.0 - default_epsilon {
+        b
+      } else if cosine < -1.0 + default_epsilon {
+        a
+      } else {
+        let angle = @math.acosf(cosine)
+        let sine = @math.sinf(angle)
+        let one : Float = 1.0
+        let from = @math.sinf((one - t) * angle) / sine
+        let to = @math.sinf(t * angle) / sine
+        (a.scale(from) + b.scale(to)).normalize()
+      }
+    }
+    _ => self.lerp(other, t)
   }
 }
 

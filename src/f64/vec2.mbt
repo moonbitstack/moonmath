@@ -179,6 +179,72 @@ pub fn Vec2::clamp(self : Vec2, low : Vec2, high : Vec2) -> Vec2 {
 }
 
 ///|
+/// The same vector with a new x component.
+pub fn Vec2::with_x(self : Vec2, x : Double) -> Vec2 {
+  { x, y: self.y, }
+}
+
+///|
+/// The same vector with a new y component.
+pub fn Vec2::with_y(self : Vec2, y : Double) -> Vec2 {
+  { x: self.x, y, }
+}
+
+///|
+/// The smallest of the two components.
+pub fn Vec2::min_element(self : Vec2) -> Double {
+  self.x.min(self.y)
+}
+
+///|
+/// The largest of the two components.
+pub fn Vec2::max_element(self : Vec2) -> Double {
+  self.x.max(self.y)
+}
+
+///|
+/// The point half way between the two.
+pub fn Vec2::midpoint(self : Vec2, other : Vec2) -> Vec2 {
+  { x: (self.x + other.x) * 0.5, y: (self.y + other.y) * 0.5, }
+}
+
+///|
+/// The vector shortened to at most `high` and lengthened to at least `low`.
+///
+/// The direction is kept, and a vector with no direction is left as it is: there
+/// is no length to bring into range. The two bounds may be given in either
+/// order.
+pub fn Vec2::clamp_length(self : Vec2, low : Double, high : Double) -> Vec2 {
+  let lower = low.min(high)
+  let upper = low.max(high)
+  let length = self.length()
+  if length == 0.0 {
+    self
+  } else {
+    self.scale(length.clamp(min=lower, max=upper) / length)
+  }
+}
+
+///|
+/// The vector moved towards `target` by at most `max_delta`, without passing it.
+///
+/// A step of a steering pass: the distance covered is `max_delta` however far
+/// away the target is, and the target itself once it is nearer than that.
+pub fn Vec2::move_towards(
+  self : Vec2,
+  target : Vec2,
+  max_delta : Double,
+) -> Vec2 {
+  let delta = target - self
+  let length = delta.length()
+  if length <= max_delta || length == 0.0 {
+    target
+  } else {
+    self + delta.scale(max_delta / length)
+  }
+}
+
+///|
 /// The vector with every component replaced by its absolute value.
 pub fn Vec2::abs(self : Vec2) -> Vec2 {
   { x: self.x.abs(), y: self.y.abs(), }

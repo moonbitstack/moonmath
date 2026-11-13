@@ -196,6 +196,75 @@ pub fn Vec4::clamp(self : Vec4, low : Vec4, high : Vec4) -> Vec4 {
 }
 
 ///|
+/// The same vector with a new x component.
+pub fn Vec4::with_x(self : Vec4, x : {{S}}) -> Vec4 {
+  { x, y: self.y, z: self.z, w: self.w }
+}
+
+///|
+/// The same vector with a new y component.
+pub fn Vec4::with_y(self : Vec4, y : {{S}}) -> Vec4 {
+  { x: self.x, y, z: self.z, w: self.w }
+}
+
+///|
+/// The same vector with a new z component.
+pub fn Vec4::with_z(self : Vec4, z : {{S}}) -> Vec4 {
+  { x: self.x, y: self.y, z, w: self.w }
+}
+
+///|
+/// The same vector with a new w component.
+pub fn Vec4::with_w(self : Vec4, w : {{S}}) -> Vec4 {
+  { x: self.x, y: self.y, z: self.z, w }
+}
+
+///|
+/// The smallest of the four components.
+pub fn Vec4::min_element(self : Vec4) -> {{S}} {
+  self.x.min(self.y).min(self.z).min(self.w)
+}
+
+///|
+/// The largest of the four components.
+pub fn Vec4::max_element(self : Vec4) -> {{S}} {
+  self.x.max(self.y).max(self.z).max(self.w)
+}
+
+///|
+/// The vector shortened to at most `high` and lengthened to at least `low`.
+///
+/// The direction is kept, and a vector with no direction is left as it is: there
+/// is no length to bring into range. The two bounds may be given in either
+/// order.
+pub fn Vec4::clamp_length(self : Vec4, low : {{S}}, high : {{S}}) -> Vec4 {
+  let lower = low.min(high)
+  let upper = low.max(high)
+  let length = self.length()
+  if length == 0.0 {
+    self
+  } else {
+    self.scale(length.clamp(min=lower, max=upper) / length)
+  }
+}
+
+///|
+/// The vector moved towards `target` by at most `max_delta`, without passing it.
+///
+/// A step of a solver on four unknowns: the distance covered is `max_delta`
+/// however far away the target is, and the target itself once it is nearer than
+/// that.
+pub fn Vec4::move_towards(self : Vec4, target : Vec4, max_delta : {{S}}) -> Vec4 {
+  let delta = target - self
+  let length = delta.length()
+  if length <= max_delta || length == 0.0 {
+    target
+  } else {
+    self + delta.scale(max_delta / length)
+  }
+}
+
+///|
 /// The vector with every component replaced by its absolute value.
 pub fn Vec4::abs(self : Vec4) -> Vec4 {
   { x: self.x.abs(), y: self.y.abs(), z: self.z.abs(), w: self.w.abs() }
