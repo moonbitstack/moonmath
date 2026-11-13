@@ -56,3 +56,27 @@ test "the geometry answers from outside" {
   let rotation = @f64.Quat::from_axis_angle(@f64.Vec3::unit_z(), @f64.half_pi)
   assert_true(rotation.rotate(@f64.Vec3::unit_x()).approx(@f64.Vec3::unit_y()))
 }
+
+///|
+test "a rigid motion, from outside" {
+  let bone = @f64.DualQuat::from_rotation_translation(
+    @f64.Quat::from_axis_angle(@f64.Vec3::unit_y(), 0.5),
+    @f64.Vec3::new(1.0, 2.0, 3.0),
+  )
+  let matrix = bone.to_mat4()
+  assert_true(
+    bone
+    .transform_point(@f64.Vec3::unit_x())
+    .approx(matrix.transform_point(@f64.Vec3::unit_x())),
+  )
+  assert_eq(bone.to_array().length(), 8)
+  // The operator a skinning loop needs, and the sum it is made of.
+  let blended = (bone.scale(0.5) + bone.scale(0.5)).normalize()
+  assert_true(blended.approx(bone))
+  // The frame and the turn, also reachable from outside the package.
+  let (u, v) = @f64.Vec3::unit_z().any_orthonormal_pair()
+  assert_true(u.cross(v).approx(@f64.Vec3::unit_z()))
+  assert_true(
+    @f64.Vec3::unit_x().rotate_z(@f64.half_pi).approx(@f64.Vec3::unit_y()),
+  )
+}

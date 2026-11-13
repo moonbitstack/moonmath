@@ -241,6 +241,42 @@ pub impl Show for Color4
 pub impl Sub for Color4
 pub impl @debug.Debug for Color4
 
+#derive(Eq)
+pub(all) struct DualQuat {
+  real : Quat
+  dual : Quat
+}
+pub fn DualQuat::add(Self, Self) -> Self
+pub fn DualQuat::approx(Self, Self, eps? : Float) -> Bool
+pub fn DualQuat::dot(Self, Self) -> Float
+pub fn DualQuat::equal(Self, Self) -> Bool
+pub fn DualQuat::from_mat4(Mat4) -> Self?
+pub fn DualQuat::from_rotation_translation(Quat, Vec3) -> Self
+pub fn DualQuat::identity() -> Self
+pub fn DualQuat::inverse(Self) -> Self?
+pub fn DualQuat::is_finite(Self) -> Bool
+pub fn DualQuat::mul(Self, Self) -> Self
+pub fn DualQuat::neg(Self) -> Self
+pub fn DualQuat::new(Quat, Quat) -> Self
+pub fn DualQuat::normalize(Self) -> Self
+pub fn DualQuat::not_equal(Self, Self) -> Bool
+pub fn DualQuat::output(Self, &Logger) -> Unit
+pub fn DualQuat::rotation(Self) -> Quat
+pub fn DualQuat::scale(Self, Float) -> Self
+pub fn DualQuat::slerp(Self, Self, Float) -> Self
+pub fn DualQuat::to_array(Self) -> FixedArray[Float]
+pub fn DualQuat::to_mat4(Self) -> Mat4
+pub fn DualQuat::to_repr(Self) -> @debug.Repr
+pub fn DualQuat::to_string(Self) -> String
+pub fn DualQuat::transform_point(Self, Vec3) -> Vec3
+pub fn DualQuat::transform_vector(Self, Vec3) -> Vec3
+pub fn DualQuat::translation(Self) -> Vec3
+pub impl Add for DualQuat
+pub impl Mul for DualQuat
+pub impl Neg for DualQuat
+pub impl Show for DualQuat
+pub impl @debug.Debug for DualQuat
+
 #derive(Eq, @debug.Debug)
 pub(all) enum EulerOrder {
   Xyz

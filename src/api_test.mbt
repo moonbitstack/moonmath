@@ -74,3 +74,29 @@ test "the geometry answers from outside" {
     rotation.rotate(@moonmath.Vec3::unit_x()).approx(@moonmath.Vec3::unit_y()),
   )
 }
+
+///|
+test "a rigid motion, from outside" {
+  let bone = @moonmath.DualQuat::from_rotation_translation(
+    @moonmath.Quat::from_axis_angle(@moonmath.Vec3::unit_y(), 0.5),
+    @moonmath.Vec3::new(1.0, 2.0, 3.0),
+  )
+  let matrix = bone.to_mat4()
+  assert_true(
+    bone
+    .transform_point(@moonmath.Vec3::unit_x())
+    .approx(matrix.transform_point(@moonmath.Vec3::unit_x())),
+  )
+  assert_eq(bone.to_array().length(), 8)
+  // The operator a skinning loop needs, and the sum it is made of.
+  let blended = (bone.scale(0.5) + bone.scale(0.5)).normalize()
+  assert_true(blended.approx(bone))
+  // The frame and the turn, also reachable from outside the package.
+  let (u, v) = @moonmath.Vec3::unit_z().any_orthonormal_pair()
+  assert_true(u.cross(v).approx(@moonmath.Vec3::unit_z()))
+  assert_true(
+    @moonmath.Vec3::unit_x()
+    .rotate_z(@moonmath.half_pi)
+    .approx(@moonmath.Vec3::unit_y()),
+  )
+}
