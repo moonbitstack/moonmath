@@ -1,6 +1,6 @@
 name = "moonbitstack/moonmath"
 
-version = "0.1.4"
+version = "0.2.0"
 
 readme = "README.md"
 
@@ -51,7 +51,7 @@ keywords = [
 description = "Vectors, matrices, quaternions and geometry for MoonBit: column-major, right-handed, and ready to copy into a GPU buffer, with a special-function subpackage in double and arbitrary precision."
 
 import {
-  "moonbitstack/moonnum@0.2.7",
+  "moonbitstack/moonnum@0.3.0",
 }
 
 source = "src"
