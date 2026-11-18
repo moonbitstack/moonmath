@@ -241,11 +241,11 @@ fn wanted(largest : Double, value : Double, digits : Int32) -> Int32 {
   if ratio <= 1.0 {
     return digits
   }
-  let needed = @math.log10(ratio) + Double::from_int(margin) + 4.0
+  let needed = @math.log10(ratio) + margin.to_double() + 4.0
   if needed > 1.0e3 {
     return 1000
   }
-  if needed < Double::from_int(digits) {
+  if needed < digits.to_double() {
     return digits
   }
   needed.to_int()

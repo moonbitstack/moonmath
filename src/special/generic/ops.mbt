@@ -75,7 +75,7 @@ pub fn double_ops() -> Ops[Double] {
   {
     zero: 0.0,
     one: 1.0,
-    from_int: fn(i) { Double::from_int(i) },
+    from_int: fn(i) { i.to_double() },
     from_decimal: fn(text) { decimal_to_double(text) },
     add: fn(a, b) { a + b },
     sub: fn(a, b) { a - b },
@@ -115,7 +115,7 @@ pub let double_algebra : Ops[Double] = double_ops()
 /// decimal digit the wrong way now and then, and one that carries a fraction of
 /// a digit more does not.
 pub fn digits_to_precision(digits : Int32) -> Int32 {
-  @math.ceil(Double::from_int(digits) * 3.32193 + 3.0).to_int()
+  @math.ceil(digits.to_double() * 3.32193 + 3.0).to_int()
 }
 
 ///|

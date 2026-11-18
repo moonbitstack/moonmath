@@ -574,7 +574,7 @@ fn[T] series_limit(x : T, ops : Ops[T]) -> Int32 {
   if slack <= 0.0 {
     return 200000
   }
-  let wanted_terms = Double::from_int(ops.digits) * 60.0 / slack
+  let wanted_terms = ops.digits.to_double() * 60.0 / slack
   if wanted_terms > 200000.0 {
     200000
   } else if wanted_terms < 20000.0 {
